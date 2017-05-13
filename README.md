@@ -32,7 +32,7 @@ It is assumed that preCICE has been installed successfully beforehand. Concernin
 ### Adapter
 The adapter makes use of an additional input configuration file in YAML format. Therefore, the YAML parser "yaml-cpp" needs to be downloaded and installed from GitHub: https://github.com/jbeder/yaml-cpp. The building procedure is described in a *README* file included in the package.
 
-The adapter source code can be downloaded from https://github.com/precice/precice/tools/adapters. The adapter is installed via a *Makefile*. It contains five variables that need to be adapted to your system:
+The adapter source code can be downloaded from https://github.com/precice/calculix-adapter. The adapter is installed via a *Makefile*. It contains five variables that need to be adapted to your system:
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
  2. `SPOOLES`: Location of SPOOLES (top-level directory)
