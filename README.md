@@ -27,7 +27,7 @@ This document describes how to build the preCICE adapter for CalculiX and how to
 Before installing the adapter, CalculiX itself must be downloaded and installed from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX. Note that the current version of the adapter was developed for CalculiX 2.10. It is recommended to use this version.
 
 ### preCICE
-It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building. Please note that preCICE should be built with "mpicc".
+It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building.
 
 ### Adapter
 The adapter makes use of an additional input configuration file in YAML format. Therefore, the YAML parser "yaml-cpp" needs to be downloaded and installed from GitHub: https://github.com/jbeder/yaml-cpp. The building procedure is described in a *README* file included in the package.
@@ -113,4 +113,4 @@ For the FSI example above:
 The input file for this example would be *testcase.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
 ## References
-[1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Institut für Informatik, Technische Universität München, December 2016.
+[1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Institut für Informatik, Technische Universität München, December 2016.
