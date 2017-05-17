@@ -100,7 +100,7 @@ The adapter internally uses the CalculiX data format for point forces to apply t
 
 At the moment, only the non-linear solver of CCX is coupled via the adapter. Therefore, two keywords must appear in the CalculiX input file for FSI simulations: "DYNAMIC" (enabling a dynamic computation) and "NLGEOM" (selecting the geometrically non-linear solver).
 
-A testcase is provided in the directory `testcase`. It corresponds to the geometry of the structural solver of the Extended Flap scenario, Section 6.2 in the bachelor thesis of Alexander Rusch [2](https://www5.in.tum.de/pub/Rusch2016_BA.pdf).
+A testcase is provided in the directory `testcase`. It corresponds to the geometry of the structural solver of the Extended Flap scenario, Section 6.2 in the bachelor thesis of Alexander Rusch [[2]](https://www5.in.tum.de/pub/Rusch2016_BA.pdf).
 
 ### Running the Adapted CalculiX Executable
 Running the adapted executable is pretty similar to running the original CalculiX CCX solver. The syntax is as follows:
@@ -115,4 +115,5 @@ The input file for this example would be *testcase.inp*. Note that the suffix ".
 
 ## References
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
+
 [2] Alexander Rusch. Extending SU2 to fluid-structure interaction via preCICE. Bachelor's thesis, Munich School of Engineering, Technical University of Munich, 2016.
