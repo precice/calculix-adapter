@@ -1,7 +1,5 @@
 # Building and Usage of the preCICE Adapter for CalculiX
 
-**---------- Adapter alpha version (beta version coming soon) ----------**
-
 This document describes how to build the preCICE adapter for CalculiX and how to use it for fluid-structure interaction (FSI) simulations. The adapter was initially developed for conjugate heat transfer (CHT) simulations via preCICE by Lucia Cheung in the scope of her master’s thesis [[1]](#references). For running the adapter for CHT simulations refer to this thesis. The adapter was extended to fluid-structure interaction by Alexander Rusch.
 
 ## Contents
@@ -24,7 +22,7 @@ This document describes how to build the preCICE adapter for CalculiX and how to
 
 ## Building the Adapter
 ### CalculiX
-Before installing the adapter, CalculiX itself must be downloaded and installed from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX. Note that the current version of the adapter was developed for CalculiX 2.10. It is recommended to use this version.
+Before installing the adapter, CalculiX itself must be downloaded and installed from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX. Currently only CalculiX 2.10 is supported. Please let us know if you want to use a different version.
 
 ### preCICE
 It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building.
@@ -40,6 +38,7 @@ The adapter source code can be downloaded from https://github.com/precice/calcul
  4. `PRECICE_ROOT`: Location of preCICE (top-level directory)
  5. `YAML`: Location of the YAML parser (configuration file reader) (top-level directory)
 
+Furthermore, you might need to adapt the name of the ARPACK library `libarpack_INTEL.a` to your setting. 
 Type "make" for building and "make clean" before a rebuild from the top-level directory of the adapter code, in which the *Makefile* is located. After building successfully, the executable "ccx_preCICE" is located in the "bin" folder.
 
 ## Running Simulations
@@ -101,6 +100,8 @@ The adapter internally uses the CalculiX data format for point forces to apply t
 
 At the moment, only the non-linear solver of CCX is coupled via the adapter. Therefore, two keywords must appear in the CalculiX input file for FSI simulations: "DYNAMIC" (enabling a dynamic computation) and "NLGEOM" (selecting the geometrically non-linear solver).
 
+A testcase is provided in the directory `testcase`. It corresponds to the geometry of the structural solver of the Extended Flap scenario, Section 6.2 in the bachelor thesis of Alexander Rusch [2](https://www5.in.tum.de/pub/Rusch2016_BA.pdf).
+
 ### Running the Adapted CalculiX Executable
 Running the adapted executable is pretty similar to running the original CalculiX CCX solver. The syntax is as follows:
 
@@ -113,4 +114,5 @@ For the FSI example above:
 The input file for this example would be *testcase.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
 ## References
-[1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Institut für Informatik, Technische Universität München, December 2016.
+[1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
+[2] Alexander Rusch. Extending SU2 to fluid-structure interaction via preCICE. Bachelor's thesis, Munich School of Engineering, Technical University of Munich, 2016.
