@@ -1,6 +1,6 @@
 # Building and Usage of the preCICE Adapter for CalculiX
 
-This document describes how to build the preCICE adapter for CalculiX and how to use it for fluid-structure interaction (FSI) simulations. The adapter was initially developed for conjugate heat transfer (CHT) simulations via preCICE by Lucia Cheung in the scope of her master’s thesis [[1]](#references). For running the adapter for CHT simulations refer to this thesis. The adapter was extended to fluid-structure interaction by Alexander Rusch.
+This document describes how to build the preCICE adapter for CalculiX and how to use it for fluid-structure interaction (FSI) simulations. The adapter was initially developed for conjugate heat transfer (CHT) simulations via preCICE by Lucia Cheung in the scope of her master’s thesis [[1]](https://www5.in.tum.de/pub/Cheung2016_Thesis.pdf). For running the adapter for CHT simulations refer to this thesis. The adapter was extended to fluid-structure interaction by Alexander Rusch.
 
 ## Contents
 <!-- toc orderedList:0 -->
