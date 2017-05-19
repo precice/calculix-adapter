@@ -124,11 +124,11 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * 
     {
         int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
         //x-component of the displacementDeltas
-        displacementDeltas[3 * i] = -v[nodeIdx * mt + 1] + v_init[nodeIdx * mt + 1];
+        displacementDeltas[3 * i] = v[nodeIdx * mt + 1] - v_init[nodeIdx * mt + 1];
         //y-component of the displacements
-        displacementDeltas[3 * i + 1] = -v[nodeIdx * mt + 2] + v_init[nodeIdx * mt + 2];
+        displacementDeltas[3 * i + 1] = v[nodeIdx * mt + 2] - v_init[nodeIdx * mt + 2];
         //z-component of the displacements
-        displacementDeltas[3 * i + 2] = -v[nodeIdx * mt + 3] + v_init[nodeIdx * mt + 3];
+        displacementDeltas[3 * i + 2] = v[nodeIdx * mt + 3] - v_init[nodeIdx * mt + 3];
     }
 }
 
