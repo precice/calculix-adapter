@@ -1,4 +1,4 @@
-# Specify the locations of: the original CCX source, SPOOLES and ARPACK
+# Specify the locations of: the original CCX source, SPOOLES, ARPACK, preCICE and YAML
 CCX				= $(HOME)/PathTo/CalculiX/ccx_2.10/src
 SPOOLES			= $(HOME)/PathTo/SPOOLES
 ARPACK			= $(HOME)/PathTo/ARPACK
