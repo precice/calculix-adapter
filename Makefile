@@ -14,7 +14,7 @@ INCLUDES = \
 	-I./adapter \
 	-I$(CCX) \
 	-I$(SPOOLES) \
-	-I$(PRECICE)/src \
+	-I$(PRECICE_ROOT)/src \
     -I$(ARPACK) \
 	-I$(YAML)/include
 
@@ -22,7 +22,7 @@ LIBS = \
 	$(SPOOLES)/spooles.a \
 	$(ARPACK)/libarpack_INTEL.a \
     -lpthread -lm -lc \
-    -L$(PRECICE)/build/last \
+    -L$(PRECICE_ROOT)/build/last \
     -lprecice \
     -lboost_regex \
     -lboost_log \
