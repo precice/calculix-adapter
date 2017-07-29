@@ -52,6 +52,10 @@
 #define ITGFORMAT "d"
 #endif
 
+void FORTRAN(actideacti,(char *set,ITG *nset,ITG *istartset,ITG *iendset,
+			 ITG *ialset,char *objectset,ITG *ipkon,ITG *ibject,
+                         ITG *ne));
+
 void FORTRAN(addimdnodecload,(ITG *nodeforc,ITG *i,ITG *imdnode,
              ITG *nmdnode,double *xforc,ITG *ikmpc,ITG *ilmpc,
              ITG *ipompc,ITG *nodempc,ITG *nmpc,ITG *imddof,ITG *nmddof,
@@ -107,7 +111,8 @@ void FORTRAN(applyboun,(ITG *ifaext,ITG *nfaext,ITG *ielfa,ITG *ikboun,
              ITG *nload,char *sideload,ITG *isolidsurf,ITG *nsolidsurf,
 	     ITG *ifabou,ITG *nfabou,ITG *nface,ITG *nodeboun,ITG *ndirboun,
 	     ITG *ikmpc,ITG *ilmpc,char *labmpc,ITG *nmpc,ITG *nactdohinv,
-	     ITG *compressible,ITG *iatleastonepressurebc));
+	     ITG *compressible,ITG *iatleastonepressurebc,ITG *ipkonf,
+             ITG *kon,ITG *konf,ITG *nblk));
 
 void FORTRAN(applympc,(ITG *nface,ITG *ielfa,ITG *is,ITG *ie,ITG *ifabou,
 		       ITG *ipompc,double *vfa,double *coefmpc,ITG *nodempc,
@@ -153,7 +158,8 @@ void arpack(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *istep,ITG *mcs,ITG *ics,char *tieset,
              double *cs,ITG *nintpoint,ITG *mortar,ITG *ifacecount,
 	     ITG **islavsurfp,double **pslavsurfp,double **clearinip,
-	     ITG *nmat,char *typeboun,ITG *ielprop,double *prop);
+	     ITG *nmat,char *typeboun,ITG *ielprop,double *prop,
+             char *orname);
 
 void arpackbu(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     ITG *ne,
@@ -185,7 +191,7 @@ void arpackbu(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              ITG *inotr,ITG *ntrans,double *ttime,double *fmpc,
 	     char *cbody,ITG *ibody,double *xbody,ITG *nbody,
 	     double *thicke,char *jobnamec,ITG *nmat,ITG *ielprop,
-             double *prop);
+	     double *prop,char *orname);
 
 void arpackcs(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *ne,
@@ -220,11 +226,15 @@ void arpackcs(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *mpcinfo,ITG *ntie,ITG *istep,
 	     char *tieset,ITG *nintpoint,ITG *mortar,ITG *ifacecount,
 	     ITG **islavsurfp,double **pslavsurfp,double **clearinip,
-	     ITG *nmat,char *typeboun,ITG *ielprop,double *prop);
+	     ITG *nmat,char *typeboun,ITG *ielprop,double *prop,
+             char *orname);
 
 void FORTRAN(assigndomtonodes,(ITG *ne,char *lakon,ITG *ipkon,ITG *kon,
              ITG *ielmat,ITG *inomat,double *elcon,ITG *ncmat_,ITG *ntmat_,
 	     ITG *mi,ITG *ne2));
+
+void FORTRAN(autocovmatrix,(double *co,double *ad,double *au,ITG *jqs,
+	     ITG *irows,ITG *ndesi,ITG *nodedesi,double *physcon));
 
 void FORTRAN(basis,(double *x,double *y,double *z,double *xo,double *yo,
                     double *zo,ITG *nx,ITG *ny,ITG *nz,double *planfa,
@@ -242,6 +252,13 @@ void FORTRAN(biotsavart,(ITG *ipkon,ITG *kon,char *lakon,ITG *ne,double *co,
                          double *qfx,double *h0,ITG *mi,ITG *nka,ITG *nkb));
 
 void *biotsavartmt(ITG *i);
+
+void FORTRAN(blockanalysis,(char *set,ITG *nset,ITG *istartset,ITG *iendset,
+             ITG *ialset,ITG *nblk,ITG *ipkon,ITG *kon,ITG *ielfa,
+             ITG *nodface,ITG *neiel,ITG *neij,ITG *neifa,ITG *ipoface,
+             ITG *ipnei,ITG *konf,ITG *istartblk,ITG *iendblk,ITG *nactdoh,
+	     ITG *nblket,ITG *nblkze,ITG *nef,ITG *ielblk,ITG *nk,
+             ITG *nactdohinv));
 
 void FORTRAN(bodyforce,(char *cbody,ITG *ibody,ITG *ipobody,ITG *nbody,
              char *set,ITG *istartset,ITG *iendset,ITG *ialset,
@@ -283,6 +300,14 @@ void FORTRAN(calcgamma,(ITG *nface,ITG *ielfa,double *vel,double *gradvel,
 void FORTRAN(calcgammat,(ITG *nface,ITG *ielfa,double *vel,double *gradtfa,
                         double *gammat,double *xlet,double *xxn,double *xxj,
 			ITG *ipnei,double *betam,ITG *nef));
+
+void FORTRAN(calcgradkel,(ITG *ne,char *lakon,ITG *ipnei,double *vfa,
+                          double *area,double *xxn,double *gradkel,ITG *neifa,
+			  double *volume));
+
+void FORTRAN(calcgradoel,(ITG *ne,char *lakon,ITG *ipnei,double *vfa,
+                          double *area,double *xxn,double *gradoel,ITG *neifa,
+			  double *volume));
 
 void FORTRAN(calcgradpel,(ITG *ne,char *lakon,ITG *ipnei,double *vfa,
                           double *area,double *xxn,double *gradpel,ITG *neifa,
@@ -390,7 +415,7 @@ void FORTRAN(calcview,(char *sideload,double *vold,double *co,
 	     ITG *kontri,ITG *nloadtr,double *adview,double *auview,
              double *dist,ITG *idist,double *area,ITG *ntrit,ITG *mi,ITG *jqrad,
 	     ITG *irowrad,ITG *nzsrad,double *sidemean,ITG *ntria,
-             ITG *ntrib));
+	     ITG *ntrib,char *covered,ITG *ng));
 
 void *calcviewmt(ITG *i);
 
@@ -444,7 +469,7 @@ void FORTRAN(calinput,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *cyclicsymmetry,ITG *idefforc,ITG *idefload,
                ITG *idefbody,ITG *mortar,ITG *ifacecount,ITG *islavsurf,
 	       double *pslavsurf,double *clearini,char *heading,
-               ITG *iaxial,ITG *nobject,char *objectset));    
+	       ITG *iaxial,ITG *nobject,char *objectset,ITG *nprint_));    
 
 void cascade(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
    ITG *mpcfree,ITG *nodeboun,ITG *ndirboun,ITG*nboun,ITG*ikmpc,
@@ -486,14 +511,41 @@ void checkconvergence(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
           ITG *neini,double *dampwk,double *dampwkini,double *energystartstep);
 
 void checkconvnet(ITG *icutb,ITG *iin,
-		  double *qamt,double *qamf,double *qamp,
-		  double *ram1t,double *ram1f,double *ram1p,
-		  double *ram2t,double *ram2f,double *ram2p,
-		  double *ramt,double *ramf,double *ramp,
+		  double *cam1t,double *cam1f,double *cam1p,
+		  double *cam2t,double *cam2f,double *cam2p,
+		  double *camt,double *camf,double *camp,
 		  ITG *icntrl,double *dtheta,double *ctrl,
-                  double *uama,double *ram1a,double *ram2a,double *rama,
+                  double *cam1a,double *cam2a,double *cama,
                   double *vamt,double *vamf,double *vamp,double *vama,
-                  double *qa);
+                  double *qa,double *qamt,double *qamf,double *ramt,
+                  double *ramf,double *ramp,ITG *iplausi);
+
+void checkdivergence(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
+	  ITG *ne,double *stn,ITG *nmethod,
+	  ITG *kode,char *filab,double *een,double *t1act,
+          double *time,double *epn,ITG *ielmat,char *matname,
+          double *enern,double *xstaten,ITG *nstate_,ITG *istep,
+          ITG *iinc,ITG *iperturb,double *ener,ITG *mi,char *output,
+          ITG *ithermal,double *qfn,ITG *mode,ITG *noddiam,double *trab,
+          ITG *inotr,ITG *ntrans,double *orab,ITG *ielorien,ITG *norien,
+          char *description,double *sti,
+	  ITG *icutb,ITG *iit,double *dtime,double *qa,double *vold,
+          double *qam,double *ram1,double *ram2,double *ram,
+          double *cam,double *uam,ITG *ntg,double *ttime,
+          ITG *icntrl,double *theta,double *dtheta,double *veold,
+          double *vini,ITG *idrct,double *tper,ITG *istab,double *tmax,
+	  ITG *nactdof,double *b,double *tmin,double *ctrl,double *amta,
+          ITG *namta,ITG *itpamp,ITG *inext,double *dthetaref,ITG *itp,
+          ITG *jprint,ITG *jout,ITG *uncoupled,double *t1,ITG *iitterm,
+          ITG *nelemload,ITG *nload,ITG *nodeboun,ITG *nboun,ITG *itg,
+	  ITG *ndirboun,double *deltmx,ITG *iflagact,char *set,ITG *nset,
+	  ITG *istartset,ITG *iendset,ITG *ialset,double *emn,double *thicke,
+	  char *jobnamec,ITG *mortar,ITG *nmat,ITG *ielprop,double *prop,
+	  ITG *ialeatoric,ITG *kscale,
+          double *energy,double *allwk,double *energyref,
+          double *emax,double *enres,double *enetoll,double *energyini,
+          double *allwkini,double *temax,double *reswk,ITG *ne0,
+          ITG *neini,double *dampwk,double *dampwkini,double *energystartstep);
 
 void checkinclength(double *time,double *ttime,double *theta,double *dtheta,
           ITG *idrct,double *tper,double *tmax,double *tmin,double *ctrl,
@@ -509,8 +561,12 @@ void FORTRAN(checkimpacts,(ITG *ne,ITG *neini,double *temax,
 		   double *dampwk,double *dampwkini,double *emax,
 		   ITG *mortar,double *maxdecay,double *enetoll));
 
+void FORTRAN(checkinputvaluesnet,(ITG *ieg,ITG *nflow,double *prop,
+				  ITG *ielprop,char *lakon));
+
 void FORTRAN(checktime,(ITG *itpamp,ITG *namta,double *tinc,double *ttime,
-	     double *amta,double *tmin,ITG *inext,ITG *itp,ITG *istep));
+	     double *amta,double *tmin,ITG *inext,ITG *itp,ITG *istep,
+             double *tper));
 
 void FORTRAN(checktruecontact,(ITG *ntie,char *tieset,double *tietol,
 	     double *elcon,ITG *itruecontact,ITG *ncmat_,ITG *ntmat_));
@@ -519,14 +575,14 @@ void FORTRAN(closefile,());
 
 void FORTRAN(closefilefluid,());
 
-void compfluid(double **cop,ITG *nk,ITG **ipkonp,ITG **konp,char **lakonp,
+void compfluid(double **cop,ITG *nk,ITG **ipkonp,ITG *konf,char **lakonp,
     char **sideface,ITG *ifreestream,
     ITG *nfreestream,ITG *isolidsurf,ITG *neighsolidsurf,
-    ITG *nsolidsurf,ITG **iponoel,ITG **inoel,ITG *nshcon,double *shcon,
+    ITG *nsolidsurf,ITG *nshcon,double *shcon,
     ITG *nrhcon,double *rhcon,double **voldp,ITG *ntmat_,ITG *nodeboun,
     ITG *ndirboun,ITG *nboun,ITG **ipompcp,ITG **nodempcp,ITG *nmpc,
     ITG **ikmpcp,ITG **ilmpcp,ITG *ithermal,ITG *ikboun,ITG *ilboun,
-    ITG *turbulent,ITG *isolver,ITG *iexpl,double *vcontu,double *ttime,
+    ITG *turbulent,ITG *isolver,ITG *iexpl,double *ttime,
     double *time,double *dtime,ITG *nodeforc,ITG *ndirforc,double *xforc,
     ITG *nforc,ITG *nelemload,char *sideload,double *xload,ITG *nload,
     double *xbody,ITG *ipobody,ITG *nbody,ITG *ielmatf,char *matname,
@@ -547,10 +603,26 @@ void compfluid(double **cop,ITG *nk,ITG **ipkonp,ITG **konp,char **lakonp,
     ITG *neifa,ITG *neiel,ITG *ielfa,ITG *ifaext,double *vfa,double *vel,
     ITG *ipnei,ITG *nflnei,ITG *nfaext,char *typeboun,ITG *neij,
     double *tincf,ITG *nactdoh,ITG *nactdohinv,ITG *ielorien,
-    char *jobnamec);
+    char *jobnamec,ITG *ifatie,ITG *nstate_,double *xstate,char *orname,
+    ITG *nblk,ITG *ielblk,ITG *istartblk,ITG *iendblk,ITG *nblket,
+    ITG *nblkze,ITG *kon);
 
 void FORTRAN(complete_hel,(ITG *neq,double *b,double *hel,double *ad,
              double *au,ITG *jq,ITG *irow,ITG *nzs));
+
+void FORTRAN(complete_hel_blk,(double *vel,double *hel,double *auv6,
+	     ITG *ipnei,ITG *neiel,ITG *nef,ITG *nactdohinv));
+
+void FORTRAN(complete_hel_cyclic,(ITG *neq,double *b,double *hel,double *ad,
+	     double *au,ITG *jq,ITG *irow,ITG *ipnei,ITG *neiel,
+	     ITG *ifatie,double *c,char *lakonf,ITG *neifa,ITG *nzs));
+
+void FORTRAN(complete_hel_cyclic_blk,(double *vel,double *hel,double *auv6,
+	     double *c,ITG *ipnei,ITG *neiel,ITG *neifa,ITG *ifatie,
+             ITG *nef));
+
+void complete_hel_blk_main(double *vel,double *hel,double *auv6,double *c,
+      ITG *ipnei,ITG *neiel,ITG *neifa,ITG *ifatie,ITG *nef);
 
 void complexfreq(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
 	       ITG **nodebounp,ITG **ndirbounp,double **xbounp,ITG *nboun,
@@ -587,7 +659,8 @@ void complexfreq(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
                ITG *idrct,ITG *jmax,
 	       double *ctrl,ITG *itpamp,double *tietol,ITG *nalset,
 	       ITG *ikforc,ITG *ilforc,double *thicke,
-	       char *jobnamef,ITG *mei,ITG *nmat,ITG *ielprop,double *prop);
+	       char *jobnamef,ITG *mei,ITG *nmat,ITG *ielprop,double *prop,
+               char *orname);
 
 void contact(ITG *ncont,ITG *ntie,char *tieset,ITG *nset,char *set,
 	     ITG *istartset,ITG *iendset,ITG *ialset,ITG *itietri,
@@ -609,8 +682,8 @@ void contact(ITG *ncont,ITG *ntie,char *tieset,ITG *nset,char *set,
              double *theta,double *xstateini,double *xstate,ITG *nstate_,
              ITG *icutb,ITG *ialeatoric);
 
-void FORTRAN(convert2slapcol,(double *au,double *ad,ITG *irow,ITG *ia,
-                              ITG *jq,ITG *ja,ITG *nzs,ITG *neq,double *aua));
+void FORTRAN(convert2slapcol,(double *au,double *ad,
+                              ITG *jq,ITG *nzs,ITG *nef,double *aua));
     
 void FORTRAN(coriolissolve,(double *cc,ITG *nev,double *aa,double *bb,
              double *xx,double *eiga,double *eigb,double *eigxx,
@@ -625,6 +698,15 @@ void FORTRAN(correctvfa,(ITG *nface,ITG *ielfa,double *area,double *vfa,
                        double *xxn,ITG *ifabou,ITG *ipnei,
                        ITG *nef,ITG *neifa,double *hfa,double *vel,
 		       double *xboun,char *lakonf,double *flux));
+
+void FORTRAN(createfint,(ITG *ne,ITG *ipkon,char *lakon,ITG *kon,
+			 ITG *nactdof,ITG *mi,double *fn0,double *fint));
+
+void FORTRAN(createialdesi,(ITG *ndesi,ITG *nodedesi,ITG *iponoel,
+			    ITG *inoel,ITG *istartdesi,ITG *ialdesi));
+
+void FORTRAN(createialelem,(ITG *ne,ITG *istartelem,ITG *ialelem,
+                            ITG *ipoeldi,ITG *ieldi));
 
 void FORTRAN(createinterfacempcs,(ITG *imastnode,double *xmastnor,
 	     ITG *nmastnode,ITG *ikmpc,ITG *ilmpc,ITG *nmpc,ITG *ipompc,
@@ -661,12 +743,18 @@ void FORTRAN(createtiedsurfs,(ITG *nodface,ITG *ipoface,char *set,
 	     ITG *ntie,double *tietol,ITG *nalset,ITG *nk,ITG *nset,
              ITG *iactive));
 
+void FORTRAN(create_iau6,(ITG *nef,ITG *ipnei,ITG *neiel,ITG *jq,
+			  ITG *irow,ITG *nzs,ITG *iau6,char *lakonf));
+
 void FORTRAN(dattime,(char *date,char *clock));
 
 void CEE(ddotc,(ITG *n,double *dx,ITG *incx,double *dy,ITG *incy,
                 double *funcddot));
 
 void *ddotc1mt(ITG *i);
+
+void FORTRAN(desiperelem,(ITG *ndesi,ITG *istartdesi,ITG *ialdesi,
+			  ITG *ipoeldi,ITG *ieldi,ITG *ne));
 
 void dfdbj(double *bcont,double **dbcontp,ITG *neq,ITG *nope,
 	   ITG *konl,ITG *nactdof,double *s,double *z,ITG *ikmpc,
@@ -745,7 +833,8 @@ void dyna(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
                ITG *idrct,ITG *jmax,
 	       double *ctrl,ITG *itpamp,double *tietol,ITG *nalset,
 	       ITG *ikforc,ITG *ilforc,double *thicke,
-	       ITG *nslavs,ITG *nmat,char *typeboun,ITG *ielprop,double *prop);
+	       ITG *nslavs,ITG *nmat,char *typeboun,ITG *ielprop,double *prop,
+               char *orname);
 
 void dynacont(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 	      ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
@@ -863,10 +952,14 @@ void electromagnetics(double **co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
              ITG *ielprop,double *prop,ITG *ntie,char **tiesetp,
 	     ITG *itpamp,ITG *iviewfile,char *jobnamec,double **tietolp,
 	     ITG *nslavs,double *thicke,ITG *ics,ITG *nalset,ITG *nmpc_,
-	     ITG *nmat,char *typeboun,ITG *iaxial,ITG *nload_);
+	     ITG *nmat,char *typeboun,ITG *iaxial,ITG *nload_,ITG *nprop,
+	     ITG *network,char *orname);
 
 void FORTRAN(elementpernode,(ITG *iponoel,ITG *inoel,char *lakon,ITG *ipkon,
-              ITG *kon,ITG *ne));
+			     ITG *kon,ITG *ne,ITG *inoelsize));
+
+void FORTRAN(elementperorien,(ITG *ipoorel,ITG *iorel,ITG *ielorien,
+			      ITG *ne,ITG *mi));
 
 void FORTRAN(envtemp,(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,char *sideload,
                       ITG *nelemload,ITG *ipkon,ITG *kon,char *lakon,
@@ -880,7 +973,7 @@ void FORTRAN(envtemp,(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,char *sideload,
                       double *vold,char *set,ITG *nshcon,
 		      double *rhcon,ITG *nrhcon,ITG *mi,ITG *nmpc,
                       ITG *nodempc,ITG *ipompc,char *labmpc,ITG *ikboun,
-                      ITG *nasym,ITG *iaxial));
+                      ITG *nasym,double *ttime,double *time,ITG *iaxial));
 
 void FORTRAN(equationcheck,(double *ac,ITG *nteq,ITG *nactdog,
                             ITG *itg,ITG *ntg,ITG *nacteq,ITG *network));
@@ -888,6 +981,10 @@ void FORTRAN(equationcheck,(double *ac,ITG *nteq,ITG *nactdog,
 void FORTRAN(errorestimator,(double *yi,double *yn,ITG *ipkon,
              ITG *kon,char *lakon,ITG *nk,ITG *ne,ITG *mi,ITG *ielmat,
 	     ITG *nterms));
+
+void FORTRAN(rotationvector,(double *a,double *euler));
+
+void FORTRAN(rotationvectorinv,(double *a,double* euler));
 
 void expand(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     ITG *ne,ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
@@ -921,34 +1018,50 @@ void expand(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     char* tieset,ITG* ntie,ITG *imddof,ITG *nmddof,
 	     ITG *imdnode,ITG *nmdnode,ITG *imdboun,ITG *nmdboun,
              ITG *imdmpc,ITG *nmdmpc,ITG **izdofp,ITG *nzdof,ITG *nherm,
-	     double *xmr,double *xmi,char *typeboun,ITG *ielprop,double *prop);
+	     double *xmr,double *xmi,char *typeboun,ITG *ielprop,double *prop,
+             char *orname);
 
 void FORTRAN(extrapolate,(double *sti,double *stn,ITG *ipkon,ITG *inum,
              ITG *kon,char *lakon,ITG *nfield,ITG *nk,ITG *ne,ITG *mi,
              ITG *ndim,double *orab,ITG *ielorien,double *co,ITG *iorienglob,
-	     char *cflag,ITG *nelemload,ITG *nload,ITG *nodeboun,ITG *nboun,
-             ITG *ndirboun,double *vold,ITG *ithermal,ITG *force,
-	     ITG *cfd,ITG *ielmat,double *thicke,char *filab));
+	     char *cflag,double *vold,ITG *force,
+	     ITG *ielmat,double *thicke,ITG *ielprop,double *prop));
 
 void FORTRAN(extrapolate_ad_h,(ITG *nface,ITG *ielfa,double *xrlfa,
 			       double *ad,double *adfa,
-                               double *hel,double *hfa));
+                               double *hel,double *hfa,
+                               ITG *icyclic,double *c,ITG *ifatie));
 
 void FORTRAN(extrapolate_ad_h_comp,(ITG *nface,ITG *ielfa,double *xrlfa,
-			       double *ad,double *adfa,
-                               double *hel,double *hfa));
+			       double *ad,double *adfa,double *hel,double *hfa,
+                               ITG *icyclic,double *c,ITG *ifatie));
 
 void FORTRAN(extrapolatefluid,(ITG *nk,ITG *iponofa,ITG *inofa,ITG *inum,
              double *vfa,double *v,ITG *ielfa,ITG *ithermal,
              ITG *imach,ITG *ikappa,double *xmach,double *xkappa,
              double *shcon,ITG *nshcon,ITG *ntmat_,ITG *ielmatf,
-             double *physcon,ITG *mi));
+	     double *physcon,ITG *mi,ITG *iturb,double *xturb));
+
+void FORTRAN(extrapolate_gradkel,(ITG *nface,ITG *ielfa,double *xrlfa,
+	     double *gradkel,double *gradkfa,ITG *icyclic,double *c,ITG *ifatie));
+
+void FORTRAN(extrapolate_gradoel,(ITG *nface,ITG *ielfa,double *xrlfa,
+	     double *gradoel,double *gradofa,ITG *icyclic,double *c,ITG *ifatie));
 
 void FORTRAN(extrapolate_gradtel,(ITG *nface,ITG *ielfa,double *xrlfa,
-                    double *gradvel,double *gradvfa));
+	     double *gradtel,double *gradtfa,ITG *icyclic,double *c,ITG *ifatie));
 
 void FORTRAN(extrapolate_gradvel,(ITG *nface,ITG *ielfa,double *xrlfa,
-			       double *gradv,double *gradvfa));
+	     double *gradv,double *gradvfa,ITG *icyclic,double *c,
+             ITG *ifatie));
+
+void FORTRAN(extrapolate_kel,(ITG *nface,ITG *ielfa,double *xrlfa,double *vel,
+			      double *vfa,ITG *ifabou,double *xboun,ITG *ipnei,
+                              ITG *nef,double *physcon,double *umfa));
+
+void FORTRAN(extrapolate_oel,(ITG *nface,ITG *ielfa,double *xrlfa,double *vel,
+			      double *vfa,ITG *ifabou,double *xboun,ITG *ipnei,
+                              ITG *nef,double *physcon,double *umfa,double *dy));
 
 void FORTRAN(extrapolate_pel,(ITG *nface,ITG *ielfa,double *xrlfa,
 			      double *vel,double *vfa,ITG *ifabou,
@@ -960,15 +1073,32 @@ void FORTRAN(extrapolate_tel,(ITG *nface,ITG *ielfa,double *xrlfa,double *vel,
 
 void FORTRAN(extrapolate_vel,(ITG *nface,ITG *ielfa,double *xrlfa,double *vel,
 			      double *vfa,ITG *ifabou,double *xboun,ITG *ipnei,
-                              ITG *nef));
+                              ITG *nef,ITG *icyclic,double *c,ITG *ifatie,
+                              double *xxn));
 
 void FORTRAN(fcrit,(double *time,double *tend,double *aai,double *bbi,
 		      double *zetaj,double *dj,double *ddj,
 		      double *h1,double *h2,double *h3,double *h4,
                       double *func,double *funcp));
 
+void FORTRAN(fill_neiel,(ITG *nef,ITG *ipnei,ITG *neiel,ITG *neielcp));
+
+void FORTRAN(filter,(double *dgdxglob,ITG *nobject,ITG *nk,ITG *nodedesi,
+		     ITG *ndesi,char *objectset,double *xo,double *yo,
+		     double *zo,double *x,double *y,double *z,ITG *nx,
+		     ITG *ny,ITG *nz,ITG *neighbor,double *r,ITG *ndesia,
+		     ITG *ndesib));
+
+void filtermain(double *co,double *dgdxglob,ITG *nobject,ITG *nk,
+           ITG *nodedesi,ITG *ndesi,char *objectset);
+
+void *filtermt(ITG *i);
+
 void FORTRAN(findsurface,(ITG *ipoface,ITG *nodface,ITG *ne,ITG *ipkon,ITG *kon,
                      char *lakon,ITG *ntie,char *tieset));
+
+void FORTRAN(findsurface_se,(ITG *nodface,ITG *ipoface,ITG *ne,ITG *ipkon,
+                          char *lakon,ITG *kon));
 
 void FORTRAN (flowoutput,(ITG *itg,ITG *ieg,ITG *ntg,ITG *nteq,
 			  double *bc,char *lakon,
@@ -978,11 +1108,10 @@ void FORTRAN (flowoutput,(ITG *itg,ITG *ieg,ITG *ntg,ITG *nteq,
 			  ITG *ielmat,double *prop,
 			  ITG *ielprop,ITG *nactdog,ITG *nacteq,ITG *iin,
 			  double *physcon,double *camt,double *camf,double *camp,
-			  double *uamt,double *uamf,double *uamp,
 			  double *rhcon,ITG *nrhcon,
 			  double *vold,char *jobnamef,char *set,ITG *istartset,
                           ITG *iendset,ITG *ialset,ITG *nset,ITG *mi,
-                          ITG *iaxial));
+                          ITG *iaxial,ITG *istep,ITG *iit));
 
 void FORTRAN(flowresult,(ITG *ntg,ITG *itg,double *cam,double *vold,
               double *v,
@@ -995,6 +1124,11 @@ void FORTRAN(forcesolve,(double *zc,ITG *nev,double *aa,double *bb,
 	     ITG *iter,double *d,ITG *neq,double *z,ITG *istartnmd,
 	     ITG *iendnmd,ITG *nmd,ITG *cyclicsymmetry,ITG *neqact,
 	     ITG *igeneralizedforce));
+
+void FORTRAN(formgradient,(ITG *istartdesi,ITG *ialdesi,ITG *ipkon,
+	    char *lakon,ITG *ipoface,ITG *ndesi,ITG *nodedesi,ITG *nodface,
+	    ITG *kon,double *co,double *dgdx,ITG *nobject,
+            double *weightformgrad));
 
 void frd(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne0,
 	 double *v,double *stn,ITG *inum,ITG *nmethod,ITG *kode,
@@ -1024,19 +1158,48 @@ void frdcyc(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,double *v
             char *set,ITG *nset,double *emn,double *thicke,char *jobnamec,
             ITG *ne0,double *cdn,ITG *mortar,ITG *nmat);
 
-void frd_se(double *co,ITG *nk,double *stn,ITG *inum,ITG *nmethod,
+void frd_norm_se(double *co,ITG *nk,double *stn,ITG *inum,ITG *nmethod,
          ITG *kode,char *filab,double *fn,double *time,ITG *nstate_,
 	 ITG *istep,ITG *iinc,ITG *mode,ITG *noddiam,char *description,
 	 ITG *mi,ITG *ngraph,ITG *ne,double *cs,char *set,ITG *nset,
 	 ITG *istartset,ITG *iendset,ITG *ialset,double *thicke,
-	 char *jobnamec,char *output,double *dgdxtotglob,ITG *numobject);
+	 char *jobnamec,char *output,double *dgdxtotglob,ITG *numobject,
+	 char *objectset,double *extnor,ITG *ntrans,double *trab,
+         ITG *inotr);
+
+void frd_sen(double *co,ITG *nk,double *dstn,ITG *inum,ITG *nmethod,
+         ITG *kode,char *filab,double *time,ITG *nstate_,
+	 ITG *istep,ITG *iinc,ITG *mode,ITG *noddiam,char *description,
+	 ITG *mi,ITG *ngraph,ITG *ne,double *cs,char *set,ITG *nset,
+	 ITG *istartset,ITG *iendset,ITG *ialset,
+	 char *jobnamec,char *output,double *v,ITG *iobject,
+	 char *objectset,ITG *ntrans,ITG *inotr,double *trab,
+	 ITG *idesvar,char *orname,ITG *icoordinate,ITG *inorm,
+         ITG *irand);
+
+void frd_sen_se(double *co,ITG *nk,double *stn,ITG *inum,ITG *nmethod,
+         ITG *kode,char *filab,double *fn,double *time,ITG *nstate_,
+	 ITG *istep,ITG *iinc,ITG *mode,ITG *noddiam,char *description,
+	 ITG *mi,ITG *ngraph,ITG *ne,double *cs,char *set,ITG *nset,
+	 ITG *istartset,ITG *iendset,ITG *ialset,double *thicke,
+	 char *jobnamec,char *output,double *dgdxglob,ITG *iobject,
+	 char *objectset);
+
+void frd_orien_se(double *co,ITG *nk,double *stn,ITG *inum,ITG *nmethod,
+         ITG *kode,char *filab,double *fn,double *time,ITG *nstate_,
+	 ITG *istep,ITG *iinc,ITG *mode,ITG *noddiam,char *description,
+	 ITG *mi,ITG *ngraph,ITG *ne,double *cs,char *set,ITG *nset,
+	 ITG *istartset,ITG *iendset,ITG *ialset,double *thicke,
+	 char *jobnamec,char *output,double *dgdxtotglob,ITG *numobject,
+	 char *objectset,ITG *ntrans,ITG *inotr,double *trab,
+	 ITG *idesvar,char *orname);
 
 void FORTRAN(frdfluid,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              ITG *ne,double *v,ITG *kode,double *time,
              ITG *ielmatf,char *matname,char *filab,
 	     ITG *inum,ITG *ntrans,ITG *inotr,double *trab,ITG *mi,
 	     ITG *istep,double *stn,double *qfn,ITG *nactdofinv,
-	     double *xmach,double *xkappa,double *physcon));
+	     double *xmach,double *xkappa,double *physcon,double *xturb));
 
 void frdheader(ITG *icounter,double *oner,double *time,double *pi,
 	       ITG *noddiam,double *cs,ITG *null,ITG *mode,
@@ -1081,7 +1244,8 @@ void FORTRAN(gasmechbc,(double *vold,ITG *nload,char *sideload,
 			ITG *nelemload,double *xload,ITG *mi));
 
 void FORTRAN(genadvecelem,(ITG *inodesd,ITG *ipkon,ITG *ne,char *lakon,
-             ITG *kon,ITG *nload,char *sideload,ITG *nelemload,ITG *nkon));
+	     ITG *kon,ITG *nload,char *sideload,ITG *nelemload,ITG *nkon,
+             ITG *network));
 
 void FORTRAN(gencontelem_f2f,(char *tieset,ITG *ntie,ITG *itietri,ITG *ne,
              ITG *ipkon,ITG *kon,char *lakon,double *cg,double *straight,
@@ -1107,7 +1271,7 @@ void FORTRAN(gencontelem_n2f,(char *tieset,ITG *ntie,ITG *itietri,ITG *ne,
      ITG *iponoels,ITG *inoels,double *springarea,
      char *set,ITG *nset,ITG *istartset,ITG *iendset,ITG *ialset,
      double *tietol,double *reltime,
-     char* filab,ITG *nasym,double *xnoels,ITG *icutb));
+     char* filab,ITG *nasym,double *xnoels,ITG *icutb,ITG *ne0));
 
 void FORTRAN(generateeminterfaces,(ITG *istartset,ITG *iendset,
 	     ITG *ialset,ITG *iactive,ITG *ipkon,char *lakon,ITG *kon,
@@ -1137,7 +1301,8 @@ void FORTRAN(geomview,(double *vold,double *co,double *pmid,double *e1,
 
 void FORTRAN(getdesiinfo,(char *set,ITG *istartset,ITG *iendset,ITG *ialset,
             ITG *nset,ITG *mi,ITG *nactdof,ITG *ndesi,
-            ITG *ndirdesi,ITG *nodedesi,ITG *ntie,char *tieset));  
+            ITG *nodedesi,ITG *ntie,char *tieset,ITG *itmp,ITG *nmpc,
+	    ITG *nodempc,ITG *ipompc));  
 
 void getglobalresults (char *jobnamec,ITG **integerglobp,double **doubleglobp,
                        ITG *nboun,ITG *iamboun,double *xboun,ITG *nload,
@@ -1179,8 +1344,11 @@ void FORTRAN(initialcfd,(ITG *ne,ITG *ipkon,ITG *kon,char *lakon,
              double *co,double *coel,double *cofa,ITG *nface,ITG *ielfa,
              double *area,ITG *ipnei,ITG *neiel,double *xxn,double *xxi,
 	     double *xle,double *xlen,double *xlet,double *xrlfa,double *cosa,
-	     double *volume,ITG *neifa,double *xxj,double *cosb,double *vel,
-             double *dmin));
+	     double *volume,ITG *neifa,double *xxj,double *cosb,
+	     double *dmin,ITG *ifatie,double *cs,char *tieset,ITG *icyclic,
+	     double *c,ITG *neij,double *physcon,ITG *isolidsurf,
+	     ITG *nsolidsurf,double *dy,double *xxni,double *xxnj,
+	     double *xxicn,ITG *nflnei,ITG *iturbulent));
 
 void FORTRAN(initialchannel,(ITG *itg,ITG *ieg,ITG *ntg,double *ac,double *bc,
                          char *lakon,double *v,ITG * ipkon,ITG *kon,
@@ -1192,7 +1360,8 @@ void FORTRAN(initialchannel,(ITG *itg,ITG *ieg,ITG *ntg,double *ac,double *bc,
                          double *rhcon,ITG *nrhcon,ITG *ipobody,ITG *ibody,
                          double *xbody,double *co,ITG *nbody,ITG *network,
                          ITG *iin_abs,double *vold,char *set,ITG *istep,
-                         ITG *iit,ITG *mi,ITG *ineighe,ITG *ilboun));
+			 ITG *iit,ITG *mi,ITG *ineighe,ITG *ilboun,
+			 double *ttime,double *time,ITG *iaxial));
 
 void FORTRAN(initialnet,(ITG *itg,ITG *ieg,ITG *ntg,double *ac,double *bc,
                          char *lakon,double *v,ITG * ipkon,ITG *kon,
@@ -1206,10 +1375,14 @@ void FORTRAN(initialnet,(ITG *itg,ITG *ieg,ITG *ntg,double *ac,double *bc,
                          ITG *iin_abs,double *vold,char *set,ITG *istep,
                          ITG *iit,ITG *mi,ITG *ineighe,ITG *ilboun,
                          ITG *channel,ITG *iaxial,ITG *nmpc,char *labmpc,
-                         ITG *ipompc,ITG *nodempc,double *coefmpc));
+                         ITG *ipompc,ITG *nodempc,double *coefmpc,
+                         double *ttime,double *time,ITG *iponoel,ITG *inoel));
 
 void insert(ITG *ipointer,ITG **mast1p,ITG **mast2p,ITG *i1,
 	    ITG *i2,ITG *ifree,ITG *nzs_);
+
+void insertfreq(ITG *ipointer, ITG **mast1p, ITG **nextp, ITG *i1,
+		ITG *i2, ITG *ifree, ITG *nzs_);
 
 void insertrad(ITG *ipointer,ITG **mast1p,ITG **mast2p,ITG *i1,
 	    ITG *i2,ITG *ifree,ITG *nzs_);
@@ -1265,7 +1438,7 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *ilboun,
 	     double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
 	     double *alcon,ITG *nalcon,double *alzero,ITG **ielmatp,
-	     ITG *ielorien,ITG *norien,double *orab,ITG *ntmat_,
+	     ITG **ielorienp,ITG *norien,double *orab,ITG *ntmat_,
 	     double *t0,double *t1,double *t1old,
 	     ITG *ithermal,double *prestr,ITG *iprestr,
 	     double *vold,ITG *iperturb,double *sti,ITG *nzs,
@@ -1286,7 +1459,8 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     double *xbody,ITG *nbody,double *xbodyold,double *timepar,
 	     double *thicke,char *jobnamec,char *tieset,ITG *ntie,
 	     ITG *istep,ITG *nmat,ITG *ielprop,double *prop,char *typeboun,
-	     ITG *mortar,ITG *mpcinfo,double *tietol,ITG *ics,ITG *icontact);
+	     ITG *mortar,ITG *mpcinfo,double *tietol,ITG *ics,ITG *icontact,
+             char *orname);
 
 void FORTRAN(mafillcorio,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
                char *lakon,
@@ -1371,7 +1545,36 @@ void FORTRAN(mafillem,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
 	       ITG *nasym,ITG *iactive,double *h0,double *pslavsurf,
 	       double *pmastsurf,ITG *mortar,double *clearini,
-	       ITG *ielprop,double *prop));
+	       ITG *ielprop,double *prop,ITG *iponoel,ITG *inoel,
+               ITG *network));
+
+void FORTRAN(mafillk,(ITG *nef,ITG *ipnei,ITG *neifa,
+               ITG *neiel,double *vfa,double *xxn,double *area,
+	       double *au,double *ad,ITG *jq,ITG *irow,ITG *nzs,
+               double *b,double *vel,double *umfa,double *xlet,
+               double *xle,double *gradkfa,double *xxi,double *body,
+               double *volume,ITG *ielfa,char *lakonf,
+               ITG *ifabou,ITG *nbody,ITG *neq,double *dtimef,double *velo,
+               double *veloo,double *cpfa,double *hcfa,double *cvel,
+	       double *gradvel,double *xload,double *gammat,double *xrlfa,
+	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
+	       double *flux,ITG *nefa,ITG *nefb,ITG *iau6,double *xxni,
+	       double *xxnj,ITG *iturbulent));
+
+void mafillkmain(ITG *nef,ITG *ipnei,ITG *neifa,
+               ITG *neiel,double *vfa,double *xxn,double *area,
+	       double *au,double *ad,ITG *jq,ITG *irow,ITG *nzs,
+               double *b,double *vel,double *umel,double *xlet,
+               double *xle,double *gradkfa,double *xxi,double *body,
+               double *volume,ITG *ielfa,char *lakonf,
+               ITG *ifabou,ITG *nbody,ITG *neq,double *dtimef,double *velo,
+               double *veloo,double *cpfa,double *hcfa,double *cvel,
+	       double *gradvel,double *xload,double *gammat,double *xrlfa,
+	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
+	       double *flux,ITG *iau6,double *xxni,double *xxnj,
+               ITG *iturbulent);
+
+void *mafillkmt(ITG *i);
 
 void FORTRAN(mafillnet,(ITG *itg,ITG *ieg,ITG *ntg,
 			double *ac,ITG *nload,char *sideload,
@@ -1387,7 +1590,36 @@ void FORTRAN(mafillnet,(ITG *itg,ITG *ieg,ITG *ntg,
 			double *vold,double *xloadold,double *reltime,
 			ITG *nmethod,char *set,ITG *mi,ITG *nmpc,
                         ITG *nodempc,ITG *ipompc,double *coefmpc,
-                        char *labmpc,ITG *iaxial));
+                        char *labmpc,ITG *iaxial,double *cocon,ITG *ncocon,
+                        ITG *iponoel,ITG *inoel));
+
+void FORTRAN(mafillo,(ITG *nef,ITG *ipnei,ITG *neifa,
+               ITG *neiel,double *vfa,double *xxn,double *area,
+	       double *au,double *ad,ITG *jq,ITG *irow,ITG *nzs,
+               double *b,double *vel,double *umfa,double *xlet,
+               double *xle,double *gradofa,double *xxi,double *body,
+               double *volume,ITG *ielfa,char *lakonf,
+               ITG *ifabou,ITG *nbody,ITG *neq,double *dtimef,double *velo,
+               double *veloo,double *cpfa,double *hcfa,double *cvel,
+	       double *gradvel,double *xload,double *gammat,double *xrlfa,
+	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
+	       double *flux,ITG *nefa,ITG *nefb,ITG *iau6,double *xxni,
+	       double *xxnj,ITG *iturbulent,double *gradkel,double *gradoel));
+
+void mafillomain(ITG *nef,ITG *ipnei,ITG *neifa,
+               ITG *neiel,double *vfa,double *xxn,double *area,
+	       double *au,double *ad,ITG *jq,ITG *irow,ITG *nzs,
+               double *b,double *vel,double *umel,double *xlet,
+               double *xle,double *gradofa,double *xxi,double *body,
+               double *volume,ITG *ielfa,char *lakonf,
+               ITG *ifabou,ITG *nbody,ITG *neq,double *dtimef,double *velo,
+               double *veloo,double *cpfa,double *hcfa,double *cvel,
+	       double *gradvel,double *xload,double *gammat,double *xrlfa,
+	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
+	       double *flux,ITG *iau6,double *xxni,double *xxnj,
+	       ITG *iturbulent,double *gradkel,double *gradoel);
+
+void *mafillomt(ITG *i);
 
 void FORTRAN(mafillp,(ITG *ne,char *lakonf,ITG *ipnei,
              ITG *neifa,ITG *neiel,double *vfa,double *area,double *adfa,
@@ -1396,7 +1628,7 @@ void FORTRAN(mafillp,(ITG *ne,char *lakonf,ITG *ipnei,
 	     double *xle,double *b,double *xxn,
 	     ITG *neq,ITG *nzs,double *hfa,double *gradpel,
 	     double *bp,double *xxi,ITG *neij,double *xlen,double *cosb,
-             ITG *nefa,ITG *nefb));
+	     ITG *nefa,ITG *nefb,ITG *iau6,double *xxicn));
 
 void FORTRAN(mafillpbc,(ITG *nef,double *au,double *ad,ITG *jq,ITG *irow,
 			double *b,ITG *iatleastonepressurebc,ITG *nzs));
@@ -1410,7 +1642,8 @@ void FORTRAN(mafillpcomp,(ITG *ne,char *lakonf,ITG *ipnei,
 	     double *bp,double *xxi,ITG *neij,double *xlen,double *cosb,
              ITG *ielmatf,ITG *mi,double *a1,double *a2,double *a3,double *velo,
              double *veloo,double *dtimef,double *shcon,ITG *ntmat_,double *vel,
-	     ITG *nactdohinv,double *xrlfa,double *flux,ITG *nefa,ITG *nefb));
+	     ITG *nactdohinv,double *xrlfa,double *flux,ITG *nefa,ITG *nefb,
+	     ITG *iau6,double *xxicn));
 
 void mafillpcompmain(ITG *ne,char *lakonf,ITG *ipnei,
              ITG *neifa,ITG *neiel,double *vfa,double *area,double *adfa,
@@ -1421,7 +1654,8 @@ void mafillpcompmain(ITG *ne,char *lakonf,ITG *ipnei,
 	     double *bp,double *xxi,ITG *neij,double *xlen,double *cosb,
              ITG *ielmatf,ITG *mi,double *a1,double *a2,double *a3,double *velo,
              double *veloo,double *dtimef,double *shcon,ITG *ntmat_,double *vel,
-	     ITG *nactdohinv,double *xrlfa,double *flux);
+	     ITG *nactdohinv,double *xrlfa,double *flux,ITG *iau6,
+             double *xxicn);
 
 void *mafillpcompmt(ITG *i);
 
@@ -1432,7 +1666,7 @@ void mafillpmain(ITG *ne,char *lakonf,ITG *ipnei,
 	     double *xle,double *b,double *xxn,
 	     ITG *neq,ITG *nzs,double *hfa,double *gradpel,
 	     double *bp,double *xxi,ITG *neij,double *xlen,double *cosb,
-	     ITG *iatleastonepressurebc);
+	     ITG *iatleastonepressurebc,ITG *iau6,double *xxicn);
 
 void *mafillpmt(ITG *i);
 
@@ -1468,7 +1702,38 @@ void FORTRAN(mafillsm,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
 	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
-	       double *fnext,ITG *nea,ITG *neb,ITG *kscale));
+	       double *fnext,ITG *nea,ITG *neb,ITG *kscale,ITG *iponoel,
+	       ITG *inoel,ITG *network));
+
+void FORTRAN(mafillsmcsse,(double *co,ITG *kon,ITG *ipkon,char *lakon,
+	       ITG *ne,ITG *ipompc,ITG *nodempc,double *coefmpc,
+	       ITG *nmpc,ITG *nelemload,char *sideload,double *xload,
+	       ITG *nload,double *xbody,ITG *ipobody,ITG *nbody,
+	       double *cgr,ITG *nactdof,ITG *neq,ITG *nmethod,ITG *ikmpc,
+	       ITG *ilmpc,double *elcon,ITG *nelcon,double *rhcon,
+	       ITG *nrhcon,double *alcon,ITG *nalcon,double *alzero,
+	       ITG *ielmat,ITG *ielorien,ITG *norien,double *orab,
+	       ITG *ntmat_,double *t0,double *t1,ITG *ithermal,
+	       ITG *iprestr,double *vold,ITG *iperturb,double *sti,
+	       double *stx,ITG *iexpl,double *plicon,ITG *nplicon,
+               double *plkcon,ITG *nplkcon,double *xstiff,ITG *npmat_,
+	       double *dtime,char *matname,ITG *mi,ITG *ncmat_,ITG *mass,
+               ITG *stiffness,ITG *buckling,ITG *rhs,
+               ITG *intscheme,double *physcon,double *ttime,double *time,
+               ITG *istep,ITG *iinc,ITG *coriolis,ITG *ibody,
+	       double *xloadold,double *reltime,double *veold,
+               double *springarea,ITG *nstate_,double *xstateini,
+	       double *xstate,double *thicke,
+               ITG *integerglob,double *doubleglob,char *tieset,
+	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
+	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
+	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
+	       ITG *nea,ITG *neb,double *distmin,ITG *ndesi,
+	       ITG *nodedesi,double *df,ITG *jqs,
+	       ITG *irows,double *dfminds,ITG *icoordinate,
+	       double *dxstiff,double *xdesi,ITG *istartelem,ITG *ialelem,
+	       double *v,double *sigma,char *labmpc,ITG *ics,double *cs,
+	       ITG *mcs,ITG *nk,ITG *nzss));
 
 void FORTRAN(mafillsmse,(double *co,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *ipompc,ITG *nodempc,double *coefmpc,
@@ -1494,7 +1759,10 @@ void FORTRAN(mafillsmse,(double *co,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
 	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
 	       ITG *nea,ITG *neb,double *distmin,ITG *ndesi,
-	       ITG *nodedesi,ITG *ndirdesi,double *dfextminds));
+	       ITG *nodedesi,double *df,ITG *jqs,
+	       ITG *irows,double *dfminds,ITG *icoordinate,
+	       double *dxstiff,double *xdesi,ITG *istartelem,ITG *ialelem,
+	       double *v,double *sigma,ITG *ieigenfrequency));
 
 void *mafillsmmt(ITG *i);
 
@@ -1532,7 +1800,8 @@ void mafillsmmain(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
 	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
-               double *fnext,ITG *kscale);
+	       double *fnext,ITG *kscale,ITG *iponoel,ITG *inoel,
+               ITG *network);
 
 void mafillsmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *nodeboun,ITG *ndirboun,double *xboun,
@@ -1540,9 +1809,7 @@ void mafillsmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *nmpc,ITG *nodeforc,ITG *ndirforc,
 	       double *xforc,ITG *nforc,ITG *nelemload,char *sideload,
 	       double *xload,ITG *nload,double *xbody,ITG *ipobody,
-	       ITG *nbody,double *cgr,
-	       double *ad,double *au,ITG *nactdof,
-	       ITG *icol,ITG *jq,ITG *irow,ITG *neq,ITG *nzl,
+	       ITG *nbody,double *cgr,ITG *nactdof,ITG *neq,
 	       ITG *nmethod,ITG *ikmpc,ITG *ilmpc,ITG *ikboun,
 	       ITG *ilboun,
 	       double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
@@ -1550,8 +1817,8 @@ void mafillsmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ielorien,ITG *norien,double *orab,ITG *ntmat_,
 	       double *t0,double *t1,ITG *ithermal,
 	       double *prestr,ITG *iprestr,double *vold,
-	       ITG *iperturb,double *sti,ITG *nzs,double *stx,
-	       double *adb,double *aub,ITG *iexpl,
+	       ITG *iperturb,double *sti,double *stx,
+	       ITG *iexpl,
                double *plicon,ITG *nplicon,double *plkcon,ITG *nplkcon,
                double *xstiff,
 	       ITG *npmat_,double *dtime,char *matname,ITG *mi,
@@ -1567,7 +1834,11 @@ void mafillsmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
 	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
                double *fnext,double *distmin,ITG *ndesi,ITG *nodedesi,
-	       ITG *ndirdesi,double *dfextminds);
+	       double *df,ITG *nzss,ITG *jqs,ITG *irows,
+	       ITG *icoordinate,double *dxstiff,double *xdesi,
+	       ITG *istartelem,ITG *ialelem,double *v,double *sigma,
+	       ITG *cyclicsymmetry,char *labmpc,ITG *ics,double *cs,
+	       ITG *mcs,ITG *ieigenfrequency);
 
 void FORTRAN(mafillsmas,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *nodeboun,ITG *ndirboun,double *xboun,
@@ -1601,7 +1872,7 @@ void FORTRAN(mafillsmas,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
                double *clearini,ITG *ielprop,double *prop,ITG *ne0,
-               ITG *kscale));
+	       ITG *kscale,ITG *iponoel,ITG *inoel,ITG *network));
 
 void FORTRAN(mafillsmas1,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *nodeboun,ITG *ndirboun,double *xboun,
@@ -1703,7 +1974,7 @@ void FORTRAN(mafillsmcs,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
 	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
 	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
                double *clearini,ITG *ielprop,double *prop,ITG *ne0,
-               ITG *kscale));
+	       ITG *kscale,double *xstateini,double *xstate,ITG *nstate_));
 
 void FORTRAN(mafillsmcsas,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
                char *lakon,
@@ -1743,6 +2014,42 @@ void FORTRAN(mafillsmforc,(ITG *nforc,ITG *ndirforc,ITG *nodeforc,
              ITG *nodempc,ITG *ikmpc,ITG *ilmpc,double *coefmpc,ITG *mi,
 	     ITG *rhsi,double *fnext,ITG *nmethod));
 
+void FORTRAN(mafillsm_company,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
+               char *lakon,
+	       ITG *ne,ITG *nodeboun,ITG *ndirboun,double *xboun,
+	       ITG *nboun,ITG *ipompc,ITG *nodempc,double *coefmpc,
+	       ITG *nmpc,ITG *nodeforc,ITG *ndirforc,
+	       double *xforc,ITG *nforc,ITG *nelemload,char *sideload,
+	       double *xload,ITG *nload,double *xbody,ITG *ipobody,
+	       ITG *nbody,double *cgr,
+	       double *ad,double *au,double *bb,ITG *nactdof,
+	       ITG *icol,ITG *jq,ITG *irow,ITG *neq,ITG *nzl,
+	       ITG *nmethod,ITG *ikmpc,ITG *ilmpc,ITG *ikboun,
+	       ITG *ilboun,
+	       double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
+	       double *alcon,ITG *nalcon,double *alzero,ITG *ielmat,
+	       ITG *ielorien,ITG *norien,double *orab,ITG *ntmat_,
+	       double *t0,double *t1,ITG *ithermal,
+	       double *prestr,ITG *iprestr,double *vold,
+	       ITG *iperturb,double *sti,ITG *nzs,double *stx,
+	       double *adb,double *aub,ITG *iexpl,
+               double *plicon,ITG *nplicon,double *plkcon,ITG *nplkcon,
+               double *xstiff,
+	       ITG *npmat_,double *dtime,char *matname,ITG *mi,
+               ITG *ncmat_,ITG *mass,ITG *stiffness,ITG *buckling,ITG *rhs,
+               ITG *intscheme,double *physcon,double *shcon,ITG *nshcon,
+               double *cocon,ITG *ncocon,double *ttime,double *time,
+               ITG *istep,ITG *kinc,ITG *coriolis,ITG *ibody,
+	       double *xloadold,double *reltime,double *veold,
+               double *springarea,ITG *nstate_,double *xstateini,
+	       double *xstate,double *thicke,
+               ITG *integerglob,double *doubleglob,char *tieset,
+	       ITG *istartset,ITG *iendset,ITG *ialset,ITG *ntie,
+	       ITG *nasym,double *pslavsurf,double *pmastsurf,ITG *mortar,
+	       double *clearini,ITG *ielprop,double *prop,ITG *ne0,
+	       double *fnext,ITG *kscale,ITG *iponoel,
+               ITG *inoel));
+
 void FORTRAN(mafillt,(ITG *nef,ITG *ipnei,ITG *neifa,
                ITG *neiel,double *vfa,double *xxn,double *area,
 	       double *au,double *ad,ITG *jq,ITG *irow,ITG *nzs,
@@ -1753,7 +2060,8 @@ void FORTRAN(mafillt,(ITG *nef,ITG *ipnei,ITG *neifa,
                double *veloo,double *cpfa,double *hcfa,double *cvel,
 	       double *gradvel,double *xload,double *gammat,double *xrlfa,
 	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
-	       double *flux,ITG *nefa,ITG *nefb));
+	       double *flux,ITG *nefa,ITG *nefb,ITG *iau6,double *xxni,
+	       double *xxnj,ITG *iturbulent));
 
 void FORTRAN(mafilltcomp,(ITG *nef,ITG *ipnei,ITG *neifa,
                ITG *neiel,double *vfa,double *xxn,double *area,
@@ -1765,7 +2073,8 @@ void FORTRAN(mafilltcomp,(ITG *nef,ITG *ipnei,ITG *neifa,
                double *veloo,double *cpfa,double *hcfa,double *cvel,
 	       double *gradvel,double *xload,double *gammat,double *xrlfa,
 	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
-               double *flux,ITG *nefa,ITG *nefb));
+	       double *flux,ITG *nefa,ITG *nefb,ITG *iau6,double *xxni,
+               double *xxnj));
 
 void mafilltcompmain(ITG *nef,ITG *ipnei,ITG *neifa,
                ITG *neiel,double *vfa,double *xxn,double *area,
@@ -1777,7 +2086,7 @@ void mafilltcompmain(ITG *nef,ITG *ipnei,ITG *neifa,
                double *veloo,double *cpfa,double *hcfa,double *cvel,
 	       double *gradvel,double *xload,double *gammat,double *xrlfa,
 	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
-               double *flux);
+	       double *flux,ITG *iau6,double *xxni,double *xxnj);
 
 void *mafilltcompmt(ITG *i);
 
@@ -1791,7 +2100,8 @@ void mafilltmain(ITG *nef,ITG *ipnei,ITG *neifa,
                double *veloo,double *cpfa,double *hcfa,double *cvel,
 	       double *gradvel,double *xload,double *gammat,double *xrlfa,
 	       double *xxj,ITG *nactdohinv,double *a1,double *a2,double *a3,
-	       double *flux);
+	       double *flux,ITG *iau6,double *xxni,double *xxnj,
+               ITG *iturbulent);
 
 void *mafilltmt(ITG *i);
 
@@ -1800,32 +2110,36 @@ void FORTRAN(mafillv,(ITG *nef,ITG *ipnei,ITG *neifa,ITG *neiel,
              ITG *jq,ITG *irow,ITG *nzs,double *b,double *vel,double *cosa,
              double *umfa,double *xlet,double *xle,double *gradvfa,
              double *xxi,double *body,double *volume,
-	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,ITG *neq,
+	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,
 	     double *dtimef,double *velo,double *veloo,
 	     double *sel,double *xrlfa,double *gamma,double *xxj,
 	     ITG *nactdohinv,double *a1,double *a2,double *a3,double *flux,
-	     ITG *nefa,ITG *nefb));
+	     ITG *nefa,ITG *nefb,ITG *icyclic,double *c,ITG *ifatie,
+	     ITG *iau6,double *xxni,double *xxnj,ITG *iturbulent));
 
 void FORTRAN(mafillvcomp,(ITG *nef,ITG *ipnei,ITG *neifa,ITG *neiel,
              double *vfa,double *xxn,double *area,double *au,double *ad,
              ITG *jq,ITG *irow,ITG *nzs,double *b,double *vel,double *cosa,
              double *umfa,double *xlet,double *xle,double *gradvfa,
 	     double *xxi,double *body,double *volume,
-	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,ITG *neq,
+	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,
 	     double *dtimef,double *velo,double *veloo,
 	     double *sel,double *xrlfa,double *gamma,double *xxj,
 	     ITG *nactdohinv,double *a1,double *a2,double *a3,double *flux,
-	     ITG *nefa,ITG *nefb));
+	     ITG *nefa,ITG *nefb,ITG *icyclic,double *c,ITG *ifatie,
+	     ITG *iau6,double *xxni,double *xxnj));
 
 void mafillvcompmain(ITG *nef,ITG *ipnei,ITG *neifa,ITG *neiel,
              double *vfa,double *xxn,double *area,double *au,double *ad,
              ITG *jq,ITG *irow,ITG *nzs,double *b,double *vel,double *cosa,
              double *umfa,double *xlet,double *xle,double *gradvfa,
 	     double *xxi,double *body,double *volume,
-	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,ITG *neq,
+	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,
 	     double *dtimef,double *velo,double *veloo,
 	     double *sel,double *xrlfa,double *gamma,double *xxj,
-	     ITG *nactdohinv,double *a1,double *a2,double *a3,double *flux);
+	     ITG *nactdohinv,double *a1,double *a2,double *a3,
+	     double *flux,ITG *icyclic,double *c,ITG *ifatie,ITG *iau6,
+             double *xxni,double *xxnj);
 
 void *mafillvcompmt(ITG *i);
 
@@ -1834,12 +2148,22 @@ void mafillvmain(ITG *nef,ITG *ipnei,ITG *neifa,ITG *neiel,
              ITG *jq,ITG *irow,ITG *nzs,double *b,double *vel,double *cosa,
              double *umfa,double *xlet,double *xle,double *gradvfa,
              double *xxi,double *body,double *volume,
-	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,ITG *neq,
+	     ITG *ielfa,char *lakonf,ITG *ifabou,ITG *nbody,
 	     double *dtimef,double *velo,double *veloo,
 	     double *sel,double *xrlfa,double *gamma,double *xxj,
-	     ITG *nactdohinv,double *a1,double *a2,double *a3,double *flux);
+	     ITG *nactdohinv,double *a1,double *a2,double *a3,
+	     double *flux,ITG *icyclic,double *c,ITG *ifatie,
+	     ITG *iau6,double *xxni,double *xxnj,ITG *iturbulent);
 
 void *mafillvmt(ITG *i);
+
+void *mafillv0mt(ITG *i);
+
+void *mafillv1mt(ITG *i);
+
+void *mafillv2mt(ITG *i);
+
+void *mafillv3mt(ITG *i);
 
 void mastruct(ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 	      ITG *nodeboun,ITG *ndirboun,ITG *nboun,ITG *ipompc,
@@ -1848,7 +2172,7 @@ void mastruct(ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 	      ITG *ikmpc,ITG *ilmpc,ITG *ipointer,ITG *nzs,ITG *nmethod,
               ITG *ithermal,ITG *ikboun,ITG *ilboun,ITG *iperturb,
               ITG *mi,ITG *mortar,char *typeboun,char *labmpc,
-              ITG *iit,ITG *icascade);
+              ITG *iit,ITG *icascade,ITG *network);
 
 void mastructcs(ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *nodeboun,
@@ -1865,16 +2189,29 @@ void mastructem(ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 	      ITG *jq,ITG **mast1p,ITG **irowp,ITG *isolver,ITG *neq,
 	      ITG *ikmpc,ITG *ilmpc,ITG *ipointer,ITG *nzs,
 	      ITG *ithermal,ITG *mi,ITG *ielmat,double *elcon,ITG *ncmat_,
-	      ITG *ntmat_,ITG *inomat);
+	      ITG *ntmat_,ITG *inomat,ITG *network);
 
 void mastructf(ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 	       ITG *icol,ITG *jq,ITG **mast1p,ITG **irowp,
-	       ITG *isolver,ITG *neq,ITG *ipointer,ITG *nzs,
+	       ITG *isolver,ITG *ipointer,ITG *nzs,
                ITG *ipnei,ITG *ineiel,ITG *mi);
 
 void mastructrad(ITG *ntr,ITG *nloadtr,char *sideload,ITG *ipointerrad,
               ITG **mast1radp,ITG **irowradp,ITG *nzsrad,
 	      ITG *jqrad,ITG *icolrad);
+
+void mastructrand(ITG *icols,ITG *jqs,ITG **mast1p,ITG **irowsp,
+                  ITG *ipointer,ITG *nzss,
+                  ITG *ndesi,double *physcon,double *xo,double *yo,
+                  double *zo,double *x,double *y,double *z,ITG *nx,
+                  ITG *ny,ITG *nz);
+
+void mastructse(ITG *kon, ITG *ipkon, char *lakon, ITG *ne,
+	      ITG *ipompc, ITG *nodempc, ITG *nmpc,
+	      ITG *nactdof, ITG *icols,ITG *jqs, ITG **mast1p, ITG **irowsp, 
+              ITG *ipointer, ITG *nzss, ITG *mi, ITG *mortar,
+	      ITG *nodedesi, ITG *ndesi, ITG *icoordinate,ITG *ielorien,
+	      ITG *istartdesi,ITG *ialdesi);
 
 void FORTRAN(materialdata_cfd,(ITG *nef,double *vel,double *shcon,
 	     ITG *nshcon,ITG *ielmat,ITG *ntmat_,ITG *mi,double *cvel,
@@ -1898,6 +2235,10 @@ void FORTRAN(mult,(double *matrix,double *trans,ITG *n));
 
 void FORTRAN(negativepressure,(ITG *ne0,ITG *ne,ITG *mi,double *stx,
 			       double *pressureratio));
+
+void FORTRAN(networkelementpernode,(ITG *iponoel,ITG *inoel,char *lakon,
+	     ITG *ipkon,ITG *kon,ITG *inoelsize,ITG *nflow,ITG *ieg,
+	     ITG *ne,ITG *network));
 
 void FORTRAN(networkinum,(ITG *ipkon,ITG *inum,ITG *kon,char *lakon,
        ITG *ne,ITG *itg,ITG *ntg));
@@ -1955,55 +2296,56 @@ void nonlingeo(double **co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *nslavs,double *thicke,ITG *ics,
 	     ITG *nintpoint,ITG *mortar,ITG *ifacecount,char *typeboun,
 	     ITG **islavsurfp,double **pslavsurfp,double **clearinip,
-	     ITG *nmat,double *xmodal,ITG *iaxial,ITG *inext);
+	     ITG *nmat,double *xmodal,ITG *iaxial,ITG *inext,ITG *nprop,
+	     ITG *network,char *orname);
 
 void nonlingeo_precice(double **co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
-	     ITG *ne,
-	     ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
-	     ITG **ipompcp,ITG **nodempcp,double **coefmpcp,char **labmpcp,
-             ITG *nmpc,
-	     ITG *nodeforc,ITG *ndirforc,double *xforc,ITG *nforc,
-	     ITG **nelemloadp,char **sideloadp,double *xload,
-	     ITG *nload,ITG *nactdof,
-	     ITG **icolp,ITG *jq,ITG **irowp,ITG *neq,ITG *nzl,
-	     ITG *nmethod,ITG **ikmpcp,ITG **ilmpcp,ITG *ikboun,
-	     ITG *ilboun,
-	     double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
-	     double *alcon,ITG *nalcon,double *alzero,ITG **ielmatp,
-	     ITG **ielorienp,ITG *norien,double *orab,ITG *ntmat_,
-	     double *t0,double *t1,double *t1old,
-	     ITG *ithermal,double *prestr,ITG *iprestr,
-	     double **vold,ITG *iperturb,double *sti,ITG *nzs, 
-	     ITG *kode,char *filab,ITG *idrct,
-	     ITG *jmax,ITG *jout,double *timepar,
-	     double *eme,double *xbounold,
-	     double *xforcold,double *xloadold,
-             double *veold,double *accold,
-             char *amname,double *amta,ITG *namta,ITG *nam,
-             ITG *iamforc,ITG **iamloadp,
-             ITG *iamt1,double *alpha,ITG *iexpl,
-	     ITG *iamboun,double *plicon,ITG *nplicon,double *plkcon,
-	     ITG *nplkcon,
-             double **xstatep,ITG *npmat_,ITG *istep,double *ttime,
-	     char *matname,double *qaold,ITG *mi,
-             ITG *isolver,ITG *ncmat_,ITG *nstate_,ITG *iumat,
-             double *cs,ITG *mcs,ITG *nkon,double **ener,ITG *mpcinfo,
-             char *output,
-             double *shcon,ITG *nshcon,double *cocon,ITG *ncocon,
-             double *physcon,ITG *nflow,double *ctrl,
-             char *set,ITG *nset,ITG *istartset,
-             ITG *iendset,ITG *ialset,ITG *nprint,char *prlab,
-             char *prset,ITG *nener,ITG *ikforc,ITG *ilforc,double *trab,
-             ITG *inotr,ITG *ntrans,double **fmpcp,char *cbody,
-             ITG *ibody,double *xbody,ITG *nbody,double *xbodyold,
-             ITG *ielprop,double *prop,ITG *ntie,char *tieset,
-	     ITG *itpamp,ITG *iviewfile,char *jobnamec,double *tietol,
-	     ITG *nslavs,double *thicke,ITG *ics,
-	     ITG *nintpoint,ITG *mortar,ITG *ifacecount,char *typeboun,
-	     ITG **islavsurfp,double **pslavsurfp,double **clearinip,
-	     ITG *nmat,double *xmodal,ITG *iaxial,ITG *inext,
-		 char *preciceParticipantName,char *configFilename
-					   );
+               ITG *ne,
+               ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
+               ITG **ipompcp,ITG **nodempcp,double **coefmpcp,char **labmpcp,
+               ITG *nmpc,
+               ITG *nodeforc,ITG *ndirforc,double *xforc,ITG *nforc,
+               ITG **nelemloadp,char **sideloadp,double *xload,
+               ITG *nload,ITG *nactdof,
+               ITG **icolp,ITG *jq,ITG **irowp,ITG *neq,ITG *nzl,
+               ITG *nmethod,ITG **ikmpcp,ITG **ilmpcp,ITG *ikboun,
+               ITG *ilboun,
+               double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
+               double *alcon,ITG *nalcon,double *alzero,ITG **ielmatp,
+               ITG **ielorienp,ITG *norien,double *orab,ITG *ntmat_,
+               double *t0,double *t1,double *t1old,
+               ITG *ithermal,double *prestr,ITG *iprestr,
+               double **vold,ITG *iperturb,double *sti,ITG *nzs,
+               ITG *kode,char *filab,ITG *idrct,
+               ITG *jmax,ITG *jout,double *timepar,
+               double *eme,double *xbounold,
+               double *xforcold,double *xloadold,
+               double *veold,double *accold,
+               char *amname,double *amta,ITG *namta,ITG *nam,
+               ITG *iamforc,ITG **iamloadp,
+               ITG *iamt1,double *alpha,ITG *iexpl,
+               ITG *iamboun,double *plicon,ITG *nplicon,double *plkcon,
+               ITG *nplkcon,
+               double **xstatep,ITG *npmat_,ITG *istep,double *ttime,
+               char *matname,double *qaold,ITG *mi,
+               ITG *isolver,ITG *ncmat_,ITG *nstate_,ITG *iumat,
+               double *cs,ITG *mcs,ITG *nkon,double **ener,ITG *mpcinfo,
+               char *output,
+               double *shcon,ITG *nshcon,double *cocon,ITG *ncocon,
+               double *physcon,ITG *nflow,double *ctrl,
+               char *set,ITG *nset,ITG *istartset,
+               ITG *iendset,ITG *ialset,ITG *nprint,char *prlab,
+               char *prset,ITG *nener,ITG *ikforc,ITG *ilforc,double *trab,
+               ITG *inotr,ITG *ntrans,double **fmpcp,char *cbody,
+               ITG *ibody,double *xbody,ITG *nbody,double *xbodyold,
+               ITG *ielprop,double *prop,ITG *ntie,char *tieset,
+               ITG *itpamp,ITG *iviewfile,char *jobnamec,double *tietol,
+               ITG *nslavs,double *thicke,ITG *ics,
+               ITG *nintpoint,ITG *mortar,ITG *ifacecount,char *typeboun,
+               ITG **islavsurfp,double **pslavsurfp,double **clearinip,
+               ITG *nmat,double *xmodal,ITG *iaxial,ITG *inext,ITG *nprop,
+               ITG *network,char *orname,
+               char *preciceParticipantName,char *configFilename);
 
 void FORTRAN(nonlinmpc,(double *co,double *vold,ITG *ipompc,ITG *nodempc,
 		   double *coefmpc,char *labmpc,ITG *nmpc,ITG *ikboun,
@@ -2018,9 +2360,13 @@ void FORTRAN(norm,(double *vel,double *velnorm,ITG *nef));
 
 void FORTRAN(normalsoninterface,(ITG *istartset,ITG *iendset,
 	     ITG *ialset,ITG *imast,ITG *ipkon,ITG *kon,char *lakon,
-             ITG *imastnode,ITG *nmastnode,double *xmastnor,double *co));
+	     ITG *imastnode,ITG *nmastnode,double *xmastnor,double *co));
 
-void objectivesmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
+void FORTRAN(normalsonsurface_se,(ITG *ipkon,ITG *kon,char*lakon,
+	     double *extnor,double *co,ITG *nk,ITG *ipoface,
+	     ITG *nodface,ITG *nactdof,ITG *mi));
+
+void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     ITG *ne,double *v,double *stn,ITG *inum,
 	     double *stx,
 	     double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
@@ -2056,13 +2402,81 @@ void objectivesmmain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              ITG *islavnode,ITG *nslavnode,ITG *ntie,double *clearini,
              ITG *islavsurf,ITG *ielprop,double *prop,double *energyini,
              double *energy,double *distmin,
-	     ITG *ndesi,ITG *nodedesi,ITG *ndirdesi,ITG *nobject,
-	     char *objectset,double *g0,double *dgdx,double *dgdv,double *sti,
-	     double *dgdxtot,double *dfextminds,double *df);
+	     ITG *ndesi,ITG *nodedesi,ITG *nobject,
+	     char *objectset,double *g0,double *dgdx,double *sti,
+	     double *df,ITG *nactdofinv,ITG *jqs,ITG *irows,
+	     ITG *idisplacement,ITG *nzs,char *jobnamec,ITG *isolver,
+	     ITG *icol,ITG *irow,ITG *jq,ITG *kode,double *cs,char *output,
+	     ITG *istartdesi,ITG *ialdesi,double *xdesi,char *orname,
+	     ITG *icoordinate,ITG *iev,double *d,double *z,double *au,
+	     double *ad,double *aub,double *adb,ITG *cyclicsymmetry,
+	     ITG *nzss,ITG *nev,ITG *ishapeenergy,double *fint,
+	     ITG *nlabel,ITG *igreen,ITG *nasym);
 
-void *objectivemt_shapeener(ITG *i);
+void *objectivemt_shapeener_dx(ITG *i);
 
-void *objectivemt_mass(ITG *i);
+void *objectivemt_mass_dx(ITG *i);
+
+void FORTRAN(objective_disp,(ITG *nodeset,ITG *istartset,ITG *iendset,
+	     ITG *ialset,ITG *nk,ITG *idesvar,ITG *iobject,ITG *mi,
+             double *g0,ITG *nobject,double *vold));
+
+void FORTRAN(objective_disp_dx,(ITG *nodeset,ITG *istartset,ITG *iendset,
+	     ITG *ialset,ITG *nk,ITG *idesvar,ITG *iobject,ITG *mi,
+             ITG *nactdof,double *dgdx,ITG *ndesi,ITG *nobject,
+	     double *vold,double *b));
+
+void FORTRAN(objective_freq,(double *dgdx,double *df,double *vold,
+             ITG *ndesi,ITG *iobject,ITG *mi,ITG *nactdofinv,ITG *jqs,
+             ITG *irows));
+
+void FORTRAN(objective_freq_cs,(double *dgdx,double *df,double *vold,
+             ITG *ndesi,ITG *iobject,ITG *mi,ITG *nactdofinv,ITG *jqs,
+	     ITG *irows,ITG *nk,ITG *nzss));
+
+void FORTRAN(objective_mass_dx,(double *co1,ITG *kon1,ITG *ipkon1,char *lakon1,
+             ITG *nelcon1,double *rhcon1,ITG *ielmat1,
+	     ITG *ielorien1,ITG *norien1,ITG *ntmat1_,
+             char *matname1,ITG *mi1,double *thicke1,ITG *mortar1,ITG *nea,
+             ITG *neb,ITG *ielprop1,double *prop1,double *distmin1,
+             ITG *ndesi1,ITG *nodedesi1,ITG *nobject1,
+	     double *g01,double *dgdx1,ITG *iobject1,double *xmass1,
+	     ITG *istartdesi1,ITG *ialdesi1,double *xdesi1,ITG *idesvar));
+    
+void FORTRAN(objective_shapeener_dx,(double *co1,ITG *kon1,ITG *ipkon1,
+             char *lakon1,ITG *ne1,double *stx1,double *elcon1,
+             ITG *nelcon1,double *rhcon1,ITG *nrhcon1,double *alcon1,
+             ITG *nalcon1,double *alzero1,ITG *ielmat1,ITG *ielorien1,
+             ITG *norien1,double *orab1,ITG *ntmat1_,double *t01,
+             double *t11,ITG *ithermal1,double *prestr1,ITG *iprestr1,
+             ITG *iperturb1,ITG *iout1,double *vold1,ITG *nmethod1,
+             double *veold1,double *dtime1,double *time1,double *ttime1,
+             double *plicon1,ITG *nplicon1,double *plkcon1,ITG *nplkcon1,
+             double *xstateini1,double *xstiff1,double *xstate1,
+             ITG *npmat1_,char *matname1,ITG *mi1,ITG *ielas1,ITG *icmd1,
+             ITG *ncmat1_,ITG *nstate1_,double *stiini1,double *vini1,
+             double *ener1,double *enerini1,ITG *istep1,ITG *iinc1,
+             double *springarea1,double *reltime1,ITG *calcul_qa1,
+             ITG *iener1,ITG *ikin1,ITG *ne01,double *thicke1,
+             double *emeini1,double *pslavsurf1,double *pmastsurf1,
+             ITG *mortar1,double *clearini1,ITG *nea,ITG *neb,
+             ITG *ielprop1,double *prop1,double *distmin1,ITG *ndesi1,
+             ITG *nodedesi1,ITG *nobject1,double *g01,
+	     double *dgdx1,ITG *iobject1,double *sti1,double *xener1,
+	     ITG *istartdesi1,ITG *ialdesi1,double *xdesi1,ITG *idesvar));
+
+void FORTRAN(objective_shapeener_tot,(double *dgdx,double *df,double *vold,
+             ITG *ndesi,ITG *iobject,ITG *mi,ITG *nactdofinv,ITG *jqs,
+	     ITG *irows,ITG *iperturb,double *fint));
+
+void FORTRAN(objective_stress,(ITG *nodeset,ITG *istartset,ITG *iendset,
+	     ITG *ialset,ITG *nk,ITG *idesvar,ITG *iobject,ITG *mi,
+	     double *g0,ITG *nobject,double *stn,char *objectset));
+
+void FORTRAN(objective_stress_dx,(ITG *nodeset,ITG *istartset,ITG *iendset,
+	     ITG *ialset,ITG *nk,ITG *idesvar,ITG *iobject,
+             double *dgdx,ITG *ndesi,ITG *nobject,
+	     double *stn,double *dstn,char *objectset,double *g0));
 
 void FORTRAN(op,(ITG *n,double *x,double *y,double *ad,double *au,ITG *jq,ITG *irow));
 
@@ -2076,6 +2490,13 @@ void FORTRAN(openfile,(char *jobname,char *output));
 
 void FORTRAN(openfilefluid,(char *jobname));
 
+void FORTRAN(prefilter,(double *co,ITG *nodedesi,ITG *ndesi,double *xo,
+                        double *yo,double *zo,double *x,double *y,
+                        double *z,ITG *nx,ITG *ny,ITG *nz));
+
+void FORTRAN(postfilter,(double *dgdxglob,ITG *nobject,ITG *nk,ITG *nodedesi,
+                         ITG *ndesi));
+
 void FORTRAN(postview,(ITG *ntr,char *sideload,ITG *nelemload,ITG *kontri,
              ITG *ntri,ITG *nloadtr,double *tenv,double *adview,double *auview,
              double *area,double *fenv,ITG *jqrad,ITG *irowrad,ITG *nzsrad));
@@ -2087,7 +2508,10 @@ void FORTRAN(precfd,(ITG *ne,ITG *ipkon,ITG *kon,char *lakon,ITG *ipnei,
                      ITG *nset,ITG *istartset,ITG *iendset,ITG *ialset,
                      double *vel,double *vold,ITG *mi,ITG *neij,ITG *nef,
                      ITG *nactdoh,ITG *ipkonf,char *lakonf,ITG *ielmatf,
-                     ITG *ielmat,ITG *ielorienf,ITG *ielorien,ITG *norien));
+                     ITG *ielmat,ITG *ielorienf,ITG *ielorien,ITG *norien,
+                     double *cs,ITG *mcs,char *tieset,double *x,double *y,
+                     double *z,double *xo,double *yo,double *zo,ITG *nx,
+                     ITG *ny,ITG *nz,double *co,ITG *ifatei));
 
 void precontact(ITG *ncont,ITG *ntie,char *tieset,ITG *nset,char *set,
         ITG *istartset,ITG *iendset,ITG *ialset,ITG *itietri,
@@ -2100,6 +2524,9 @@ void precontact(ITG *ncont,ITG *ntie,char *tieset,ITG *nset,char *set,
 	ITG *nintpoint,double **pslavsurfp,double *xmastnor,double *cs,
 	ITG *mcs,ITG *ics,double *clearini,ITG *nslavs);
 
+void FORTRAN(preconvert2slapcol,(ITG *irow,ITG *ia,
+                              ITG *jq,ITG *ja,ITG *nzs,ITG *nef));
+
 void prediction(double *uam,ITG *nmethod,double *bet,double *gam,double *dtime,
                ITG *ithermal,ITG *nk,double *veold,double *accold,double *v,
 	       ITG *iinc,ITG *idiscon,double *vold,ITG *nactdof,ITG *mi);
@@ -2111,34 +2538,29 @@ void prediction_em(double *uam,ITG *nmethod,double *bet,double *gam,double *dtim
 void preiter(double *ad,double **aup,double *b,ITG **icolp,ITG **irowp,
 	     ITG *neq,ITG *nzs,ITG *isolver,ITG *iperturb);
 
-void FORTRAN(printout,(char *set,ITG *nset,ITG *istartset,ITG *iendset,
-             ITG *ialset,ITG *nprint,char *prlab,char *prset,
-             double *v,double *t1,double *fn,ITG *ipkon,
-             char *lakon,double *stx,double *eei,double *xstate,
-             double *ener,ITG *mi,ITG *nstate_,ITG *ithermal,
-             double *co,ITG *kon,double *qfx,double *ttime,double *trab,
-             ITG *inotr,ITG *ntrans,double *orab,ITG *ielorien,
-	     ITG *norien,ITG *nk,ITG *ne,ITG *inum,char *filab,double *vold,
-             ITG *ikin,ITG *ielmat,double *thicke,double *eme,ITG *islavsurf,
-             ITG *mortar));
-
 void FORTRAN(printoutfluid,(char *set,ITG *nset,ITG *istartset,ITG *iendset,
              ITG *ialset,ITG *nprint,char *prlab,char *prset,
-             double *v,double *t1,double *fn,ITG *ipkon,
+             ITG *ipkon,
              char *lakon,double *stx,double *eei,double *xstate,
-             double *ener,ITG *mi,ITG *nstate_,ITG *ithermal,
+             double *ener,ITG *mi,ITG *nstate_,
              double *co,ITG *kon,double *qfx,double *ttime,double *trab,
              ITG *inotr,ITG *ntrans,double *orab,ITG *ielorien,
-	     ITG *norien,ITG *nk,ITG *ne,ITG *inum,char *filab,double *vold,
+	     ITG *norien,double *vold,
              ITG *ielmatf,double *thicke,double *eme,double *vcontu,
-	     double *physcon,ITG *nactdoh,ITG *ielpropf,double *prop));
+	     double *physcon,ITG *nactdoh,ITG *ielpropf,double *prop,
+	     double *xkappa,double *xmach,ITG *ithermal,char *orname));
 
 void FORTRAN(printoutface,(double *co,double *rhcon,ITG *nrhcon,ITG *ntmat_,
             double *vold,double *shcon,ITG *nshcon,double *cocon,
             ITG *ncocon,ITG *icompressible,ITG *istartset,ITG *iendset,
             ITG *ipkon,char *lakon,ITG *kon,ITG *ialset,char *prset,
 	    double *timef,ITG *nset,char *set,ITG *nprint,char *prlab,
-	    ITG *ielmat,ITG *mi));
+	    ITG *ielmat,ITG *mi,ITG *ithermal,ITG *nactdoh,ITG *icfd,
+	    double *time,double *stn));
+
+void FORTRAN(propertynet,(ITG *ieg,ITG *nflow,double *prop,ITG *ielprop,
+			  char *lakon,ITG *iin,double *prop_store,
+                          double *ttime,double *time));
 
 int pthread_create (pthread_t *thread_id,const pthread_attr_t *attributes,
                     void *(*thread_function)(void *),void *arguments);
@@ -2171,7 +2593,8 @@ void radflowload(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,double *adrad,
        ITG *ialset,ITG *nset,ITG *ineighe,ITG *nmpc,ITG *nodempc,
        ITG *ipompc,double *coefmpc,char *labmpc,ITG *iemchange,ITG *nam,
        ITG *iamload,ITG *jqrad,ITG *irowrad,ITG *nzsrad,ITG *icolrad,
-       ITG *ne,ITG *iaxial,double *qa);
+       ITG *ne,ITG *iaxial,double *qa,double *cocon,ITG *ncocon,
+       ITG *iponoel,ITG *inoel,ITG *nprop);
 
 void FORTRAN (radmatrix,(ITG *ntr,double *adrad,double *aurad,double *bcr,
        char *sideload,ITG *nelemload,double *xloadact,char *lakon,
@@ -2184,10 +2607,21 @@ void FORTRAN (radmatrix,(ITG *ntr,double *adrad,double *aurad,double *bcr,
        ITG *mi,ITG *iemchange,ITG *nam,ITG *iamload,ITG *jqrad,
        ITG *irowrad,ITG *nzsrad));
 
-void FORTRAN (radresult,(ITG *ntr,double *xloadact,double *bcr,
+void FORTRAN(radresult,(ITG *ntr,double *xloadact,double *bcr,
        ITG *nloadtr,double *tarea,double * tenv,double *physcon,double *erad,
        double *auview,double *fenv,ITG *irowrad,ITG *jqrad,
        ITG *nzsrad,double *q));
+
+void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
+         ITG *nactdof,ITG *mi,ITG *nodedesi,ITG *ndesi,ITG *istartdesi,
+	 ITG *ialdesi,double *co,double *physcon,ITG *isolver,ITG *ntrans,
+	 ITG *nk,ITG *inotr,double *trab,char *jobnamec,ITG *nboun,
+         double *cs,	 
+	 ITG *mcs,ITG *inum,ITG *nmethod,ITG *kode,char *filab,ITG *nstate_,
+	 ITG *istep,char *description,char *set,ITG *nset,ITG *iendset,
+	 char *output,ITG *istartset,ITG *ialset,double *extnor);
+
+void FORTRAN(randomval,(double *randval,ITG *nev));
 
 void FORTRAN(readforce,(double *zc,ITG *neq,ITG *nev,ITG *nactdof,
 	     ITG *ikmpc,ITG *nmpc,ITG *ipompc,ITG *nodempc,ITG *mi,
@@ -2232,7 +2666,8 @@ void remastruct(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
               double **fextp,double **bp,double **aux2p,double **finip,
               double **fextinip,double **adbp,double **aubp,ITG *ithermal,
 	      ITG *iperturb,ITG *mass,ITG *mi,ITG *iexpl,ITG *mortar,
-	      char *typeboun,double **cvp,double **cvinip,ITG *iit);
+	      char *typeboun,double **cvp,double **cvinip,ITG *iit,
+              ITG *network);
 
 void remastructar(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
               ITG *mpcfree,ITG *nodeboun,ITG *ndirboun,ITG *nboun,
@@ -2243,7 +2678,7 @@ void remastructar(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
               ITG *nactdof,ITG *icol,ITG *jq,ITG **irowp,ITG *isolver,
               ITG *neq,ITG *nzs,ITG *nmethod,ITG *ithermal,
 	      ITG *iperturb,ITG *mass,ITG *mi,ITG *ics,double *cs,
-	      ITG *mcs,ITG *mortar,char *typeboun,ITG *iit);
+	      ITG *mcs,ITG *mortar,char *typeboun,ITG *iit,ITG *network);
 
 void remastructem(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
               ITG *mpcfree,ITG *nodeboun,ITG *ndirboun,ITG *nboun,
@@ -2256,7 +2691,7 @@ void remastructem(ITG *ipompc,double **coefmpcp,ITG **nodempcp,ITG *nmpc,
               double **fextp,double **bp,double **aux2p,double **finip,
               double **fextinip,double **adbp,double **aubp,ITG *ithermal,
 	      ITG *iperturb,ITG *mass,ITG *mi,ITG *ielmat,double *elcon,
-	      ITG *ncmat_,ITG *ntmat_,ITG *inomat);
+	      ITG *ncmat_,ITG *ntmat_,ITG *inomat,ITG *network);
 
 void FORTRAN(restartshort,(ITG *nset,ITG *nload,ITG *nbody,ITG *nforc,
     ITG *nboun,
@@ -2321,7 +2756,10 @@ void FORTRAN(resultnet,(ITG *itg,ITG *ieg,ITG *ntg,
                         ITG *ineighe,double *cama,double *vamt,
                         double *vamf,double *vamp,double *vama,
                         ITG *nmpc,ITG *nodempc,ITG *ipompc,double *coefmpc,
-                        char *labmpc,ITG *iaxial));
+                        char *labmpc,ITG *iaxial,double *qat,double *qaf,
+                        double *ramt,double *ramf,double *ramp,
+                        double *cocon,ITG *ncocon,ITG *iponoel,ITG *inoel,
+                        ITG *iplausi));
 
 void results(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     ITG *ne,double *v,double *stn,ITG *inum,
@@ -2358,7 +2796,8 @@ void results(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              double *pmastsurf,ITG *mortar,ITG *islavact,double *cdn,
              ITG *islavnode,ITG *nslavnode,ITG *ntie,double *clearini,
              ITG *islavsurf,ITG *ielprop,double *prop,double *energyini,
-             double *energy,ITG *kscale);
+             double *energy,ITG *kscale,ITG *iponoel,ITG *inoel,ITG *nener,
+             char *orname,ITG *network);
 
 void FORTRAN(resultsem,(double *co,ITG *kon,ITG *ipkon,char *lakon,
              double *v,double *elcon,ITG *nelcon,ITG *ielmat,ITG *ntmat_,
@@ -2378,10 +2817,10 @@ void  FORTRAN(resultsforc_em,(ITG *nk,double *f,double *fn,ITG *nactdof,
        ITG *ipompc,ITG *nodempc,double *coefmpc,char *labmpc,ITG *nmpc,
        ITG *mi,double *fmpc,ITG *calcul_fn,ITG *calcul_f,ITG *inomat));
        
-void  FORTRAN(resultsforc_se,(ITG *nk,double *f,double *dfn,ITG *nactdof,
-       ITG *ipompc,ITG *nodempc,double *coefmpc,char *labmpc,ITG *nmpc,
-       ITG *mi,double *fmpc,ITG *calcul_fn,ITG *calcul_f,ITG *ndesi,
-       double *df));
+void  FORTRAN(resultsforc_se,(ITG *nk,double *dfn,ITG *nactdof,
+       ITG *ipompc,ITG *nodempc,double *coefmpc,ITG *nmpc,
+       ITG *mi,double *fmpc,ITG *calcul_fn,ITG *calcul_f,ITG *idesvar,
+       double *df,ITG *jqs,ITG *irows,double *distmin));
 
 void FORTRAN(resultsini,(ITG *nk,double *v,ITG *ithermal,char *filab,
        ITG *iperturb,double *f,double *fn,ITG *nactdof,ITG *iout,
@@ -2430,19 +2869,23 @@ void FORTRAN(resultsmech_se,(double *co,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
           ITG *nrhcon,double *alcon,ITG *nalcon,double *alzero,ITG *ielmat,
           ITG *ielorien,ITG *norien,double *orab,ITG *ntmat_,double *t0,
           double *t1,ITG *ithermal,double *prestr,ITG *iprestr,double *eme,
-          ITG *iperturb,double *fn,ITG *iout,double *qa,double *vold,
+          ITG *iperturb,double *fn,ITG *iout,double *vold,
           ITG *nmethod,double *veold,double *dtime,double *time,
           double *ttime,double *plicon,ITG *nplicon,double *plkcon,
           ITG *nplkcon,double *xstateini,double *xstiff,double *xstate,
           ITG *npmat_,char *matname,ITG *mi,ITG *ielas,ITG *icmd,ITG *ncmat_,
           ITG *nstate_,double *stiini,double *vini,double *ener,double *eei,
           double *enerini,ITG *istep,ITG *iinc,double *springarea,
-          double *reltime,ITG *calcul_fn,ITG *calcul_qa,ITG *calcul_cauchy,
-	  ITG *iener,ITG *ikin,ITG *nal,ITG *ne0,double *thicke,
+          double *reltime,ITG *calcul_fn,ITG *calcul_cauchy,
+	  ITG *iener,ITG *ikin,ITG *ne0,double *thicke,
 	  double *emeini,double *pslavsurf,double *pmastsurf,ITG *mortar,
           double *clearini,ITG *nea,ITG *neb,ITG *ielprop,double *prop,
-	  double *dfn,double *distmin,ITG *ndesi,ITG *nodedesi,
-	  ITG *ndirdesi,double *fn0,double *sti));
+	  double *dfn,ITG *idesvar,ITG *nodedesi,
+	  double *fn0,double *sti,ITG *icoordinate,
+	  double *dxstiff,ITG *ialdesi,double *xdesi));
+
+void FORTRAN(resultsnoddir,(ITG *nk,double *v,ITG *nactdof,double *b,
+       ITG *ipompc,ITG *nodempc,double *coefmpc,ITG *nmpc,ITG *mi));
 
 void  FORTRAN(resultsprint,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
        char *lakon,ITG *ne,double *v,double *stn,ITG *inum,double *stx,
@@ -2460,7 +2903,7 @@ void  FORTRAN(resultsprint,(double *co,ITG *nk,ITG *kon,ITG *ipkon,
        ITG *islavact,double *cdn,ITG *mortar,ITG *islavnode,ITG *nslavnode,
        ITG *ntie,ITG *islavsurf,double *time,ITG *ielprop,double *prop,
        double *veold,ITG *ne0,ITG *nmpc,ITG *ipompc,ITG *nodempc,
-       char *labmpc,double *energyini,double *energy));
+       char *labmpc,double *energyini,double *energy,char *orname));
 	     
 void results_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	     ITG *ne,double *v,double *stn,ITG *inum,
@@ -2498,7 +2941,11 @@ void results_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              ITG *islavnode,ITG *nslavnode,ITG *ntie,double *clearini,
              ITG *islavsurf,ITG *ielprop,double *prop,double *energyini,
              double *energy,double *df,double *distmin,
-	     ITG *ndesi,ITG *nodedesi,ITG *ndirdesi,double *sti);
+	     ITG *ndesi,ITG *nodedesi,double *sti,
+	     ITG *nkon,ITG *jqs,ITG *irows,ITG *nactdofinv,
+	     ITG *icoordinate,double *dxstiff,ITG *istartdesi,
+	     ITG *ialdesi,double *xdesi,ITG *ieigenfrequency,
+             double *fint,ITG *ishapeenergy);
 
 void FORTRAN(resultstherm,(double *co,ITG *kon,ITG *ipkon,
        char *lakon,double *v,
@@ -2515,7 +2962,8 @@ void FORTRAN(resultstherm,(double *co,ITG *kon,ITG *ipkon,
        ITG *nea,ITG *neb,ITG *ithermal,ITG *nelemload,ITG *nload,
        ITG *nmethod,double *reltime,char *sideload,double *xload,
        double *xloadold,double *pslavsurf,double *pmastsurf,ITG *mortar,
-       double *clearini,double *plicon,ITG *nplicon,ITG *ielprop,double *prop));
+       double *clearini,double *plicon,ITG *nplicon,ITG *ielprop,
+       double *prop,ITG *iponoel,ITG *inoel,ITG *network));
 
 void *resultsthermemmt(ITG *i);
 
@@ -2555,7 +3003,8 @@ void resultsinduction(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
              double *shcon,ITG *nshcon,char *sideload,double *xload,
 	     double *xloadold,ITG *icfd,ITG *inomat,double *h0,
 	     ITG *islavnode,ITG *nslavnode,ITG *ntie,ITG *ielprop,
-	     double *prop,ITG *iactive,double *energy,double *energyini);
+	     double *prop,ITG *iactive,double *energyini,double *energy,
+	     ITG *iponoel,ITG *inoel,char *orname,ITG *network);
 
 void FORTRAN(rhs,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	       ITG *ne,ITG *ipompc,ITG *nodempc,double *coefmpc,
@@ -2574,7 +3023,8 @@ void FORTRAN(rhs,(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
                ITG *iinc,double *dtime,double *physcon,ITG *ibody,
 	       double *xbodyold,double *reltime,double *veold,
 	       char *matname,ITG *mi,ITG *ikactmech,ITG *nactmech,
-               ITG *ielprop,double *prop));
+               ITG *ielprop,double *prop,double *sti,double *xstateini,
+               double *xstate,ITG *nstate_));
 
 void FORTRAN(rhsp,(ITG *ne,char *lakon,ITG *ipnei,
              ITG *neifa,ITG *neiel,double *vfa,double *area,double *adfa,
@@ -2582,7 +3032,8 @@ void FORTRAN(rhsp,(ITG *ne,char *lakon,ITG *ipnei,
              ITG *jq,ITG *irow,double *ap,ITG *ielfa,ITG *ifabou,
 	     double *xle,double *b,double *xxn,
 	     ITG *neq,ITG *nzs,double *hfa,double *gradpel,double *bp,
-	     double *xxi,ITG *neij,double *xlen,ITG *nefa,ITG *nefb));
+	     double *xxi,ITG *neij,double *xlen,ITG *nefa,ITG *nefb,
+             double *xxicn));
 
 void rhspmain(ITG *ne,char *lakon,ITG *ipnei,
              ITG *neifa,ITG *neiel,double *vfa,double *area,double *adfa,
@@ -2590,7 +3041,8 @@ void rhspmain(ITG *ne,char *lakon,ITG *ipnei,
              ITG *jq,ITG *irow,double *ap,ITG *ielfa,ITG *ifabou,
 	     double *xle,double *b,double *xxn,
 	     ITG *neq,ITG *nzs,double *hfa,double *gradpel,double *bp,
-	     double *xxi,ITG *neij,double *xlen,ITG *iatleastonepressurebc);
+	     double *xxi,ITG *neij,double *xlen,ITG *iatleastonepressurebc,
+	     double *xxicn);
 
 void *rhspmt(ITG *i);
        
@@ -2602,12 +3054,12 @@ void sensitivity(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     ITG *nodeforc,ITG *ndirforc,double *xforc,ITG *nforc,
 	     ITG *nelemload,char *sideload,double *xload,
 	     ITG *nload,ITG *nactdof,
-	     ITG **icolp,ITG *jq,ITG **irowp,ITG *neq,ITG *nzl,
+	     ITG *icol,ITG *jq,ITG **irowp,ITG *neq,ITG *nzl,
 	     ITG *nmethod,ITG *ikmpc,ITG *ilmpc,ITG *ikboun,
 	     ITG *ilboun,
 	     double *elcon,ITG *nelcon,double *rhcon,ITG *nrhcon,
 	     double *alcon,ITG *nalcon,double *alzero,ITG **ielmatp,
-	     ITG *ielorien,ITG *norien,double *orab,ITG *ntmat_,
+	     ITG **ielorienp,ITG *norien,double *orab,ITG *ntmat_,
 	     double *t0,double *t1,double *t1old,
 	     ITG *ithermal,double *prestr,ITG *iprestr,
 	     double *vold,ITG *iperturb,double *sti,ITG *nzs,
@@ -2629,10 +3081,14 @@ void sensitivity(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	     double *thicke,char *jobnamec,char *tieset,ITG *ntie,
 	     ITG *istep,ITG *nmat,ITG *ielprop,double *prop,char *typeboun,
 	     ITG *mortar,ITG *mpcinfo,double *tietol,ITG *ics,
-	     ITG *icontact,ITG *nobject,char *objectset,ITG *istat);
+	     ITG *icontact,ITG *nobject,char *objectset,ITG *istat,
+	     char *orname,ITG *nzsfreq,ITG *nlabel,double *physcon);
 
-void sensitivity_glob(double *dgdxtot,double *dgdxtotglob,ITG *nobject,
-                  ITG *ndesi,ITG *nodedesi,ITG *ndirdesi,ITG *nk);
+void FORTRAN(sensitivity_glob,(double *dgdxtot,double *dgdxtotglob,ITG *nobject,
+	     ITG *ndesi,ITG *nodedesi,ITG *nk));
+
+void sensitivity_out(char *jobnamec,double *dgdxtotglob,ITG *neq,
+                     ITG *nobject,double *g0);
 		  
 void FORTRAN(shape3tri,(double *xi,double *et,double *xl,double *xsj,
                       double *xs,double *shp,ITG *iflag));
@@ -2673,6 +3129,9 @@ void FORTRAN(slavintpoints,(ITG *ntie,ITG *itietri,ITG *ipkon,
 	ITG *mi,ITG *ncont,ITG *ipe,ITG *ime,double *pslavsurf,
         ITG *i,ITG *l,ITG *ntri));
 
+void FORTRAN(smalldist,(double *co,double *distmin,char *lakon,
+             ITG *ipkon,ITG *kon,ITG *ne));
+
 void FORTRAN(sortev,(ITG *nev,ITG *nmd,double *eigxx,ITG *cyclicsymmetry,
 		     double *xx,double *eigxr,ITG *pev,
 		     ITG *istartnmd,ITG *iendnmd,double *aa,double *bb));
@@ -2696,7 +3155,8 @@ void FORTRAN(springforc_n2f,(double *xl,ITG *konl,double *vl,ITG *imat,
              double *senergy,ITG *iener,double *cstr,ITG *mi,
              double *springarea,ITG *nmethod,ITG *ne0,ITG *nstate_,
 	     double *xstateini,double *xstate,double *reltime,
-	     ITG *ielas,double *venergy));
+	     ITG *ielas,double *venergy,ITG *ielorien,double *orab,
+             ITG *norien,ITG *nelem));
 
 void FORTRAN(springstiff_n2f,(double *xl,double *elas,ITG *konl,double *voldl,
              double *s,ITG *imat,double *elcon,ITG *nelcon,ITG *ncmat_,
@@ -2704,7 +3164,7 @@ void FORTRAN(springstiff_n2f,(double *xl,double *elas,ITG *konl,double *voldl,
              double *elconloc,double *plicon,ITG *nplicon,ITG *npmat_,
              ITG *iperturb,double *springarea,ITG *nmethod,ITG *mi,ITG *ne0,
              ITG *nstate_,double *xstateini,double *xstate,double *reltime,
-             ITG *nasym));
+	     ITG *nasym,ITG *ielorien,double *orab,ITG *norien,ITG *nelem));
 
 void steadystate(double **co,ITG *nk,ITG **kon,ITG **ipkon,char **lakon,ITG *ne,
 	  ITG **nodeboun,ITG **ndirboun,double **xboun,ITG *nboun,
@@ -2740,7 +3200,7 @@ void steadystate(double **co,ITG *nk,ITG **kon,ITG **ipkon,char **lakon,ITG *ne,
           ITG *isolver,ITG *jq,char *output,ITG *mcs,ITG *nkon,
 	  ITG *ics,double *cs,ITG *mpcend,double *ctrl,
 	  ITG *ikforc,ITG *ilforc,double *thicke,ITG *nmat,
-          char *typeboun,ITG *ielprop,double *prop);
+	  char *typeboun,ITG *ielprop,double *prop,char *orname);
 
 void FORTRAN(stop,());
 
@@ -2864,6 +3324,9 @@ void FORTRAN(triangucont,(ITG *ncont,ITG *ntie,char *tieset,ITG *nset,
 	  char *lakon,ITG *ipkon,ITG *kon,ITG *koncont,char *kind1,
 	  char *kind2,double *co,ITG *nk));
 
+void FORTRAN(tridiagonal_nrhs,(double *a,double *b,ITG *n,ITG *m,
+             ITG *nrhs));
+
 #ifdef BAM
 void FORTRAN(uexternaldb,(ITG *lop,ITG *lrestart,double *time,double *dtime,
                           ITG *kstep,ITG *kinc));
@@ -2907,6 +3370,11 @@ void FORTRAN(writecvg,(ITG *itep,ITG *iinc,ITG *icutb,ITG *iit,ITG *ne,ITG *ne0,
 		       double *ram,double *qam,double *cam,double *uam,
                        ITG *ithermal));
 
+void FORTRAN(writedeigdx,(ITG *iev,double *d,ITG *ndesi,char*orname,
+                          double *dgdx));
+
+void FORTRAN(writedesi,(ITG *norien,char *orname));
+
 void FORTRAN(writeev,(double *,ITG *,double *,double *));
 
 void FORTRAN(writeevcomplex,(double *eigxx,ITG *nev,double *fmin,double *fmax));
@@ -2931,8 +3399,13 @@ void FORTRAN(writemaccs,(double *mac,ITG *nev,ITG* nm));
 
 void FORTRAN(writempc,(ITG *,ITG *,double *,char *,ITG *));
 
+void FORTRAN(writeobj,(char *objectset,ITG *iobject,double *g0));
+
 void FORTRAN(writepf,(double *d,double *bjr,double *bji,double *freq ,
 		      ITG *nev,ITG *mode,ITG *nherm));
+
+void FORTRAN(writerandomfield,(double *d,ITG *nev,double *abserr,
+             double *relerr));
 
 void FORTRAN(writere,());
 
@@ -2967,18 +3440,45 @@ void FORTRAN(zneupd,(ITG *rvec,char *howmny,ITG *select,double *d,
 	     ITG *ldv,ITG *iparam,ITG *ipntr,double *workd,
 	     double *workl,ITG *lworkl,double *rwork,ITG *info));
 
-void FORTRAN(getflux,(double *co,ITG *ntmat_,
-			double *vold,double *cocon,
-			ITG *ncocon,ITG * iset,ITG *istartset,ITG *iendset,
-			ITG *ipkon,char *lakon,ITG *kon,ITG *ialset,
-			ITG *ielmat,ITG *mi,double * flux));
+#ifdef CALCULIX_EXTERNAL_BEHAVIOURS_SUPPORT
 
-void FORTRAN(getkdeltatemp,(double *co,ITG *ntmat_,
-			double *vold,double *cocon,
-			ITG *ncocon,ITG * iset,ITG *istartset,ITG *iendset,
-			ITG *ipkon,char *lakon,ITG *kon,ITG *ialset,
-			ITG *ielmat,ITG *mi,double * kdelta, double * reftemp));
+/*!
+ * list of supported external behaviours
+ */
+typedef enum {
+  //! interface to standard calculix behaviours
+  CALCULIX_STANDARD_INTERFACE,
+  //! interface to abaqus behaviours in small strain
+  CALCULIX_ABAQUS_INTERFACE,
+  //! interface to abaqus behaviours in finite strain
+  CALCULIX_ABAQUSNL_INTERFACE
+} CalculixInterface;
+/*!
+ * a structure describing an external behaviour
+ */
+typedef struct
+{
+  // name of the material
+  const char *n;
+  // interface
+  CalculixInterface i;
+  // function pointer
+  const void* ptr;
+}  CalculixExternalBehaviour;
+/*!
+ * \return the description of an external beahviour
+ * \param[in] n : external behaviour name
+ */
+const CalculixExternalBehaviour*
+calculix_searchExternalBehaviour(const char*);
+/*!
+ * \param[in] n: material name
+ */
+void calculix_registerExternalBehaviour(const char *);
+/*!
+ * \brief free the memory associated with external behaviours
+ * treatment.
+ */
+void calculix_freeExternalBehaviours();
 
-void FORTRAN(getgausspointscoords,(int setID, double *co,
-			ITG * iset,ITG *istartset,ITG *iendset,
-			ITG *ipkon,char *lakon,ITG *kon,ITG *ialset));
+#endif /* CALCULIX_EXTERNAL_BEHAVIOURS_SUPPORT */
