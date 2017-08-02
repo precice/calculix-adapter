@@ -1,9 +1,9 @@
 # Specify the locations of: the original CCX source, SPOOLES and ARPACK
-CCX				= $(HOME)/PathTo/CalculiX/ccx_2.12/src
+CCX			= $(HOME)/PathTo/CalculiX/ccx_2.12/src
 SPOOLES			= $(HOME)/PathTo/SPOOLES
 ARPACK			= $(HOME)/PathTo/ARPACK
-PRECICE_ROOT	= $(HOME)/PathTo/preCICE
-YAML            = $(HOME)/PathTo/yaml-cpp
+PRECICE_ROOT		= $(HOME)/PathTo/preCICE
+YAML            	= $(HOME)/PathTo/yaml-cpp
 
 # Specify where to store the generated .o files
 OBJDIR 		= bin
@@ -15,29 +15,29 @@ INCLUDES = \
 	-I$(CCX) \
 	-I$(SPOOLES) \
 	-I$(PRECICE_ROOT)/src \
-    -I$(ARPACK) \
+    	-I$(ARPACK) \
 	-I$(YAML)/include
 
 LIBS = \
 	$(SPOOLES)/spooles.a \
 	$(ARPACK)/libarpack_INTEL.a \
-    -lpthread -lm -lc \
-    -L$(PRECICE_ROOT)/build/last \
-    -lprecice \
-    -lboost_regex \
-    -lboost_log \
-    -lboost_log_setup \
-    -lboost_thread \
-    -lboost_program_options \
-    -lboost_system \
-    -lboost_filesystem \
-    -lpython2.7 \
-    -lstdc++ \
-    -lmpi_cxx \
-    -lm \
-    -lmpi \
-    -L$(YAML)/build \
-    -lyaml-cpp
+    	-lpthread -lm -lc \
+    	-L$(PRECICE_ROOT)/build/last \
+    	-lprecice \
+    	-lboost_regex \
+    	-lboost_log \
+    	-lboost_log_setup \
+    	-lboost_thread \
+    	-lboost_program_options \
+    	-lboost_system \
+    	-lboost_filesystem \
+    	-lpython2.7 \
+    	-lstdc++ \
+    	-lmpi_cxx \
+    	-lm \
+    	-lmpi \
+    	-L$(YAML)/build \
+    	-lyaml-cpp
 
 
 # Compilers and flags
@@ -46,7 +46,9 @@ LIBS = \
 CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
 CC = mpicc
-FC = gfortran
+FC = mpifort
+# FC = mpif90
+# FC = gfortran
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
@@ -67,7 +69,7 @@ $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
 	g++ -std=c++11 -I$(YAML)/include -c $< -o $@ $(LIBS)
-    #$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+    	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
