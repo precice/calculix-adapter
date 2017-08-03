@@ -24,18 +24,16 @@ LIBS = \
     	-lpthread -lm -lc \
     	-L$(PRECICE_ROOT)/build/last \
     	-lprecice \
-    	-lboost_regex \
     	-lboost_log \
     	-lboost_log_setup \
     	-lboost_thread \
-    	-lboost_program_options \
     	-lboost_system \
     	-lboost_filesystem \
+	-lboost_program_options \
     	-lpython2.7 \
     	-lstdc++ \
+	-lpetsc \
     	-lmpi_cxx \
-    	-lm \
-    	-lmpi \
     	-L$(YAML)/build \
     	-lyaml-cpp
 
