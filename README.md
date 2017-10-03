@@ -90,6 +90,8 @@ An exemplary CalculiX case input file may look like the following:
  Nfix3, 1, 3, 0
 *CLOAD
  Ninterface, 1, 0.0
+ Ninterface, 2, 0.0
+ Ninterface, 3, 0.0
 *NODE FILE
  U
 *EL FILE
@@ -97,7 +99,7 @@ An exemplary CalculiX case input file may look like the following:
 *END STEP
 ```
 
-The adapter internally uses the CalculiX data format for point forces to apply the FSI forces at the coupling interface. This data structure is only initialized for those nodes, which are loaded at the beginning of a CalculiX analysis step via the input file. Thus, it is necessary to load all nodes of the node set, which defines the FSI interface in CalculiX (referring to the above example, the nodes of set "interface" (Note that in CalculiX a node set always begins with an "N" followed by the actual name of the set, which is here "interface".) are loaded via the "CLOAD" keyword.). However, the values of these initial forces can (and should) be chosen to zero, such that the simulation result is not affected.
+The adapter internally uses the CalculiX data format for point forces to apply the FSI forces at the coupling interface. This data structure is only initialized for those nodes, which are loaded at the beginning of a CalculiX analysis step via the input file. Thus, it is necessary to load all nodes of the node set, which defines the FSI interface in CalculiX (referring to the above example, the nodes of set "interface" (Note that in CalculiX a node set always begins with an "N" followed by the actual name of the set, which is here "interface".) are loaded via the "CLOAD" keyword.), in each spatial direction. However, the values of these initial forces can (and should) be chosen to zero, such that the simulation result is not affected.
 
 CalculiX CCX offers both a geometrically linear as well as a geometrically non-linear solver. Both are coupled via the adapter. The keyword "NLGEOM" (as shown in the example) needs to be included in the CalculiX case input file in order to select the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword "NLGEOM" does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations via preCICE the keyword "DYNAMIC" (enabling a dynamic computation) must appear in the CalculiX input file.
 

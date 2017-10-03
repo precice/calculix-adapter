@@ -311,18 +311,21 @@ void getXforcIndices( ITG * nodes, ITG numNodes, int nforc, int * ikforc, int * 
         int idof = 8 * ( nodes[i] - 1 ) + 1; // 1 for x force DOF
         int k;
         FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+        k -= 1; // Adjust because of FORTRAN indices
         int m = ilforc[k] - 1; // Adjust because of FORTRAN indices
         xforcIndices[3 * i] = m;
         
         //y-direction
-        idof = 8 * ( nodes[i] - 1 ) + 2; // 1 for y force DOF
+        idof = 8 * ( nodes[i] - 1 ) + 2; // 2 for y force DOF
         FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+        k -= 1; // Adjust because of FORTRAN indices
         m = ilforc[k] - 1; // Adjust because of FORTRAN indices
         xforcIndices[3 * i + 1] = m;
         
         //z-direction
-        idof = 8 * ( nodes[i] - 1 ) + 3; // 1 for z force DOF
+        idof = 8 * ( nodes[i] - 1 ) + 3; // 3 for z force DOF
         FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+        k -= 1; // Adjust because of FORTRAN indices
         m = ilforc[k] - 1; // Adjust because of FORTRAN indices
         xforcIndices[3 * i + 2] = m;
     }

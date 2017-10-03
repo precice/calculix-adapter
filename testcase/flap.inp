@@ -19,6 +19,8 @@
  Nfix3, 1, 3, 0
 *CLOAD
  Ninterface, 1, 0.0
+ Ninterface, 2, 0.0
+ Ninterface, 3, 0.0
 *NODE FILE
  U
 *EL FILE
