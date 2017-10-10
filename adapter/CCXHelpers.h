@@ -71,9 +71,11 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes
  * @param co: CalculiX array with all the node coordinates
+ * @param v: CalculiX array containing the solution variables (displacements needed here)
+ * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param coordinates: output array with the coordinates of the input nodes
  */
-void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * coordinates );
+void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int mt, double * coordinates );
 
 /**
  * @brief getNodeTemperatures
