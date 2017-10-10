@@ -67,7 +67,7 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
 	}
 }
 
-void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * coordinates )
+void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int mt, double * coordinates )
 {
 
 	ITG i;
@@ -75,9 +75,10 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * coordi
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
-		coordinates[i * 3 + 0] = co[nodeIdx * 3 + 0];
-		coordinates[i * 3 + 1] = co[nodeIdx * 3 + 1];
-		coordinates[i * 3 + 2] = co[nodeIdx * 3 + 2];
+        //The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
+		coordinates[i * 3 + 0] = co[nodeIdx * 3 + 0] + v[nodeIdx * mt + 1];
+		coordinates[i * 3 + 1] = co[nodeIdx * 3 + 1] + v[nodeIdx * mt + 2];
+		coordinates[i * 3 + 2] = co[nodeIdx * 3 + 2] + v[nodeIdx * mt + 3];
 	}
 }
 

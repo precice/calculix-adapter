@@ -387,7 +387,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	interface->nodeIDs = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
 
 	interface->nodeCoordinates = malloc( interface->numNodes * 3 * sizeof( double ) );
-	getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, interface->nodeCoordinates );
+	getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
 	if( interface->nodesMeshName != NULL )
 	{

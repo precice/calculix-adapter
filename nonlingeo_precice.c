@@ -224,9 +224,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         .mi = mi
     };
     
-    /* Adapter: Create the interfaces and initialize the coupling */
-    Precice_Setup( configFilename, preciceParticipantName, &simulationData );
-    
   if(*ithermal==4){
       uncoupled=1;
       *ithermal=3;
@@ -1112,6 +1109,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       memcpy(&sideloadref[0],&sideload[0],sizeof(char)*20**nload);
   }
   
+  /* Adapter: Create the interfaces and initialize the coupling */
+  Precice_Setup( configFilename, preciceParticipantName, &simulationData );
+    
   /* Adapter: Give preCICE the control of the time stepping */
   while( Precice_IsCouplingOngoing() ){
       
