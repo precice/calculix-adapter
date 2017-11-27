@@ -112,7 +112,7 @@ Running the adapted executable is pretty similar to running the original Calculi
 
 For the FSI example above:
 
-    ccx_preCICE -i testcase -precice-participant Calculix
+    ccx_preCICE -i flap -precice-participant Calculix
 
 The input file for this example would be *testcase.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
