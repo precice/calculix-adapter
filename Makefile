@@ -37,7 +37,8 @@ LIBS = \
        -lm \
        -lmpi \
        -L$(YAML)/build \
-       -lyaml-cpp
+       -lyaml-cpp \
+       -lxml2
 
 
 # Compilers and flags
