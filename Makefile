@@ -35,7 +35,8 @@ LIBS = \
 	-lpetsc \
     	-lmpi_cxx \
     	-L$(YAML)/build \
-    	-lyaml-cpp
+    	-lyaml-cpp \
+        -lxml2
 
 
 # Compilers and flags
