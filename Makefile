@@ -1,5 +1,5 @@
 # Specify the locations of: the original CCX source, SPOOLES and ARPACK
-CCX			= $(HOME)/PathTo/CalculiX/ccx_2.12/src
+CCX			= $(HOME)/PathTo/CalculiX/ccx_2.13/src
 SPOOLES			= $(HOME)/PathTo/SPOOLES
 ARPACK			= $(HOME)/PathTo/ARPACK
 PRECICE_ROOT		= $(HOME)/PathTo/preCICE
@@ -51,7 +51,7 @@ FC = mpifort
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
-SCCXMAIN = ccx_2.12.c
+SCCXMAIN = ccx_2.13.c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c CCXHelpers.c PreciceInterface.c
@@ -84,14 +84,14 @@ OCCXC += $(OBJDIR)/ConfigReader.o
 
 
 
-$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.12.a
-	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.12.a $(LIBS)
+$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.13.a
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.13.a $(LIBS)
 
-$(OBJDIR)/ccx_2.12.a: $(OCCXF) $(OCCXC)
+$(OBJDIR)/ccx_2.13.a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.12.a $(OBJDIR)/ccx_preCICE
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.13.a $(OBJDIR)/ccx_preCICE

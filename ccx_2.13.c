@@ -37,22 +37,49 @@ int main(int argc,char *argv[])
 {
   
 FILE *f1;
+    
+char *sideload=NULL, *set=NULL, *matname=NULL, *orname=NULL, *amname=NULL,
+     *filab=NULL, *lakon=NULL, *labmpc=NULL, *prlab=NULL, *prset=NULL, 
+     jobnamec[660]="",jobnamef[132]="",output[4]="asc", *typeboun=NULL,
+     *inpc=NULL,*tieset=NULL,*cbody=NULL,fneig[132]="",*sideloadtemp=NULL,
+     kind1[2]="T",kind2[2]="T",*heading=NULL,*objectset=NULL;
   
 ITG *kon=NULL, *nodeboun=NULL, *ndirboun=NULL, *ipompc=NULL,
-	*nodempc=NULL, *nodeforc=NULL, *ndirforc=NULL,
-        *nelemload=NULL,im,*inodesd=NULL,nload1,*idefforc=NULL,
-        *nactdof=NULL, *icol=NULL,*ics=NULL,
-        *jq=NULL, *mast1=NULL, *irow=NULL, *rig=NULL,*idefbody=NULL,
-	*ikmpc=NULL, *ilmpc=NULL, *ikboun=NULL, *ilboun=NULL,
-	*nreorder=NULL,*ipointer=NULL,*idefload=NULL,
-	*istartset=NULL, *iendset=NULL, *ialset=NULL, *ielmat=NULL,
-	*ielorien=NULL, *nrhcon=NULL, *nodebounold=NULL, *ndirbounold=NULL,
-	*nelcon=NULL, *nalcon=NULL, *iamforc=NULL,  *iamload=NULL,
-	*iamt1=NULL, *namta=NULL, *ipkon=NULL, *iamboun=NULL,
-	*nplicon=NULL, *nplkcon=NULL, *inotr=NULL, *iponor=NULL, *knor=NULL,
-	*ikforc=NULL, *ilforc=NULL, *iponoel=NULL, *inoel=NULL, *nshcon=NULL,
-        *ncocon=NULL,*ibody=NULL,*ielprop=NULL,*islavsurf=NULL,
-        *ipoinpc=NULL,icfd=0,mt,nxstate,nload0,iload;
+    *nodempc=NULL, *nodeforc=NULL, *ndirforc=NULL,
+    *nelemload=NULL,im,*inodesd=NULL,nload1,*idefforc=NULL,
+    *nactdof=NULL, *icol=NULL,*ics=NULL,
+    *jq=NULL, *mast1=NULL, *irow=NULL, *rig=NULL,*idefbody=NULL,
+    *ikmpc=NULL, *ilmpc=NULL, *ikboun=NULL, *ilboun=NULL,
+    *nreorder=NULL,*ipointer=NULL,*idefload=NULL,
+    *istartset=NULL, *iendset=NULL, *ialset=NULL, *ielmat=NULL,
+    *ielorien=NULL, *nrhcon=NULL, *nodebounold=NULL, *ndirbounold=NULL,
+    *nelcon=NULL, *nalcon=NULL, *iamforc=NULL,  *iamload=NULL,
+    *iamt1=NULL, *namta=NULL, *ipkon=NULL, *iamboun=NULL,
+    *nplicon=NULL, *nplkcon=NULL, *inotr=NULL, *iponor=NULL, *knor=NULL,
+    *ikforc=NULL, *ilforc=NULL, *iponoel=NULL, *inoel=NULL, *nshcon=NULL,
+    *ncocon=NULL,*ibody=NULL,*ielprop=NULL,*islavsurf=NULL,
+    *ipoinpc=NULL,icfd=0,mt,nxstate,nload0,iload,*iuel=NULL;
+     
+ITG nk,ne,nboun,nmpc,nforc,nload,nprint=0,nset,nalset,nentries=17,
+  nmethod,neq[3]={0,0,0},i,mpcfree=1,mei[4],j,nzl,nam,nbounold=0,
+  nforcold=0,nloadold=0,nbody,nbody_=0,nbodyold=0,network=0,nheading_=0,
+  k,nzs[3],nmpc_=0,nload_=0,nforc_=0,istep,istat,nboun_=0,nintpoint=0,
+  iperturb[2]={0,0},nmat,ntmat_=0,norien,ithermal[2]={0,0},nmpcold,
+  iprestr,kode,isolver=0,nslavs=0,nkon_=0,ne0,nkon0,mortar=0,
+  jout[2]={1,1},nlabel,nkon=0,idrct,jmax[2],iexpl,nevtot=0,ifacecount=0,
+  iplas=0,npmat_=0,mi[3]={0,3,1},ntrans,mpcend=-1,namtot_=0,iumat=0,
+  icascade=0,maxlenmpc,mpcinfo[4],ne1d=0,ne2d=0,infree[4]={0,0,0,0},
+  callfrommain,nflow=0,jin=0,irstrt=0,nener=0,jrstrt=0,nenerold,
+  nline,ipoinp[2*nentries],*inp=NULL,ntie,ntie_=0,mcs=0,nprop_=0,
+  nprop=0,itpamp=0,iviewfile,nkold,nevdamp_=0,npt_=0,cyclicsymmetry,
+  nmethodl,iaxial=1,inext=0,icontact=0,nobject=0,nobject_=0,iit=-1,
+  nzsprevstep[3],memmpcref_,mpcfreeref=-1,maxlenmpcref,*nodempcref=NULL,
+  *ikmpcref=NULL;
+
+ITG *meminset=NULL,*rmeminset=NULL;
+
+ITG nzs_,nk_=0,ne_=0,nset_=0,nalset_=0,nmat_=0,norien_=0,nam_=0,
+    ntrans_=0,ncs_=0,nstate_=0,ncmat_=0,memmpc_=0,nprint_=0,nuel_=0;
     
 double *co=NULL, *xboun=NULL, *coefmpc=NULL, *xforc=NULL,*clearini=NULL,
 	*xload=NULL, *xbounold=NULL, *xforcold=NULL,
@@ -63,35 +90,9 @@ double *co=NULL, *xboun=NULL, *coefmpc=NULL, *xforc=NULL,*clearini=NULL,
         *t1old=NULL, *eme=NULL, *plicon=NULL, *pslavsurf=NULL, *plkcon=NULL,
 	*xstate=NULL, *trab=NULL, *ener=NULL, *shcon=NULL, *cocon=NULL,
         *cs=NULL,*tietol=NULL,*fmpc=NULL,*prop=NULL,*t0g=NULL,*t1g=NULL,
-	*xbody=NULL,*xbodyold=NULL;
+    *xbody=NULL,*xbodyold=NULL,*coefmpcref=NULL;
     
-double ctrl[39]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7};
-    
-char *sideload=NULL, *set=NULL, *matname=NULL, *orname=NULL, *amname=NULL,
-     *filab=NULL, *lakon=NULL, *labmpc=NULL, *prlab=NULL, *prset=NULL, 
-     jobnamec[660]="",jobnamef[132]="",output[4]="asc", *typeboun=NULL,
-     *inpc=NULL,*tieset=NULL,*cbody=NULL,fneig[132]="",*sideloadtemp=NULL,
-     kind1[2]="T",kind2[2]="T",*heading=NULL,*objectset=NULL;
-     
-ITG nk,ne,nboun,nmpc,nforc,nload,nprint=0,nset,nalset,nentries=16,
-  nmethod,neq[3]={0,0,0},i,mpcfree=1,mei[4],j,nzl,nam,nbounold=0,
-  nforcold=0,nloadold=0,nbody,nbody_=0,nbodyold=0,network=0,nheading_=0,
-  k,nzs[3],nmpc_=0,nload_=0,nforc_=0,istep,istat,nboun_=0,nintpoint=0,
-  iperturb[2]={0,0},nmat,ntmat_=0,norien,ithermal[2]={0,0},nmpcold,
-  iprestr,kode,isolver=0,nslavs=0,nkon_=0,ne0,nkon0,mortar=0,
-  jout[2]={1,1},nlabel,nkon=0,idrct,jmax[2],iexpl,nevtot=0,ifacecount=0,
-  iplas=0,npmat_=0,mi[3]={0,3,1},ntrans,mpcend=-1,namtot_=0,iumat=0,mpcmult,
-  icascade=0,maxlenmpc,mpcinfo[4],ne1d=0,ne2d=0,infree[4]={0,0,0,0},
-  callfrommain,nflow=0,jin=0,irstrt=0,nener=0,jrstrt=0,nenerold,
-  nline,ipoinp[2*nentries],*inp=NULL,ntie,ntie_=0,mcs=0,nprop_=0,
-  nprop=0,itpamp=0,iviewfile,nkold,nevdamp_=0,npt_=0,cyclicsymmetry,
-  nmethodl,iaxial=1,inext=0,icontact=0,nobject=0,nobject_=0,iit=-1,
-  nzsprevstep[3];
-
-ITG *meminset=NULL,*rmeminset=NULL;
-
-ITG nzs_,nk_=0,ne_=0,nset_=0,nalset_=0,nmat_=0,norien_=0,nam_=0,
-    ntrans_=0,ncs_=0,nstate_=0,ncmat_=0,memmpc_=0,nprint_=0;
+double ctrl[40]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,-1.};
 
 double fei[3],*xmodal=NULL,timepar[5],
     alpha,ttime=0.,qaold[2]={0.,0.},physcon[13]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
@@ -115,7 +116,7 @@ else{
     if(strcmp1(argv[i],"-i")==0) {
     strcpy(jobnamec,argv[i+1]);strcpy1(jobnamef,argv[i+1],132);jin++;break;}
     if(strcmp1(argv[i],"-v")==0) {
-	printf("\nThis is Version 2.12\n\n");
+	printf("\nThis is Version 2.13\n\n");
 	FORTRAN(stop,());
     }
   }
@@ -123,8 +124,8 @@ else{
 
   for(i=1;i<argc;i++){
     if(strcmp1(argv[i],"-o")==0) {
-    strcpy(output,argv[i+1]);break;
-    }
+    strcpy(output,argv[i+1]);break;}
+      
     // Get preCICE participantName
     if(strcmp1(argv[i],"-precice-participant")==0) {
         strcpy(preciceParticipantName,argv[i+1]);
@@ -136,6 +137,7 @@ else{
     }
   }
 }
+setenv("CCX_JOBNAME_GETJOBNAME",jobnamec,1);
 
 #ifdef BAM
 ITG lop=0,lrestart=0,kstep=1,kinc=1;
@@ -146,12 +148,12 @@ FORTRAN(uexternaldb,(&lop,&lrestart,time,&dtime,&kstep,&kinc));
 FORTRAN(openfile,(jobnamef,output));
 
 printf("\n************************************************************\n\n");
-printf("CalculiX Version 2.12, Copyright(C) 1998-2015 Guido Dhondt\n");
+printf("CalculiX Version 2.13, Copyright(C) 1998-2017 Guido Dhondt\n");
 printf("CalculiX comes with ABSOLUTELY NO WARRANTY. This is free\n");
 printf("software, and you are welcome to redistribute it under\n");
 printf("certain conditions, see gpl.htm\n\n");
 printf("************************************************************\n\n");
-printf("You are using an executable made on So 2. Apr 15:03:04 CEST 2017\n");
+printf("You are using an executable made on So 8. Okt 22:10:07 CEST 2017\n");
 fflush(stdout);
 
 istep=0;
@@ -175,18 +177,20 @@ kode=0;
 
 /* conservative estimate of the fields to be allocated */
 
-readinput(jobnamec,&inpc,&nline,&nset_,ipoinp,&inp,&ipoinpc,ithermal); 
+ readinput(jobnamec,&inpc,&nline,&nset_,ipoinp,&inp,&ipoinpc,ithermal,&nuel_); 
 
 NNEW(set,char,81*nset_);
 NNEW(meminset,ITG,nset_);
 NNEW(rmeminset,ITG,nset_);
+NNEW(iuel,ITG,4*nuel_);
 
 FORTRAN(allocation,(&nload_,&nforc_,&nboun_,&nk_,&ne_,&nmpc_,&nset_,&nalset_,
    &nmat_,&ntmat_,&npmat_,&norien_,&nam_,&nprint_,mi,&ntrans_,
    set,meminset,rmeminset,&ncs_,&namtot_,&ncmat_,&memmpc_,&ne1d,
    &ne2d,&nflow,jobnamec,&irstrt,ithermal,&nener,&nstate_,&istep,
    inpc,ipoinp,inp,&ntie_,&nbody_,&nprop_,ipoinpc,&nevdamp_,&npt_,&nslavs,
-   &nkon_,&mcs,&mortar,&ifacecount,&nintpoint,infree,&nheading_,&nobject_));
+   &nkon_,&mcs,&mortar,&ifacecount,&nintpoint,infree,&nheading_,&nobject_,
+   iuel));
 
 SFREE(set);SFREE(meminset);SFREE(rmeminset);mt=mi[1]+1;
 NNEW(heading,char,66*nheading_);
@@ -434,7 +438,7 @@ while(istat>=0) {
     /* objectives for sensitivity analysis */
 
     if(nobject_>0){
-      NNEW(objectset,char,243*nobject_);
+      NNEW(objectset,char,324*nobject_);
     }
     
     /* temporary fields for cyclic symmetry calculations */
@@ -598,7 +602,9 @@ while(istat>=0) {
 	    ielprop,&nprop,&nprop_,prop,&itpamp,&iviewfile,ipoinpc,&icfd,
 	    &nslavs,t0g,t1g,&network,&cyclicsymmetry,idefforc,idefload,
 	    idefbody,&mortar,&ifacecount,islavsurf,pslavsurf,clearini,
-	    heading,&iaxial,&nobject,objectset,&nprint_));
+	    heading,&iaxial,&nobject,objectset,&nprint_,iuel,&nuel_,
+	    nodempcref,coefmpcref,ikmpcref,&memmpcref_,&mpcfreeref,
+	    &maxlenmpcref,&memmpc_));
 
 #ifdef CALCULIX_EXTERNAL_BEHAVIOURS_SUPPORT
   for(i=0;i!=nmat;++i){
@@ -623,6 +629,8 @@ while(istat>=0) {
   if(istat<0) break;
 
   if(istep == 1) {
+
+    SFREE(iuel);
 
   /* tied contact constraints: generate appropriate MPC's */
 
@@ -997,10 +1005,20 @@ while(istat>=0) {
               nelemload,sideloadtemp,&nload,&ne,&nk));
       SFREE(sideloadtemp);
   }
-  
+
+      /* storing the undecascaded MPC's */
+
+  if(mpcfreeref==-1){
+      memmpcref_=memmpc_;mpcfreeref=mpcfree;maxlenmpcref=maxlenmpc;
+      NNEW(nodempcref,ITG,3*memmpc_);memcpy(nodempcref,nodempc,sizeof(ITG)*3*memmpc_);
+      NNEW(coefmpcref,double,memmpc_);memcpy(coefmpcref,coefmpc,sizeof(double)*memmpc_);
+      NNEW(ikmpcref,ITG,nmpc);memcpy(ikmpcref,ikmpc,sizeof(ITG)*nmpc);
+  }
+ 
   /* decascading MPC's only necessary if MPC's changed */
 
   if(((istep == 1)||(ntrans>0)||(mpcend<0)||(nk!=nkold)||(nmpc!=nmpcold))&&(icascade==0)) {
+//  if(icascade==0) {
 
     /* decascading the MPC's */
 
@@ -1009,7 +1027,7 @@ while(istat>=0) {
     callfrommain=1;
     cascade(ipompc,&coefmpc,&nodempc,&nmpc,
 	    &mpcfree,nodeboun,ndirboun,&nboun,ikmpc,
-	    ilmpc,ikboun,ilboun,&mpcend,&mpcmult,
+	    ilmpc,ikboun,ilboun,&mpcend,
 	    labmpc,&nk,&memmpc_,&icascade,&maxlenmpc,
             &callfrommain,iperturb,ithermal);
   }
@@ -1065,7 +1083,7 @@ while(istat>=0) {
   /* nmethod=10: electromagnetic eigenvalue problems */
   /* nmethod=11: superelement creation or Green function calculation */
   /* nmethod=12: sensitivity analysis  */
-     
+    
     if(preciceUsed) {
         int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
         int isDynamic = nmethod == 4;
@@ -1182,7 +1200,7 @@ while(istat>=0) {
             exit(0);
         }
     }
-    
+
   else if((nmethod<=1)||(nmethod==11)||((iperturb[0]>1)&&(nmethod<8)))
     {
 	if(iperturb[0]<2){
@@ -1488,7 +1506,8 @@ while(istat>=0) {
              prset,&nener,trab,inotr,&ntrans,fmpc,cbody,ibody,xbody,&nbody,
 	     xbodyold,timepar,thicke,jobnamec,tieset,&ntie,&istep,&nmat,
 	     ielprop,prop,typeboun,&mortar,mpcinfo,tietol,ics,&icontact,
-	     &nobject,objectset,&istat,orname,nzsprevstep,&nlabel,physcon);
+	     &nobject,&objectset,&istat,orname,nzsprevstep,&nlabel,physcon,
+             jobnamef);
   }
 
   SFREE(nactdof);
@@ -1560,7 +1579,6 @@ while(istat>=0) {
 
   /* removing the advective elements, if any */
 
-//  if(network==1){
   if(network>0){
       ne=ne0;nkon=nkon0;
       RENEW(ipkon,ITG,ne);
@@ -1592,7 +1610,6 @@ while(istat>=0) {
 
   if(irstrt>0){
     jrstrt++;
-//    if(jrstrt==irstrt){
     if(jrstrt>=irstrt){
       jrstrt=0;
       FORTRAN(restartwrite,(&istep,&nset,&nload,&nforc,&nboun,&nk,&ne,
@@ -1637,7 +1654,6 @@ fclose(f1);
 SFREE(ipoinpc);SFREE(inpc);SFREE(inp);
 
 if(ncs_>0) SFREE(ics);
-//if((ncs_<=0)&&(npt_>0)) SFREE(dcs);
 if(mcs>0) SFREE(cs);
 SFREE(tieset);SFREE(tietol);
 
@@ -1648,6 +1664,8 @@ SFREE(ilboun);SFREE(nodebounold);SFREE(ndirbounold);SFREE(xbounold);
 
 SFREE(ipompc);SFREE(labmpc);SFREE(ikmpc);SFREE(ilmpc);SFREE(fmpc);
 SFREE(nodempc);SFREE(coefmpc);
+
+SFREE(nodempcref);SFREE(coefmpcref);SFREE(ikmpcref);
 
 SFREE(nodeforc);SFREE(ndirforc);SFREE(xforc);SFREE(ikforc);SFREE(ilforc);
 SFREE(xforcold);
