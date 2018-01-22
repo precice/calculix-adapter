@@ -565,5 +565,7 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
         	free( preciceInterface->xforcIndices );
     	}
 
+	precicec_finalize();
+
 }
 
