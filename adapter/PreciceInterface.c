@@ -564,6 +564,8 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
     	if ( preciceInterface->xforcIndices != NULL ) {
         	free( preciceInterface->xforcIndices );
     	}
+    
+    precicec_finalize();
 
 }
 
