@@ -15,6 +15,10 @@
 /*     along with this program; if not, write to the Free Software       */
 /*     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.         */
 
+#ifdef __APPLE__
+#include <pthread.h>
+#endif
+
 #define Linux 1
 #define IRIX 2
 #define IRIX64 3

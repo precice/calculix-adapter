@@ -1,9 +1,9 @@
-# Specify the locations of: the original CCX source, SPOOLES, ARPACK, preCICE and YAML
-CCX				= $(HOME)/PathTo/CalculiX/ccx_2.10/src
-SPOOLES			= $(HOME)/PathTo/SPOOLES
-ARPACK			= $(HOME)/PathTo/ARPACK
-PRECICE_ROOT	= $(HOME)/PathTo/preCICE
-YAML		= $(HOME)/PathTo/yaml-cpp
+# Specify the locations of: the original CCX source, SPOOLES and ARPACK
+CCX             = $(HOME)/PathTo/CalculiX/ccx_2.10/src
+SPOOLES         = $(HOME)/PathTo/SPOOLES
+ARPACK          = $(HOME)/PathTo/ARPACK
+PRECICE_ROOT    = $(HOME)/PathTo/preCICE
+YAML            = $(HOME)/PathTo/yaml-cpp
 
 # Specify where to store the generated .o files
 OBJDIR 		= bin
@@ -15,39 +15,51 @@ INCLUDES = \
 	-I$(CCX) \
 	-I$(SPOOLES) \
 	-I$(PRECICE_ROOT)/src \
-	-I$(ARPACK) \
+    	-I$(ARPACK) \
 	-I$(YAML)/include
 
 LIBS = \
 	$(SPOOLES)/spooles.a \
-	$(ARPACK)/libarpack_INTEL.a \
-       -lpthread -lm -lc \
-       -L$(PRECICE_ROOT)/build/last \
-       -lprecice \
-       -lboost_regex \
-       -lboost_log \
-       -lboost_log_setup \
-       -lboost_thread \
-       -lboost_program_options \
-       -lboost_system \
-       -lboost_filesystem \
-       -lpython2.7 \
-       -lstdc++ \
-       -lmpi_cxx \
-       -lm \
-       -lmpi \
-       -L$(YAML)/build \
-       -lyaml-cpp \
-       -lxml2
+    	-L$(PRECICE_ROOT)/build/last -lprecice \
+    	-lboost_log \
+    	-lboost_log_setup \
+    	-lboost_thread \
+    	-lboost_system \
+    	-lboost_filesystem \
+	-lboost_program_options \
+    	-lpython2.7 \
+    	-lstdc++ \
+	-L$(PETSC_DIR)/lib -lpetsc \
+    	-lmpi_cxx \
+    	-L$(YAML)/build -lyaml-cpp \
+        -lxml2
 
+# Adaptions for macOS
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	LIBS += $(ARPACK)/libarpack_MAC.a
+else
+	LIBS += $(ARPACK)/libarpack_INTEL.a
+    	LIBS += -lpthread -lm -lc
+endif
 
 # Compilers and flags
-#CFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
+#CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
+
 CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
+
+# Adaptions for macOS
+ifeq ($(UNAME_S),Darwin)
+        CC = /usr/local/bin/gcc
+else
+        CC = mpicc
+endif
+
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
-CC = mpicc
-FC = gfortran
+FC = mpifort
+# FC = mpif90
+# FC = gfortran
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
@@ -67,8 +79,8 @@ $(OBJDIR)/%.o : %.f
 $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	#g++ -std=c++11 -I$(YAML)/include -c $< -o $@ $(LIBS)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	g++ -std=c++11 -I$(YAML)/include -c $< -o $@ $(LIBS)
+    	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
