@@ -163,8 +163,6 @@ void Precice_ReadCouplingData( SimulationData * sim )
 	int numInterfaces = sim->numPreciceInterfaces;
 	int i;
 	
-	printf( "Initialization of the interface data structure worked fine.\n" );
-
 	if( precicec_isReadDataAvailable() )
 	{
 		for( i = 0 ; i < numInterfaces ; i++ )
@@ -191,11 +189,8 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				break;
             case FORCES:
                 //Read and set forces as point loads
-		printf( "Checkpointing: Reached the FORCES switch-case.\n" );
                 precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-		printf( "Checkpointing: BlockVectorData has been read successfully.\n" );
                 setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc );
-		printf( "Checkpointing: Node forces have been set successfully.\n" );
                 break;
             case DISPLACEMENTS:
                 printf( "Displacements cannot be used as read data\n" );
@@ -299,7 +294,6 @@ void Precice_WriteCouplingData( SimulationData * sim )
 
 		if( precicec_isActionRequired( "write-initial-data" ) )
 		{
-			printf( "Initial data written\n" );
 			precicec_fulfilledAction( "write-initial-data" );
 		}
 	}
