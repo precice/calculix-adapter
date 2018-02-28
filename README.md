@@ -103,18 +103,16 @@ The adapter internally uses the CalculiX data format for point forces to apply t
 
 CalculiX CCX offers both a geometrically linear as well as a geometrically non-linear solver. Both are coupled via the adapter. The keyword "NLGEOM" (as shown in the example) needs to be included in the CalculiX case input file in order to select the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword "NLGEOM" does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations via preCICE the keyword "DYNAMIC" (enabling a dynamic computation) must appear in the CalculiX input file.
 
-A testcase is provided in the directory `testcase`. It corresponds to the geometry of the structural solver of the Extended Flap scenario, Section 6.2 in the bachelor thesis of Alexander Rusch [[2]](https://www5.in.tum.de/pub/Rusch2016_BA.pdf). A watchpoint as defined in this thesis is placed at the center of the upper wall of the flap in order to allow to track the deformations. In the `testcase` directory the resulting movement of the watchpoint is plotted for both the linear and the non-linear CalculiX solver. See the files *x-coord-watchpoint.pdf*, *y-coord-watchpoint.pdf* and *z-coord-watchpoint.pdf*. This allows to compare the movement of the watchpoint upon deformation for both solvers.
-
 ### Running the Adapted CalculiX Executable
 Running the adapted executable is pretty similar to running the original CalculiX CCX solver. The syntax is as follows:
 
     ccx_preCICE -i [CalculiX input file] -precice-participant [participant name]
 
-For the FSI example above:
+For example:
 
-    ccx_preCICE -i testcase -precice-participant Calculix
+    ccx_preCICE -i flap -precice-participant Calculix
 
-The input file for this example would be *testcase.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
+The input file for this example would be *flap.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
 ## References
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
