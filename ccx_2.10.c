@@ -1101,7 +1101,7 @@ while(istat>=0) {
           
           printf("Starting FSI analysis via preCICE");
           
-          if(iperturb[0]<2) {
+          if(iperturb[1]==0) {
               printf(" using the geometrically linear CalculiX solver...\n");
               
               mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
@@ -1134,7 +1134,7 @@ while(istat>=0) {
               memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
               maxlenmpc=mpcinfo[3];
           }
-          else {
+          else if(iperturb[1]==1) {
               printf(" using the geometrically non-linear CalculiX solver...\n");
               
               mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
@@ -1166,6 +1166,10 @@ while(istat>=0) {
               
               memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
               maxlenmpc=mpcinfo[3];
+          }
+          else {
+	      printf("ERROR: This simulation type is not available with preCICE");
+	      exit(0);
           }
       }
       
