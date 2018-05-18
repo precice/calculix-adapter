@@ -24,7 +24,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
 	// Read the YAML config file
 	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
-
+	
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, preciceConfigFilename, 0, 1 );
 
@@ -34,6 +34,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
+
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, &interfaces[i] );
 	}
 	// Initialize variables needed for the coupling
@@ -198,9 +199,21 @@ void Precice_ReadCouplingData( SimulationData * sim )
                 exit( EXIT_FAILURE );
                 break;
 	    case DISPLACEMENTDELTAS:
-                printf( "DisplacementDeltas cannot be used as read data\n" );
-                fflush( stdout );
-                exit( EXIT_FAILURE );
+				//Read displacement deltas and set displacements
+				precicec_readBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+				printf("HERE\n");
+				for(int k=0; k<10; k++){
+					printf("%lf",interfaces[i]->nodeVectorData[k]);
+				}
+				printf("\n");
+				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt);
+				for(int k=0; k<10; k++){
+					printf("%lf",sim->vold[k]);
+				}
+				printf("\n");
+/*                printf( "DisplacementDeltas cannot be used as read data\n" );*/
+/*                fflush( stdout );*/
+/*                exit( EXIT_FAILURE );*/
                 break;
 			}
 		}
@@ -285,9 +298,10 @@ void Precice_WriteCouplingData( SimulationData * sim )
                 precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 break;
             case FORCES:
-                printf( "Forces cannot be used as write data\n" );
-                fflush( stdout );
-                exit( EXIT_FAILURE );
+				printf("Skipping the writing of forces in this solver. (One-way coupling)\n");
+/*                printf( "Forces cannot be used as write data\n" );*/
+/*                fflush( stdout );*/
+/*                exit( EXIT_FAILURE );*/
                 break;
 			}
 		}
@@ -474,6 +488,15 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
             		break;
             
         	}
+        	else if ( strcmp1( config->readDataNames[i], "DisplacementDeltas" + i ) == 0 )
+        	{
+            		PreciceInterface_EnsureValidNodesMeshID( interface );
+            		interface->readData = DISPLACEMENTDELTAS;
+                    interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+            		printf( "Read data '%s' found.\n", config->readDataNames[i] );
+            		break;
+            
+        	}
 		else
 		{
 			printf( "ERROR: Read data '%s' does not exist!\n", config->readDataNames[i] );
@@ -523,6 +546,17 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
                         interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
                         printf( "Write data '%s' found.\n", config->writeDataNames[i] );
                 }
+        else if ( strcmp1( config->writeDataNames[i], "Forces" + i ) == 0 )
+        	{
+            		PreciceInterface_EnsureValidNodesMeshID( interface );
+            		interface->writeData = FORCES;
+            		interface->xforcIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
+            		interface->forcesDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
+            		getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
+            		printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+            		break;
+            
+        	}
 		else
 		{
 			printf( "ERROR: Write data '%s' does not exist!\n", config->writeDataNames[i] );

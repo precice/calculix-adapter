@@ -413,6 +413,19 @@ void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * 
     }
 }
 
+void setNodeDisplacements( double * displacementDeltas, ITG * nodes, ITG numNodes, double * v, double * v_init, int mt)
+{
+    ITG i;
+
+    for( i = 0 ; i < numNodes ; i++ )
+    {
+		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+		v[nodeIdx * mt + 1] = displacementDeltas[3 * i] + v_init[nodeIdx * mt + 1];
+		v[nodeIdx * mt + 2] = displacementDeltas[3 * i + 1] + v_init[nodeIdx * mt + 2];
+		v[nodeIdx * mt + 3] = displacementDeltas[3 * i + 2] + v_init[nodeIdx * mt + 3];
+	}
+}
+
 bool isSteadyStateSimulation( ITG * nmethod )
 {
 	return *nmethod == 1;
