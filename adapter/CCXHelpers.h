@@ -88,6 +88,15 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int
 void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double * temperatures );
 
 /**
+ * @brief getNodeForces
+ * @param numNodes: number of nodes
+ * @param xforcIndices: indices of the xforc array to modify
+ * @param xforc: CalculiX array containing the (componentwise) assigned force values
+ * @param forces: force values to apply 
+ */
+void getNodeForces( ITG numNodes, int * xforcIndices, double * xforc, double * forces );
+
+/**
  * @brief getNodeDisplacements
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes
@@ -222,6 +231,16 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
 void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * xforc );
+
+/**
+ * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
+ * @param displacements: new displacement values
+ * @param nodes: list of node IDs
+ * @param numNodes: number of nodes
+ * @param v: CalculiX solution array containing the displacements
+ * @param mt: CalculiX variable describing the number of solution variables in the solution array v
+ */
+void setNodeDisplacements( double * displacements, ITG * nodes, ITG numNodes, double * v, int mt );
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod

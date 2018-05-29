@@ -95,6 +95,21 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 	}
 }
 
+void getNodeForces( ITG numNodes, int * xforcIndices, double * xforc, double * forces )
+{
+    ITG i;
+/*	return;//deactivated for one way coupling */
+	printf("\n\nGETNODEFORCES\n\n");
+    for ( i=0 ; i < numNodes ; i++ ) {
+        //x-component
+        forces[3 * i] = xforc[xforcIndices[3 * i]];
+        //y-component
+        forces[3 * i + 1] = xforc[xforcIndices[3 * i + 1]];
+        //z-component
+        forces[3 * i + 2] = xforc[xforcIndices[3 * i + 2]];
+    }
+}
+
 void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, int mt, double * displacements )
 {
     
@@ -413,16 +428,17 @@ void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * 
     }
 }
 
-void setNodeDisplacements( double * displacementDeltas, ITG * nodes, ITG numNodes, double * v, double * v_init, int mt)
+void setNodeDisplacements( double * displacements, ITG * nodes, ITG numNodes, double * v, int mt )
 {
     ITG i;
-
     for( i = 0 ; i < numNodes ; i++ )
     {
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		v[nodeIdx * mt + 1] = displacementDeltas[3 * i] + v_init[nodeIdx * mt + 1];
-		v[nodeIdx * mt + 2] = displacementDeltas[3 * i + 1] + v_init[nodeIdx * mt + 2];
-		v[nodeIdx * mt + 3] = displacementDeltas[3 * i + 2] + v_init[nodeIdx * mt + 3];
+/*		printf("Index//Before %d//%lf\n",nodeIdx + 1,v[nodeIdx * mt + 1]);*/
+		v[nodeIdx * mt + 1] = displacements[3 * i];
+		v[nodeIdx * mt + 2] = displacements[3 * i + 1];
+		v[nodeIdx * mt + 3] = displacements[3 * i + 2];
+/*		printf("After %lf\n",v[nodeIdx * mt + 1]);*/
 	}
 }
 
