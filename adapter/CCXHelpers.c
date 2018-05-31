@@ -98,8 +98,6 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 void getNodeForces( ITG numNodes, int * xforcIndices, double * xforc, double * forces )
 {
     ITG i;
-/*	return;//deactivated for one way coupling */
-	printf("\n\nGETNODEFORCES\n\n");
     for ( i=0 ; i < numNodes ; i++ ) {
         //x-component
         forces[3 * i] = xforc[xforcIndices[3 * i]];
@@ -291,28 +289,49 @@ void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numE
 	}
 }
 
-// Get the indices for the xboun array, corresponding to the temperature DOF of the nodes passed to the function
-void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices )
+// Get the indices for the xboun array, corresponding to the temperature or displacement DOF of the nodes passed to the function
+void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices, enum CouplingDataType couplDataType )
 {
 	ITG i;
-
-	for( i = 0 ; i < numNodes ; i++ )
+	
+	switch( couplDataType )
 	{
-		int idof = 8 * ( nodes[i] - 1 ) + 0; // 0 for temperature DOF
-		int k;
-		FORTRAN( nident, ( ikboun, &idof, &nboun, &k ) );
-		k -= 1; // Adjust because of FORTRAN indices
-		int m = ilboun[k] - 1; // Adjust because of FORTRAN indices
-		xbounIndices[i] = m;
-	}
-	// See documentation ccx_2.10.pdf for the definition of ikboun and ilboun
-
-	for( i = 0 ; i < numNodes ; i++ )
-	{
-		if( xbounIndices[i] < 0 )
+	case TEMPERATURE:
+		for( i = 0 ; i < numNodes ; i++ )
 		{
-            missingTemperatureBCError();
+			int idof = 8 * ( nodes[i] - 1 ) + 0; // 0 for temperature DOF
+			int k;
+			FORTRAN( nident, ( ikboun, &idof, &nboun, &k ) );
+			k -= 1; // Adjust because of FORTRAN indices
+			int m = ilboun[k] - 1; // Adjust because of FORTRAN indices
+			xbounIndices[i] = m;
 		}
+		// See documentation ccx_2.13.pdf for the definition of ikboun and ilboun
+
+		for( i = 0 ; i < numNodes ; i++ )
+		{
+			if( xbounIndices[i] < 0 )
+			{
+		        missingTemperatureBCError();
+			}
+		}
+	case DISPLACEMENTS:
+		for( i = 0 ; i < numNodes ; i++ )
+		{
+			int idof_x = 8 * ( nodes[i] -1 ) + 1; // 1 for x-component of displacement
+			int idof_y = 8 * ( nodes[i] -1 ) + 2; // 2 for y-component of displacement
+			int idof_z = 8 * ( nodes[i] -1 ) + 3; // 3 for z-component of displacement
+			int kx, ky, kz;
+/*			printf("idof: %d %d %d\n",idof_x,idof_y,idof_z);*/
+/*			printf("nboun: %d\n",nboun);*/
+			FORTRAN( nident, ( ikboun, &idof_x, &nboun, &kx ) );
+			FORTRAN( nident, ( ikboun, &idof_y, &nboun, &ky ) );
+			FORTRAN( nident, ( ikboun, &idof_z, &nboun, &kz ) );
+			xbounIndices[3 * i] = ilboun[kx - 1] - 1;
+			xbounIndices[3 * i + 1] = ilboun[ky - 1] - 1;
+			xbounIndices[3 * i + 2] = ilboun[kz - 1] - 1;
+/*			printf("xbounIndices: %d %d %d\n",xbounIndices[3*i],xbounIndices[3*i+1],xbounIndices[3*i+2]);*/
+		}				
 	}
 }
 
@@ -428,17 +447,14 @@ void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * 
     }
 }
 
-void setNodeDisplacements( double * displacements, ITG * nodes, ITG numNodes, double * v, int mt )
+void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun )
 {
     ITG i;
     for( i = 0 ; i < numNodes ; i++ )
     {
-		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-/*		printf("Index//Before %d//%lf\n",nodeIdx + 1,v[nodeIdx * mt + 1]);*/
-		v[nodeIdx * mt + 1] = displacements[3 * i];
-		v[nodeIdx * mt + 2] = displacements[3 * i + 1];
-		v[nodeIdx * mt + 3] = displacements[3 * i + 2];
-/*		printf("After %lf\n",v[nodeIdx * mt + 1]);*/
+		xboun[xbounIndices[3 * i]] = displacements[3 * i];
+		xboun[xbounIndices[3 * i + 1]] = displacements[3 * i + 1];
+		xboun[xbounIndices[3 * i + 2]] = displacements[3 * i + 2];
 	}
 }
 

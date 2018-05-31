@@ -29,6 +29,17 @@
 enum xloadVariable { DFLUX, FILM_H, FILM_T };
 
 /**
+ * @brief Type of coupling data
+ *  Temperature - Dirichlet
+ *  Heat Flux - Neumann
+ *  Convection - Robin
+ *  Forces - FSI data to be read (by the Calculix adapter)
+ *  Displacements - FSI data to be written (by the Calculix adapter)
+ *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
+ */
+enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
+
+/**
  * @brief Returns node set name with internal CalculiX format
  * Prepends and appends an N: e.g. If the input name is "interface",
  * it returns NinterfaceN
@@ -164,7 +175,7 @@ void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numE
  * @param ilboun: CalculiX auxiliary array for dealing with the indices of the SPCs
  * @param xbounIndices: output list of indices of the xboun array
  */
-void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices );
+void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices, enum CouplingDataType couplDataType );
 
 /**
  * @brief Gets the indices of the xforc array where the forces must be applied
@@ -240,7 +251,7 @@ void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * 
  * @param v: CalculiX solution array containing the displacements
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  */
-void setNodeDisplacements( double * displacements, ITG * nodes, ITG numNodes, double * v, int mt );
+void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun );
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod

@@ -8,7 +8,7 @@
  *********************************************************************************************/
 
 #ifndef PRECICEINTERFACE_H
-#define PRECICEINTERFACE_H
+//#define PRECICEINTERFACE_H
 
 #include <string.h>
 #include "ConfigReader.h"
@@ -23,7 +23,7 @@
  *  Displacements - FSI data to be written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
+//enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
 
 /*
  * PreciceInterface: Structure with all the information of a coupled surface
@@ -120,6 +120,7 @@ typedef struct SimulationData {
 	double * xboun;
 	ITG * ntmat_;
 	double * vold;
+	
 	double * cocon;
 	ITG * ncocon;
 	ITG * mi;
