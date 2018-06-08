@@ -39,6 +39,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	}
 	// Initialize variables needed for the coupling
 	NNEW( sim->coupling_init_v, double, sim->mt * sim->nk );
+	NNEW( sim->coupling_init_fn, double, sim->mt * sim->nk );
 
 	// Initialize preCICE
 	sim->precice_dt = precicec_initialize();
@@ -120,7 +121,7 @@ void Precice_FulfilledWriteCheckpoint()
 	precicec_fulfilledAction( "write-iteration-checkpoint" );
 }
 
-void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v )
+void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v, double * f )
 {
 
 	printf( "Adapter reading checkpoint...\n" );
@@ -135,9 +136,11 @@ void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v )
 	// Reload solution vector v
 	memcpy( v, sim->coupling_init_v, sizeof( double ) * sim->mt * sim->nk );
 
+	// Reload forces vector
+	memcpy( f, sim->coupling_init_fn, sizeof( double ) * 3 * sim->nforc );	
 }
 
-void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v )
+void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v, double * f )
 {
 
 	printf( "Adapter writing checkpoint...\n" );
@@ -152,6 +155,8 @@ void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v )
 	// Save solution vector v
 	memcpy( sim->coupling_init_v, v, sizeof( double ) * sim->mt * sim->nk );
 
+	// Save forces vector f
+	memcpy( sim->coupling_init_fn, f, sizeof( double ) * 3 * sim->nforc );
 }
 
 void Precice_ReadCouplingData( SimulationData * sim )
@@ -190,28 +195,31 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				break;
             case FORCES:
                 //Read and set forces as point loads
-				printf("READING FORCES\n");
+/*				printf("READING FORCES\n");*/
+/*				printf("Data ID: %d\n",interfaces[i]->forcesDataID);*/
                 precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc );
 
-				printf("calculix xforc // precice interface forces:\n");
-				for(int k=0; k<20; k++){
-					printf("%d: %lf // %lf\n", interfaces[i]->nodeIDs[k], sim->xforc[interfaces[i]->xforcIndices[3 * k]], interfaces[i]->nodeVectorData[3*k]);
-				}
-				printf("\n");
+/*				printf("calculix xforc // precice interface forces:\n");*/
+/*				for(int k=0; k<63; k++){*/
+/*					printf("%d (%d): %lf // %lf\n", interfaces[i]->nodeIDs[k%21], interfaces[i]->xforcIndices[k], sim->xforc[interfaces[i]->xforcIndices[k]], interfaces[i]->nodeVectorData[k]);*/
+/*				}*/
+/*				printf("\n");*/
 
                 break;
             case DISPLACEMENTS:
-				printf("\n\nREADING DISPLACEMENTS\n\n");
+				//Read and set displacements as Dirichlet BC
+/*				printf("\n\nREADING DISPLACEMENTS\n\n");*/
+/*				printf("Data ID: %d\n",interfaces[i]->displacementsDataID);*/
 				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
 
-				printf("precice interface vector // calculix xboun:\n");
+/*				printf("precice interface vector // calculix xboun:\n");*/
 
-				for(int k=0; k<20; k++){
-					printf("%d: %f // %f\n",interfaces[i]->nodeIDs[k],interfaces[i]->nodeVectorData[3*k],sim->xboun[interfaces[i]->xbounIndices[3*k]]);
-				}
-				printf("\n");
+/*				for(int k=0; k<21; k++){*/
+/*					printf("%d: %f // %f\n",interfaces[i]->nodeIDs[k],interfaces[i]->nodeVectorData[3*k],sim->xboun[interfaces[i]->xbounIndices[3*k]]);*/
+/*				}*/
+/*				printf("\n");*/
                 break;
 	    case DISPLACEMENTDELTAS:
                 printf( "DisplacementDeltas cannot be used as read data\n" );
@@ -293,30 +301,32 @@ void Precice_WriteCouplingData( SimulationData * sim )
 				free( T );
 				break;
             case DISPLACEMENTS:
-				printf("WRITING DISPLACEMENTS\n");
+/*				printf("WRITING DISPLACEMENTS\n");*/
+/*				printf("Data ID: %d\n",interfaces[i]->displacementsDataID);*/
                 getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
                 precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				printf("calculix vold // precice interface vector\n");
+/*				printf("calculix vold // precice interface vector\n");*/
 
-				for(int k=0; k<20; k++){
-					printf("%d: %lf // %lf; index for vold is: %d\n", interfaces[i]->nodeIDs[k], sim->vold[sim->mt * (interfaces[i]->nodeIDs[k]-1) + 1], interfaces[i]->nodeVectorData[3*k], sim->mt * (interfaces[i]->nodeIDs[k]-1) + 1);
-				}
-				printf("\n");
+/*				for(int k=0; k<21; k++){*/
+/*					printf("%d: %lf // %lf; index for vold is: %d\n", interfaces[i]->nodeIDs[k], sim->vold[sim->mt * (interfaces[i]->nodeIDs[k]-1) + 1], interfaces[i]->nodeVectorData[3*k], sim->mt * (interfaces[i]->nodeIDs[k]-1) + 1);*/
+/*				}*/
+/*				printf("\n");*/
                 break;
 	    case DISPLACEMENTDELTAS:
                 getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
                 precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 break;
             case FORCES:
-				printf("WRITING FORCES\n");
-				getNodeForces( interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc, interfaces[i]->nodeVectorData );
+/*				printf("WRITING FORCES\n");*/
+/*				printf("Data ID: %d\n",interfaces[i]->forcesDataID);*/
+				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->f, interfaces[i]->xforcIndices, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 
-				printf("calculix xforc // precice interface forces:\n");
-				for(int k=0; k<20; k++){
-					printf("%d: %lf // %lf\n", interfaces[i]->nodeIDs[k], sim->xforc[interfaces[i]->xforcIndices[3 * k]], interfaces[i]->nodeVectorData[3*k]);
-				}
-				printf("\n");
+/*				printf("calculix fn // precice interface forces:\n");*/
+/*				for(int k=0; k<21; k++){*/
+/*					printf("%d: %lf // %lf\n", interfaces[i]->nodeIDs[k], sim->fn[sim->mt * (interfaces[i]->nodeIDs[k]-1) + 1], interfaces[i]->nodeVectorData[3*k]);*/
+/*				}*/
+/*				printf("\n");*/
                 break;
 			}
 		}
@@ -333,6 +343,7 @@ void Precice_FreeData( SimulationData * sim )
 	int i;
 
 	free( sim->coupling_init_v );
+	free( sim->coupling_init_fn );
 
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
@@ -568,7 +579,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
             		PreciceInterface_EnsureValidNodesMeshID( interface );
             		interface->writeData = FORCES;
             		interface->xforcIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
-            		interface->forcesDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
+            		interface->forcesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
             		getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
             		printf( "Write data '%s' found.\n", config->writeDataNames[i] );
             		break;

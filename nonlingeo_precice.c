@@ -221,9 +221,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .xboun = xboun,
       .ntmat_ = ntmat_,
       .vold = vold,
+	  .f = f,
       .cocon = cocon,
       .ncocon = ncocon,
-      .mi = mi
+      .mi = mi,
+	  .accold = accold
   };
     
   if(*ithermal==4){
@@ -1145,7 +1147,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* Adapter: Write checkpoint if necessary */
       if( Precice_IsWriteCheckpointRequired() )
       {
-          Precice_WriteIterationCheckpoint( &simulationData, vini );
+          Precice_WriteIterationCheckpoint( &simulationData, vini, f );
           Precice_FulfilledWriteCheckpoint();
       }
           
@@ -2322,7 +2324,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       
       NNEW(v,double,mt**nk);
       memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
-      
       NNEW(stx,double,6*mi[0]**ne);
       NNEW(fn,double,mt**nk);
       
@@ -2460,6 +2461,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv);
 
       memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+	
       if(*ithermal!=2){
 	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stx[k];
@@ -2650,9 +2652,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                 another increment size (dtheta) */
    
     /* Adapter: Perform coupling related actions, only if solver iterations converged (icutb == 0) */
+	icutb = 0;
     if( icutb == 0 )
     {
         /* Adapter: Write coupling data */
+/*		printf("fn[173] (node 44, fx) after this iteration: %lf\n",fn[173]);*/
+/*		printf("f[0] (node 44, fx_int) after this iteration: %lf\n",f[0]);*/
+/*		printf("fn[201] (node 51, fx) after this iteration: %lf\n",fn[201]);*/
+		simulationData.f = f;
         Precice_WriteCouplingData( &simulationData );
         /* Adapter: Advance the coupling */
         Precice_Advance( &simulationData );
@@ -2662,7 +2669,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         {
             if( *nmethod == 4 )
             {
-                Precice_ReadIterationCheckpoint( &simulationData, vold );
+                Precice_ReadIterationCheckpoint( &simulationData, vold, f );
                 icutb++;
             }
             Precice_FulfilledReadCheckpoint();

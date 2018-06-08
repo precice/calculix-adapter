@@ -69,6 +69,7 @@ typedef struct PreciceInterface {
         int displacementsDataID; //New data ID for displacements
 	int displacementDeltasDataID; //New data ID for displacementDeltas
         int forcesDataID; //New data ID for forces
+	int forcesDataID2;
 
 	// Indices that indicate where to apply the boundary conditions / forces
 	int * xloadIndices;
@@ -120,10 +121,11 @@ typedef struct SimulationData {
 	double * xboun;
 	ITG * ntmat_;
 	double * vold;
-	
+	double * f;//actual values of forces for all DOFs in all nodes after computation 
 	double * cocon;
 	ITG * ncocon;
 	ITG * mi;
+	double * accold;
 
 	// Interfaces
 	int numPreciceInterfaces;
@@ -131,6 +133,7 @@ typedef struct SimulationData {
 
 	// Coupling data
 	double * coupling_init_v;
+	double * coupling_init_fn;
 	double coupling_init_theta;
 	double coupling_init_dtheta;
 	double precice_dt;
@@ -203,14 +206,14 @@ void Precice_FulfilledWriteCheckpoint();
  * @param sim: Structure with CalculiX data
  * @param v: CalculiX array with the temperature values
  */
-void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v );
+void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v, double * f );
 
 /**
  * @brief Writes iteration checkpoint
  * @param sim: Structure with CalculiX data
  * @param v: CalculiX array with the temperature values
  */
-void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v );
+void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v, double * f );
 
 /**
  * @brief Reads the coupling data for all interfaces

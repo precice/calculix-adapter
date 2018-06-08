@@ -105,7 +105,7 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  * @param forces: force values to apply 
  */
-void getNodeForces( ITG numNodes, int * xforcIndices, double * xforc, double * forces );
+void getNodeForces( ITG * nodes, ITG numNodes, double * f, int * xforcIndices, ITG mt, double * forces );
 
 /**
  * @brief getNodeDisplacements
@@ -115,7 +115,7 @@ void getNodeForces( ITG numNodes, int * xforcIndices, double * xforc, double * f
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacements: output array with the displacements in preCICE-conform order of the input nodes
  */
-void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, int mt, double * displacements );
+void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, ITG mt, double * displacements );
 
 /**
  * @brief getNodeDisplacementDeltas
