@@ -329,13 +329,19 @@ void Precice_FreeData( SimulationData * sim )
 {
 	int i;
 
-	free( sim->coupling_init_v );
+	if( sim->coupling_init_v != NULL ){
+		free( sim->coupling_init_v );
+	}
 
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
 		PreciceInterface_FreeData( sim->preciceInterfaces[i] );
-		free( sim->preciceInterfaces[i] );
+		if( sim->preciceInterfaces[i] != NULL ){
+			free( sim->preciceInterfaces[i] );
+		}
 	}
+	
+	precicec_finalize();
 }
 
 void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config )
@@ -575,32 +581,56 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 
 void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 {
-	free( preciceInterface->elementIDs );
-	free( preciceInterface->faceIDs );
-	free( preciceInterface->faceCenterCoordinates );
-	free( preciceInterface->preciceFaceCenterIDs );
-	free( preciceInterface->nodeCoordinates );
+	if( preciceInterface->elementIDs != NULL ){
+		free( preciceInterface->elementIDs );
+	}
+	
+	if( preciceInterface->faceIDs != NULL ){
+		free( preciceInterface->faceIDs );
+	}
+	
+	if( preciceInterface->faceCenterCoordinates != NULL ){
+		free( preciceInterface->faceCenterCoordinates );
+	}
+	
+	if( preciceInterface->preciceFaceCenterIDs != NULL ){
+		free( preciceInterface->preciceFaceCenterIDs );
+	}
+	
+	if( preciceInterface->nodeCoordinates != NULL ){
+		free( preciceInterface->nodeCoordinates );
+	}
 
-	if( preciceInterface->preciceNodeIDs != NULL )
+	if( preciceInterface->preciceNodeIDs != NULL ){
 		free( preciceInterface->preciceNodeIDs );
+	}
 
-	if( preciceInterface->triangles != NULL )
+	if( preciceInterface->triangles != NULL ){
 		free( preciceInterface->triangles );
+	}
 
-	free( preciceInterface->nodeScalarData );
-    free( preciceInterface->nodeVectorData );
-	free( preciceInterface->faceCenterData );
+	if( preciceInterface->nodeScalarData != NULL ){
+		free( preciceInterface->nodeScalarData );
+	}
+	
+	if( preciceInterface->nodeVectorData != NULL ){
+    		free( preciceInterface->nodeVectorData );
+	}
+	
+	if( preciceInterface->faceCenterData != NULL ){
+		free( preciceInterface->faceCenterData );
+	}
 
-	if( preciceInterface->xbounIndices != NULL )
+	if( preciceInterface->xbounIndices != NULL ){
 		free( preciceInterface->xbounIndices );
+	}
 
-	if( preciceInterface->xloadIndices != NULL )
+	if( preciceInterface->xloadIndices != NULL ){
 		free( preciceInterface->xloadIndices );
+	}
     
     if ( preciceInterface->xforcIndices != NULL )
         free( preciceInterface->xforcIndices );    	
-
-	precicec_finalize();
 
 }
 
