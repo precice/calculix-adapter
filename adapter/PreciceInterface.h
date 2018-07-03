@@ -69,7 +69,6 @@ typedef struct PreciceInterface {
     int displacementsDataID; //New data ID for displacements
 	int displacementDeltasDataID; //New data ID for displacementDeltas
     int forcesDataID; //New data ID for forces
-	int forcesDataID2;
 
 	// Indices that indicate where to apply the boundary conditions / forces
 	int * xloadIndices;

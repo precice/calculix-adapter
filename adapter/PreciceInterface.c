@@ -191,7 +191,7 @@ void Precice_ReadCouplingData( SimulationData * sim )
                 precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc);
 
-				printf("node: xforc\n");
+                printf("node: xforc\n");
 				for(int k=0; k<18; k++){
 					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->xforc[interfaces[i]->xforcIndices[k]] );				
 				}
@@ -202,7 +202,7 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				// Read and set displacements as single point constraints (Dirichlet BC)
 				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
-				
+
 				printf("node: xboun\n");
 				for(int k=0; k<18; k++){
 					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->xboun[interfaces[i]->xbounIndices[k]] );

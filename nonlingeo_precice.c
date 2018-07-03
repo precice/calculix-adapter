@@ -224,7 +224,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  .fn = fn,
       .cocon = cocon,
       .ncocon = ncocon,
-      .mi = mi,
+      .mi = mi
   };
     
   if(*ithermal==4){
@@ -2651,7 +2651,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                 another increment size (dtheta) */
    
     /* Adapter: Perform coupling related actions, only if solver iterations converged (icutb == 0) */
-	icutb = 0;
     if( icutb == 0 )
     {
         /* Adapter: Write coupling data */
