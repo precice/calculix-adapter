@@ -55,7 +55,7 @@ typedef struct PreciceInterface {
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;
-        double * nodeVectorData; //Forces, displacements and displacementDeltas are vector quantities
+    double * nodeVectorData; //Forces, displacements and displacementDeltas are vector quantities
 	double * faceCenterData;
 
 	// preCICE Data IDs
@@ -66,15 +66,15 @@ typedef struct PreciceInterface {
 	int kDeltaTemperatureWriteDataID;
 	int kDeltaReadDataID;
 	int kDeltaTemperatureReadDataID;
-        int displacementsDataID; //New data ID for displacements
+    int displacementsDataID; //New data ID for displacements
 	int displacementDeltasDataID; //New data ID for displacementDeltas
-        int forcesDataID; //New data ID for forces
+    int forcesDataID; //New data ID for forces
 	int forcesDataID2;
 
 	// Indices that indicate where to apply the boundary conditions / forces
 	int * xloadIndices;
 	int * xbounIndices;
-        int * xforcIndices;
+    int * xforcIndices;
     
 
 	enum CouplingDataType readData;
@@ -102,11 +102,11 @@ typedef struct SimulationData {
 	char * set;
 	double * co;
 	ITG nboun;
-        ITG nforc; //total number of forces
+    ITG nforc; //total number of forces
 	ITG * ikboun;
-        ITG * ikforc; //the DoFs are all stored here in an array in numerical order
+    ITG * ikforc; //the DoFs are all stored here in an array in numerical order
 	ITG * ilboun;
-        ITG * ilforc; //number of the force is stored here
+    ITG * ilforc; //number of the force is stored here
 	ITG * nelemload;
 	int nload;
 	char * sideload;
@@ -117,15 +117,14 @@ typedef struct SimulationData {
 	double * tper;
 	ITG * nmethod;
 	double * xload;
-        double * xforc; //scalar value of the force in one direction
+    double * xforc; //scalar value of the force in one direction
 	double * xboun;
 	ITG * ntmat_;
 	double * vold;
-	double * f;//actual values of forces for all DOFs in all nodes after computation 
+	double * fn;//values of forces read from calculix
 	double * cocon;
 	ITG * ncocon;
 	ITG * mi;
-	double * accold;
 
 	// Interfaces
 	int numPreciceInterfaces;
@@ -133,7 +132,6 @@ typedef struct SimulationData {
 
 	// Coupling data
 	double * coupling_init_v;
-	double * coupling_init_fn;
 	double coupling_init_theta;
 	double coupling_init_dtheta;
 	double precice_dt;
@@ -204,16 +202,16 @@ void Precice_FulfilledWriteCheckpoint();
 /**
  * @brief Reads iteration checkpoint
  * @param sim: Structure with CalculiX data
- * @param v: CalculiX array with the temperature values
+ * @param v: CalculiX array with the temperature and displacement values
  */
-void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v, double * f );
+void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v );
 
 /**
  * @brief Writes iteration checkpoint
  * @param sim: Structure with CalculiX data
- * @param v: CalculiX array with the temperature values
+ * @param v: CalculiX array with the temperature and displacement values
  */
-void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v, double * f );
+void Precice_WriteIterationCheckpoint( SimulationData * sim, double * v );
 
 /**
  * @brief Reads the coupling data for all interfaces

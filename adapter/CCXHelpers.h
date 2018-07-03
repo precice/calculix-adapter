@@ -33,8 +33,8 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  *  Temperature - Dirichlet
  *  Heat Flux - Neumann
  *  Convection - Robin
- *  Forces - FSI data to be read (by the Calculix adapter)
- *  Displacements - FSI data to be written (by the Calculix adapter)
+ *  Forces - dynamics data to be read/written (by the Calculix adapter)
+ *  Displacements - dynamics data to be read/written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
  */
 enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
@@ -100,12 +100,13 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 
 /**
  * @brief getNodeForces
+ * @param nodes: input node IDs
  * @param numNodes: number of nodes
- * @param xforcIndices: indices of the xforc array to modify
- * @param xforc: CalculiX array containing the (componentwise) assigned force values
- * @param forces: force values to apply 
+ * @param fn: Calculix array containing the actual forces
+ * @param mt: CalculiX variable describing the number of force variables in fn
+ * @param forces: output array with the forces of the input nodes
  */
-void getNodeForces( ITG * nodes, ITG numNodes, double * f, int * xforcIndices, ITG mt, double * forces );
+void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * forces );
 
 /**
  * @brief getNodeDisplacements
@@ -174,6 +175,7 @@ void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numE
  * @param ikboun: CalculiX ordered array of the DOFs corresponding to the SPCs
  * @param ilboun: CalculiX auxiliary array for dealing with the indices of the SPCs
  * @param xbounIndices: output list of indices of the xboun array
+ * @param couplDataType: indicates whether indices must be for temperature or displacement BC
  */
 void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices, enum CouplingDataType couplDataType );
 
@@ -230,26 +232,25 @@ void setFaceSinkTemperatures( double * sinkTemperatures, ITG numFaces, int * xlo
  * @param temperatures: temperature values to apply
  * @param numNodes: number of nodes
  * @param xbounIndices: indices of the xboun array to modify
- * @param xboun: CalculiX array containing the assigned temperature boundary values
+ * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
 void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndices, double * xboun );
 
 /**
- * @brief Modifies the values of the point loads (point forces) applied to the structure
+ * @brief Modifies the values of the concentrated loads (point forces) applied to the structure
  * @param forces: force values to apply
  * @param numNodes: number of nodes
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * xforc );
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc);
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
- * @param displacements: new displacement values
- * @param nodes: list of node IDs
+ * @param displacements: displacement values to apply
  * @param numNodes: number of nodes
- * @param v: CalculiX solution array containing the displacements
- * @param mt: CalculiX variable describing the number of solution variables in the solution array v
+ * @param xbounIndices: indices of the xboun array to modify
+ * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
 void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun );
 
@@ -290,6 +291,11 @@ void missingTemperatureBCError();
  * @brief Terminate program if forces are not defined
  */
 void missingForceError();
+
+/**
+ * @brief Terminate program if displacement Dirichlet BC are not defined for the interface in .inp file. (e.g. missing line under *BOUNDARY)
+ */
+void missingDisplacementBCError();
 
 /**
  * @brief Terminate program if a DFLUX BC is not defined when using Neumann BC for coupling (e.g. missing interface.dfl file)

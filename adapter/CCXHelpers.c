@@ -95,17 +95,18 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 	}
 }
 
-void getNodeForces( ITG * nodes, ITG numNodes, double * f, int * xforcIndices, int mt, double * forces )
+void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * forces )
 {
     ITG i;
+
     for ( i=0 ; i < numNodes ; i++ ) {
 		int nodeIdx = nodes[i] - 1;
         //x-component
-        forces[3 * i] = f[xforcIndices[3 * i]];//fn[nodeIdx * mt + 1];
+        forces[3 * i] = fn[nodeIdx * mt + 1];
         //y-component
-        forces[3 * i + 1] = f[xforcIndices[3 * i + 1]];//fn[nodeIdx * mt + 2];
+        forces[3 * i + 1] = fn[nodeIdx * mt + 2];
         //z-component
-        forces[3 * i + 2] = f[xforcIndices[3 * i + 2]];//fn[nodeIdx * mt + 3];
+        forces[3 * i + 2] = fn[nodeIdx * mt + 3];
     }
 }
 
@@ -319,19 +320,27 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 	case DISPLACEMENTS:
 		for( i = 0 ; i < numNodes ; i++ )
 		{
-			int idof_x = 8 * ( nodes[i] - 1 ) + 1; // 1 for x-component of displacement
-			int idof_y = 8 * ( nodes[i] - 1 ) + 2; // 2 for y-component of displacement
-			int idof_z = 8 * ( nodes[i] - 1 ) + 3; // 3 for z-component of displacement
+			int idof_x = 8 * ( nodes[i] - 1 ) + 1; // x-component of displacement
+			int idof_y = 8 * ( nodes[i] - 1 ) + 2; // y-component of displacement
+			int idof_z = 8 * ( nodes[i] - 1 ) + 3; // z-component of displacement
 			int kx, ky, kz;
-/*			printf("idof: %d %d %d\n",idof_x,idof_y,idof_z);*/
-/*			printf("nboun: %d\n",nboun);*/
 			FORTRAN( nident, ( ikboun, &idof_x, &nboun, &kx ) );
 			FORTRAN( nident, ( ikboun, &idof_y, &nboun, &ky ) );
 			FORTRAN( nident, ( ikboun, &idof_z, &nboun, &kz ) );
 			xbounIndices[3 * i] = ilboun[kx - 1] - 1;
 			xbounIndices[3 * i + 1] = ilboun[ky - 1] - 1;
 			xbounIndices[3 * i + 2] = ilboun[kz - 1] - 1;
-/*			printf("xbounIndices: %d %d %d\n",xbounIndices[3*i],xbounIndices[3*i+1],xbounIndices[3*i+2]);*/
+		}
+
+		// TODO This warning is not triggered if there are other BC (e.g. fixed nodes)
+		for( i = 0 ; i < 3 * numNodes; i++ )
+		{
+/*		printf("%d\n", nboun);*/
+/*		printf("%d\n", numNodes*3);*/
+			if( xbounIndices[i] < 0 )
+			{
+		        missingDisplacementBCError();
+			}
 		}				
 	}
 }
@@ -434,16 +443,16 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 	}
 }
 
-void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * xforc )
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc)
 {
     ITG i;
-
     for ( i=0 ; i < numNodes ; i++ ) {
-        //x-component
+		int nodeIdx = nodes[i] - 1;
+        // x-component
         xforc[xforcIndices[3 * i]] = forces[3 * i];
-        //y-component
+        // y-component
         xforc[xforcIndices[3 * i + 1]] = forces[3 * i + 1];
-        //z-component
+        // z-component
         xforc[xforcIndices[3 * i + 2]] = forces[3 * i + 2];
     }
 }
@@ -453,8 +462,11 @@ void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndi
     ITG i;
     for( i = 0 ; i < numNodes ; i++ )
     {
+		// x-component
 		xboun[xbounIndices[3 * i]] = displacements[3 * i];
+		// y-component		
 		xboun[xbounIndices[3 * i + 1]] = displacements[3 * i + 1];
+		// z-component		
 		xboun[xbounIndices[3 * i + 2]] = displacements[3 * i + 2];
 	}
 }
@@ -499,6 +511,12 @@ void missingTemperatureBCError()
 void missingForceError()
 {
     printf( "ERROR: Cannot apply forces to one or more interface nodes.\n" );
+    exit( EXIT_FAILURE );
+}
+
+void missingDisplacementBCError()
+{
+    printf( "ERROR: Cannot apply displacement to one or more interface nodes. Please make sure that a single point constraint in each direction is set for all interface nodes.\n" );
     exit( EXIT_FAILURE );
 }
 
