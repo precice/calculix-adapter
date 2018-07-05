@@ -238,12 +238,13 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 
 /**
  * @brief Modifies the values of the concentrated loads (point forces) applied to the structure
+ * @param nodes: list of node IDs
  * @param forces: force values to apply
  * @param numNodes: number of nodes
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * xforc );
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc );
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition

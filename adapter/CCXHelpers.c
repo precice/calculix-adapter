@@ -443,7 +443,7 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 	}
 }
 
-void setNodeForces( double * forces, ITG numNodes, int * xforcIndices, double * xforc )
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc )
 {
     ITG i;
     for ( i=0 ; i < numNodes ; i++ ) {
