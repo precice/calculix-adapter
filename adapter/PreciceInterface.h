@@ -14,17 +14,6 @@
 #include "ConfigReader.h"
 #include "CCXHelpers.h"
 
-/**
- * @brief Type of coupling data
- *  Temperature - Dirichlet
- *  Heat Flux - Neumann
- *  Convection - Robin
- *  Forces - FSI data to be read (by the Calculix adapter)
- *  Displacements - FSI data to be written (by the Calculix adapter)
- *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
- */
-//enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
-
 /*
  * PreciceInterface: Structure with all the information of a coupled surface
  * Includes data regarding the surface mesh(es) and the coupling data
@@ -55,7 +44,7 @@ typedef struct PreciceInterface {
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;
-    double * nodeVectorData; //Forces, displacements and displacementDeltas are vector quantities
+	double * nodeVectorData; //Forces, displacements and displacementDeltas are vector quantities
 	double * faceCenterData;
 
 	// preCICE Data IDs
@@ -66,15 +55,15 @@ typedef struct PreciceInterface {
 	int kDeltaTemperatureWriteDataID;
 	int kDeltaReadDataID;
 	int kDeltaTemperatureReadDataID;
-    int displacementsDataID; //New data ID for displacements
+	int displacementsDataID; //New data ID for displacements
 	int displacementDeltasDataID; //New data ID for displacementDeltas
-    int forcesDataID; //New data ID for forces
+	int forcesDataID; //New data ID for forces
 
 	// Indices that indicate where to apply the boundary conditions / forces
 	int * xloadIndices;
 	int * xbounIndices;
-    int * xforcIndices;
-    
+	int * xforcIndices;
+
 
 	enum CouplingDataType readData;
 	enum CouplingDataType writeData;
@@ -101,11 +90,11 @@ typedef struct SimulationData {
 	char * set;
 	double * co;
 	ITG nboun;
-    ITG nforc; //total number of forces
+	ITG nforc; //total number of forces
 	ITG * ikboun;
-    ITG * ikforc; //the DoFs are all stored here in an array in numerical order
+	ITG * ikforc; //the DoFs are all stored here in an array in numerical order
 	ITG * ilboun;
-    ITG * ilforc; //number of the force is stored here
+	ITG * ilforc; //number of the force is stored here
 	ITG * nelemload;
 	int nload;
 	char * sideload;
@@ -116,7 +105,7 @@ typedef struct SimulationData {
 	double * tper;
 	ITG * nmethod;
 	double * xload;
-    double * xforc; //scalar value of the force in one direction
+	double * xforc; //scalar value of the force in one direction
 	double * xboun;
 	ITG * ntmat_;
 	double * vold;
@@ -235,8 +224,6 @@ void Precice_WriteCouplingData( SimulationData * sim );
  * @param numInterfaces
  */
 void Precice_FreeData( SimulationData * sim );
-
-
 
 /**
  * @brief Creates an interface that is coupled with preCICE

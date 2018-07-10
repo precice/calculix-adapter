@@ -106,4 +106,4 @@ $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
-rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.13.a $(OBJDIR)/ccx_preCICE
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.13.a $(OBJDIR)/ccx_preCICE

@@ -75,7 +75,7 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
-        //The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
+		//The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
 		coordinates[i * 3 + 0] = co[nodeIdx * 3 + 0] + v[nodeIdx * mt + 1];
 		coordinates[i * 3 + 1] = co[nodeIdx * 3 + 1] + v[nodeIdx * mt + 2];
 		coordinates[i * 3 + 2] = co[nodeIdx * 3 + 2] + v[nodeIdx * mt + 3];
@@ -97,68 +97,68 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 
 void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * forces )
 {
-    ITG i;
+	ITG i;
 
-    for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ ) 
 	{
 		int nodeIdx = nodes[i] - 1;
-        //x-component of the forces
-        forces[3 * i] = fn[nodeIdx * mt + 1];
-        //y-component of the forces
-        forces[3 * i + 1] = fn[nodeIdx * mt + 2];
-        //z-component of the forces
-        forces[3 * i + 2] = fn[nodeIdx * mt + 3];
-    }
+		//x-component of the forces
+		forces[3 * i] = fn[nodeIdx * mt + 1];
+		//y-component of the forces
+		forces[3 * i + 1] = fn[nodeIdx * mt + 2];
+		//z-component of the forces
+		forces[3 * i + 2] = fn[nodeIdx * mt + 3];
+	}
 }
 
 void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, int mt, double * displacements )
 {
-    
-    // CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
-    // where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
-    ITG i;
-    
-    for( i = 0 ; i < numNodes ; i++ )
-    {
-        int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-        //x-component of the displacements
-        displacements[3 * i] = v[nodeIdx * mt + 1];
-        //y-component of the displacements
-        displacements[3 * i + 1] = v[nodeIdx * mt + 2];
-        //z-component of the displacements
-        displacements[3 * i + 2] = v[nodeIdx * mt + 3];
-    }
+
+	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
+	// where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
+	ITG i;
+
+	for( i = 0 ; i < numNodes ; i++ )
+	{
+		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+		//x-component of the displacements
+		displacements[3 * i] = v[nodeIdx * mt + 1];
+		//y-component of the displacements
+		displacements[3 * i + 1] = v[nodeIdx * mt + 2];
+		//z-component of the displacements
+		displacements[3 * i + 2] = v[nodeIdx * mt + 3];
+	}
 }
 
 void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * v_init, int mt, double * displacementDeltas )
 {
 
-    // CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
-    // where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
-    ITG i;
+	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
+	// where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
+	ITG i;
 
-    for( i = 0 ; i < numNodes ; i++ )
-    {
-        int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-        //x-component of the displacementDeltas
-        displacementDeltas[3 * i] = v[nodeIdx * mt + 1] - v_init[nodeIdx * mt + 1];
-        //y-component of the displacements
-        displacementDeltas[3 * i + 1] = v[nodeIdx * mt + 2] - v_init[nodeIdx * mt + 2];
-        //z-component of the displacements
-        displacementDeltas[3 * i + 2] = v[nodeIdx * mt + 3] - v_init[nodeIdx * mt + 3];
-    }
+	for( i = 0 ; i < numNodes ; i++ )
+	{
+		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+		//x-component of the displacementDeltas
+		displacementDeltas[3 * i] = v[nodeIdx * mt + 1] - v_init[nodeIdx * mt + 1];
+		//y-component of the displacements
+		displacementDeltas[3 * i + 1] = v[nodeIdx * mt + 2] - v_init[nodeIdx * mt + 2];
+		//z-component of the displacements
+		displacementDeltas[3 * i + 2] = v[nodeIdx * mt + 3] - v_init[nodeIdx * mt + 3];
+	}
 }
 
 /*
    int getNodesPerFace(char * lakon, int elementIdx) {
 
-        int nodesPerFace;
-        if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
-                nodesPerFace = 3;
-        } else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
-                nodesPerFace = 6;
-        }
-        return nodesPerFace;
+		int nodesPerFace;
+		if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
+				nodesPerFace = 3;
+		} else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
+				nodesPerFace = 6;
+		}
+		return nodesPerFace;
 
    }
  */
@@ -296,7 +296,7 @@ void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numE
 void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices, enum CouplingDataType couplDataType )
 {
 	ITG i;
-	
+
 	switch( couplDataType )
 	{
 	case TEMPERATURE:
@@ -315,7 +315,7 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 		{
 			if( xbounIndices[i] < 0 )
 			{
-		        missingTemperatureBCError();
+				missingTemperatureBCError();
 			}
 		}
 	case DISPLACEMENTS:
@@ -338,50 +338,50 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 		{
 			if( xbounIndices[i] < 0 )
 			{
-		        missingDisplacementBCError();
+				missingDisplacementBCError();
 			}
-		}				
+		}
 	}
 }
 
 // Get the indices for the xforc array, corresponding to the force DOFs of the nodes passed to the function
 void getXforcIndices( ITG * nodes, ITG numNodes, int nforc, int * ikforc, int * ilforc, int * xforcIndices )
 {
-    ITG i;
-    
-    for( i = 0 ; i < numNodes ; i++ )
-    {
-        //x-direction
-        int idof = 8 * ( nodes[i] - 1 ) + 1; // 1 for x force DOF
-        int k;
-        FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
-        k -= 1; // Adjust because of FORTRAN indices
-        int m = ilforc[k] - 1; // Adjust because of FORTRAN indices
-        xforcIndices[3 * i] = m;
-        
-        //y-direction
-        idof = 8 * ( nodes[i] - 1 ) + 2; // 2 for y force DOF
-        FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
-        k -= 1; // Adjust because of FORTRAN indices
-        m = ilforc[k] - 1; // Adjust because of FORTRAN indices
-        xforcIndices[3 * i + 1] = m;
-        
-        //z-direction
-        idof = 8 * ( nodes[i] - 1 ) + 3; // 3 for z force DOF
-        FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
-        k -= 1; // Adjust because of FORTRAN indices
-        m = ilforc[k] - 1; // Adjust because of FORTRAN indices
-        xforcIndices[3 * i + 2] = m;
-    }
-    // See documentation ccx_2.10.pdf for the definition of ikforc and ilforc
-    
-    for( i = 0 ; i < numNodes ; i++ )
-    {
-        if( xforcIndices[i] < 0 )
-        {
-            missingForceError();
-        }
-    }
+	ITG i;
+
+	for( i = 0 ; i < numNodes ; i++ )
+	{
+		//x-direction
+		int idof = 8 * ( nodes[i] - 1 ) + 1; // 1 for x force DOF
+		int k;
+		FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+		k -= 1; // Adjust because of FORTRAN indices
+		int m = ilforc[k] - 1; // Adjust because of FORTRAN indices
+		xforcIndices[3 * i] = m;
+
+		//y-direction
+		idof = 8 * ( nodes[i] - 1 ) + 2; // 2 for y force DOF
+		FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+		k -= 1; // Adjust because of FORTRAN indices
+		m = ilforc[k] - 1; // Adjust because of FORTRAN indices
+		xforcIndices[3 * i + 1] = m;
+
+		//z-direction
+		idof = 8 * ( nodes[i] - 1 ) + 3; // 3 for z force DOF
+		FORTRAN( nident, ( ikforc, &idof, &nforc, &k ) );
+		k -= 1; // Adjust because of FORTRAN indices
+		m = ilforc[k] - 1; // Adjust because of FORTRAN indices
+		xforcIndices[3 * i + 2] = m;
+	}
+	// See documentation ccx_2.10.pdf for the definition of ikforc and ilforc
+
+	for( i = 0 ; i < numNodes ; i++ )
+	{
+		if( xforcIndices[i] < 0 )
+		{
+			missingForceError();
+		}
+	}
 }
 
 
@@ -444,29 +444,31 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 
 void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc )
 {
-    ITG i;
-    for ( i = 0 ; i < numNodes ; i++ ) 
+	ITG i;
+
+	for ( i = 0 ; i < numNodes ; i++ ) 
 	{
 		int nodeIdx = nodes[i] - 1;
-        // x-component
-        xforc[xforcIndices[3 * i]] = forces[3 * i];
-        // y-component
-        xforc[xforcIndices[3 * i + 1]] = forces[3 * i + 1];
-        // z-component
-        xforc[xforcIndices[3 * i + 2]] = forces[3 * i + 2];
-    }
+		// x-component
+		xforc[xforcIndices[3 * i]] = forces[3 * i];
+		// y-component
+		xforc[xforcIndices[3 * i + 1]] = forces[3 * i + 1];
+		// z-component
+		xforc[xforcIndices[3 * i + 2]] = forces[3 * i + 2];
+	}
 }
 
 void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun )
 {
-    ITG i;
-    for( i = 0 ; i < numNodes ; i++ )
-    {
+	ITG i;
+
+	for( i = 0 ; i < numNodes ; i++ )
+	{
 		// x-component
 		xboun[xbounIndices[3 * i]] = displacements[3 * i];
-		// y-component		
+		// y-component
 		xboun[xbounIndices[3 * i + 1]] = displacements[3 * i + 1];
-		// z-component		
+		// z-component
 		xboun[xbounIndices[3 * i + 2]] = displacements[3 * i + 2];
 	}
 }
@@ -510,14 +512,14 @@ void missingTemperatureBCError()
 
 void missingForceError()
 {
-    printf( "ERROR: Cannot apply forces to one or more interface nodes.\n" );
-    exit( EXIT_FAILURE );
+	printf( "ERROR: Cannot apply forces to one or more interface nodes.\n" );
+	exit( EXIT_FAILURE );
 }
 
 void missingDisplacementBCError()
 {
-    printf( "ERROR: Cannot apply displacement to one or more interface nodes. Please make sure that a single point constraint in each direction is set for all interface nodes.\n" );
-    exit( EXIT_FAILURE );
+	printf( "ERROR: Cannot apply displacement to one or more interface nodes. Please make sure that a single point constraint in each direction is set for all interface nodes.\n" );
+	exit( EXIT_FAILURE );
 }
 
 void missingDfluxBCError()

@@ -24,7 +24,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
 	// Read the YAML config file
 	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
-	
+
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, preciceConfigFilename, 0, 1 );
 
@@ -186,21 +186,21 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				precicec_readBlockScalarData( interfaces[i]->kDeltaReadDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
 				setFaceHeatTransferCoefficients( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
 				break;
-            case FORCES:
-                // Read and set forces as concentrated loads (Neumann BC)
-                precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-                setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc);
-                break;
-            case DISPLACEMENTS:
+				case FORCES:
+				// Read and set forces as concentrated loads (Neumann BC)
+				precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+				setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc);
+				break;
+			case DISPLACEMENTS:
 				// Read and set displacements as single point constraints (Dirichlet BC)
 				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
 				break;
-	    	case DISPLACEMENTDELTAS:
-                printf( "DisplacementDeltas cannot be used as read data\n" );
+			case DISPLACEMENTDELTAS:
+				printf( "DisplacementDeltas cannot be used as read data\n" );
 				fflush( stdout );
-                exit( EXIT_FAILURE );
-                break;
+				exit( EXIT_FAILURE );
+				break;
 			}
 		}
 	}
@@ -275,18 +275,18 @@ void Precice_WriteCouplingData( SimulationData * sim )
 				free( myKDelta );
 				free( T );
 				break;
-            case DISPLACEMENTS:
-                getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
-                precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-                break;
-	    	case DISPLACEMENTDELTAS:
-                getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
-                precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-                break;
-            case FORCES:
+			case DISPLACEMENTS:
+				getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
+				precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+				break;
+			case DISPLACEMENTDELTAS:
+				getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
+				precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+				break;
+			case FORCES:
 				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-                break;
+				break;
 			}
 		}
 
@@ -312,7 +312,7 @@ void Precice_FreeData( SimulationData * sim )
 			free( sim->preciceInterfaces[i] );
 		}
 	}
-	
+
 	precicec_finalize();
 }
 
@@ -328,13 +328,13 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->preciceNodeIDs = NULL;
 	interface->triangles = NULL;
 	interface->nodeScalarData = NULL;
-    interface->nodeVectorData = NULL;
+	interface->nodeVectorData = NULL;
 	interface->faceCenterData = NULL;
 	interface->xbounIndices = NULL;
 	interface->xloadIndices = NULL;
-    interface->xforcIndices = NULL;
+	interface->xforcIndices = NULL;
 
-    // The patch identifies the set used as interface in Calculix
+	// The patch identifies the set used as interface in Calculix
 	interface->name = config->patchName;
 
 	// Nodes mesh
@@ -345,12 +345,12 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
 	interface->faceCentersMeshName = config->facesMeshName;
-    	//Only configure a face center mesh if necesary; i.e. do not configure it for FSI simulations, also do not configure tetra faces if no face center mesh is used (as in FSI simulations)
-    	if ( interface->faceCentersMeshName != NULL) {
-        	PreciceInterface_ConfigureFaceCentersMesh( interface, sim );
-        	// Triangles of the nodes mesh (needs to be called after the face centers mesh is configured!)
-        	PreciceInterface_ConfigureTetraFaces( interface, sim );
-    	}
+		//Only configure a face center mesh if necesary; i.e. do not configure it for FSI simulations, also do not configure tetra faces if no face center mesh is used (as in FSI simulations)
+		if ( interface->faceCentersMeshName != NULL) {
+			PreciceInterface_ConfigureFaceCentersMesh( interface, sim );
+		// Triangles of the nodes mesh (needs to be called after the face centers mesh is configured!)
+			PreciceInterface_ConfigureTetraFaces( interface, sim );
+		}
 
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
 
@@ -433,7 +433,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 
 	for( i = 0 ; i < config->numReadData ; i++ )
 	{
-        
+		
 		if( strcmp( config->readDataNames[i], "Temperature" ) == 0 )
 		{
 
@@ -467,33 +467,33 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-        else if ( strcmp1( config->readDataNames[i], "Forces" + i ) == 0 )
-        {
-            PreciceInterface_EnsureValidNodesMeshID( interface );
-            interface->readData = FORCES;
-            interface->xforcIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
-            interface->forcesDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
-            getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
-            printf( "Read data '%s' found.\n", config->readDataNames[i] );
-            break;
-        }
-        else if ( strcmp1( config->readDataNames[i], "Displacements" + i ) == 0 )
-        {
-        	PreciceInterface_EnsureValidNodesMeshID( interface );
-        	interface->readData = DISPLACEMENTS;
+		else if ( strcmp1( config->readDataNames[i], "Forces" + i ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->readData = FORCES;
+			interface->xforcIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
+			interface->forcesDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
+			getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
+			printf( "Read data '%s' found.\n", config->readDataNames[i] );
+			break;
+		}
+		else if ( strcmp1( config->readDataNames[i], "Displacements" + i ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->readData = DISPLACEMENTS;
 			interface->xbounIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
-            interface->displacementsDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
+			interface->displacementsDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS );
-        	printf( "Read data '%s' found.\n", config->readDataNames[i] );
-        	break;
-       	}
+			printf( "Read data '%s' found.\n", config->readDataNames[i] );
+			break;
+		}
 		else
 		{
 			printf( "ERROR: Read data '%s' does not exist!\n", config->readDataNames[i] );
 			exit( EXIT_FAILURE );
 		}
 	}
-    
+
 	for( i = 0 ; i < config->numWriteData ; i++ )
 	{
 		if( strcmp( config->writeDataNames[i], "Temperature" ) == 0 )
@@ -522,27 +522,27 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-        else if ( strcmp1( config->writeDataNames[i], "Displacements" + i ) == 0 )
-        {
-            PreciceInterface_EnsureValidNodesMeshID( interface );
-            interface->writeData = DISPLACEMENTS;
-            interface->displacementsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
-            printf( "Write data '%s' found.\n", config->writeDataNames[i] );
-        }
+		else if ( strcmp1( config->writeDataNames[i], "Displacements" + i ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->writeData = DISPLACEMENTS;
+			interface->displacementsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+		}
 		else if ( strcmp1( config->writeDataNames[i], "DisplacementDeltas" + i ) == 0 )
-        {
-            PreciceInterface_EnsureValidNodesMeshID( interface );
-            interface->writeData = DISPLACEMENTDELTAS;
-            interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
-            printf( "Write data '%s' found.\n", config->writeDataNames[i] );
-        }
-        else if ( strcmp1( config->writeDataNames[i], "Forces" + i ) == 0 )
-        {
-            PreciceInterface_EnsureValidNodesMeshID( interface );
-            interface->writeData = FORCES;
-            interface->forcesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
-            printf( "Write data '%s' found.\n", config->writeDataNames[i] );	            
-        }
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->writeData = DISPLACEMENTDELTAS;
+			interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+		}
+		else if ( strcmp1( config->writeDataNames[i], "Forces" + i ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->writeData = FORCES;
+			interface->forcesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+		}
 		else
 		{
 			printf( "ERROR: Write data '%s' does not exist!\n", config->writeDataNames[i] );
@@ -556,19 +556,19 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 	if( preciceInterface->elementIDs != NULL ){
 		free( preciceInterface->elementIDs );
 	}
-	
+
 	if( preciceInterface->faceIDs != NULL ){
 		free( preciceInterface->faceIDs );
 	}
-	
+
 	if( preciceInterface->faceCenterCoordinates != NULL ){
 		free( preciceInterface->faceCenterCoordinates );
 	}
-	
+
 	if( preciceInterface->preciceFaceCenterIDs != NULL ){
 		free( preciceInterface->preciceFaceCenterIDs );
 	}
-	
+
 	if( preciceInterface->nodeCoordinates != NULL ){
 		free( preciceInterface->nodeCoordinates );
 	}
@@ -584,11 +584,11 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 	if( preciceInterface->nodeScalarData != NULL ){
 		free( preciceInterface->nodeScalarData );
 	}
-	
+
 	if( preciceInterface->nodeVectorData != NULL ){
-    		free( preciceInterface->nodeVectorData );
+		free( preciceInterface->nodeVectorData );
 	}
-	
+
 	if( preciceInterface->faceCenterData != NULL ){
 		free( preciceInterface->faceCenterData );
 	}
@@ -600,9 +600,9 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 	if( preciceInterface->xloadIndices != NULL ){
 		free( preciceInterface->xloadIndices );
 	}
-    
-    if ( preciceInterface->xforcIndices != NULL )
-        free( preciceInterface->xforcIndices );    	
 
+	if ( preciceInterface->xforcIndices != NULL ){
+		free( preciceInterface->xforcIndices );
+	}
 }
 
