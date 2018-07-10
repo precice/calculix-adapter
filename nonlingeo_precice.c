@@ -221,7 +221,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .xboun = xboun,
       .ntmat_ = ntmat_,
       .vold = vold,
-	  .fn = fn,
+      .fn = fn,
       .cocon = cocon,
       .ncocon = ncocon,
       .mi = mi
