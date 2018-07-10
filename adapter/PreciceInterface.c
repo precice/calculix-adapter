@@ -187,30 +187,16 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				setFaceHeatTransferCoefficients( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
 				break;
             case FORCES:
-                // Read and set forces as concentrated loads (Neumann BC))
+                // Read and set forces as concentrated loads (Neumann BC)
                 precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc);
-
-                printf("node: xforc\n");
-				for(int k=0; k<18; k++){
-					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->xforc[interfaces[i]->xforcIndices[k]] );				
-				}
-				printf("\n");
-
                 break;
             case DISPLACEMENTS:
 				// Read and set displacements as single point constraints (Dirichlet BC)
 				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
-
-				printf("node: xboun\n");
-				for(int k=0; k<18; k++){
-					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->xboun[interfaces[i]->xbounIndices[k]] );
-				}
-				printf("\n");
-
-                break;
-	    case DISPLACEMENTDELTAS:
+				break;
+	    	case DISPLACEMENTDELTAS:
                 printf( "DisplacementDeltas cannot be used as read data\n" );
 				fflush( stdout );
                 exit( EXIT_FAILURE );
@@ -292,28 +278,14 @@ void Precice_WriteCouplingData( SimulationData * sim )
             case DISPLACEMENTS:
                 getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
                 precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-
-				printf("node: vold\n");
-				for(int k=0; k<18; k++){
-					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->vold[sim->mt * (interfaces[i]->nodeIDs[k/3]-1) + 1 + k%3] );
-				}
-				printf("\n");
-
                 break;
-	    case DISPLACEMENTDELTAS:
+	    	case DISPLACEMENTDELTAS:
                 getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
                 precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
                 break;
             case FORCES:
 				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-
-				printf("node: fn\n");
-				for(int k=0; k<18; k++){
-					printf( "%d: %10.8lf\n", interfaces[i]->nodeIDs[k/3], sim->fn[(interfaces[i]->nodeIDs[k/3]-1) * sim->mt + 1 + k%3] );
-				}
-				printf("\n");
-
                 break;
 			}
 		}
@@ -454,7 +426,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 {
 
 	interface->nodeScalarData = malloc( interface->numNodes * sizeof( double ) );
-    	interface->nodeVectorData = malloc( interface->numNodes * 3 * sizeof( double ) );
+	interface->nodeVectorData = malloc( interface->numNodes * 3 * sizeof( double ) );
 	interface->faceCenterData = malloc( interface->numElements * sizeof( double ) );
 
 	int i;
@@ -509,7 +481,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
         {
         	PreciceInterface_EnsureValidNodesMeshID( interface );
         	interface->readData = DISPLACEMENTS;
-			interface->xbounIndices = malloc( interface->numNodes * 3 * sizeof( int) );
+			interface->xbounIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
             interface->displacementsDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS );
         	printf( "Read data '%s' found.\n", config->readDataNames[i] );

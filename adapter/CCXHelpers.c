@@ -99,13 +99,14 @@ void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * for
 {
     ITG i;
 
-    for ( i=0 ; i < numNodes ; i++ ) {
+    for ( i = 0 ; i < numNodes ; i++ ) 
+	{
 		int nodeIdx = nodes[i] - 1;
-        //x-component
+        //x-component of the forces
         forces[3 * i] = fn[nodeIdx * mt + 1];
-        //y-component
+        //y-component of the forces
         forces[3 * i + 1] = fn[nodeIdx * mt + 2];
-        //z-component
+        //z-component of the forces
         forces[3 * i + 2] = fn[nodeIdx * mt + 3];
     }
 }
@@ -335,8 +336,6 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 		// TODO This warning is not triggered if there are other BC (e.g. fixed nodes)
 		for( i = 0 ; i < 3 * numNodes; i++ )
 		{
-/*		printf("%d\n", nboun);*/
-/*		printf("%d\n", numNodes*3);*/
 			if( xbounIndices[i] < 0 )
 			{
 		        missingDisplacementBCError();
@@ -446,7 +445,8 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc )
 {
     ITG i;
-    for ( i=0 ; i < numNodes ; i++ ) {
+    for ( i = 0 ; i < numNodes ; i++ ) 
+	{
 		int nodeIdx = nodes[i] - 1;
         // x-component
         xforc[xforcIndices[3 * i]] = forces[3 * i];

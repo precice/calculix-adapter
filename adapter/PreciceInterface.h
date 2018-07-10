@@ -8,7 +8,7 @@
  *********************************************************************************************/
 
 #ifndef PRECICEINTERFACE_H
-//#define PRECICEINTERFACE_H
+#define PRECICEINTERFACE_H
 
 #include <string.h>
 #include "ConfigReader.h"

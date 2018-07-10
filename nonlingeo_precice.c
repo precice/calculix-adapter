@@ -2684,8 +2684,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 	    islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
             inoel,nener,orname,network,ipobody,xbodyact,ibody);
-/*		printf("fn[173] (node 44, fx) after this iteration: %lf\n",fn[173]);*/
-/*    	printf("fn[173] (node 44, fx) after this iteration: %lf\n",simulationData.fn[173]);*/
+
 		simulationData.fn = fn;
         memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 

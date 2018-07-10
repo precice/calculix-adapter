@@ -37,7 +37,7 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  *  Displacements - dynamics data to be read/written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType {TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS};
+enum CouplingDataType { TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS };
 
 /**
  * @brief Returns node set name with internal CalculiX format
