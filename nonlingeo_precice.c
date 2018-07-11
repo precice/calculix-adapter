@@ -221,6 +221,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .xboun = xboun,
       .ntmat_ = ntmat_,
       .vold = vold,
+      .fn = fn,
       .cocon = cocon,
       .ncocon = ncocon,
       .mi = mi
@@ -1018,6 +1019,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       dtime=0.;
 
       memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+
       if(*ithermal!=2){
 	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stx[k];
@@ -1122,7 +1124,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       
       /* Adapter: Adjust solver time step */
       Precice_AdjustSolverTimestep( &simulationData );
-      
       /* Adapter read coupling data if available */
       Precice_ReadCouplingData( &simulationData );
       
@@ -1133,8 +1134,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  iinc++;
 	  jprint++;
 
-          /* store number of elements (important for implicit dynamic
-             contact */
+      /* store number of elements (important for implicit dynamic
+         contact */
 
 	  neini=*ne;
 	  
@@ -1230,7 +1231,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       reltime=theta+dtheta;
       time=reltime**tper;
       dtime=dtheta**tper;
-      
+
       FORTRAN(tempload,(xforcold,xforc,xforcact,iamforc,nforc,xloadold,xload,
 	      xloadact,iamload,nload,ibody,xbody,nbody,xbodyold,xbodyact,
 	      t1old,t1,t1act,iamt1,nk,amta,
@@ -2121,7 +2122,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
       }
       
-      /* implicit step (static or dynamic */
+      /* implicit step (static or dynamic) */
       
       if(*iexpl<=1){
 	  if((*nmethod==4)&&(*mortar<2)){
@@ -2322,7 +2323,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       
       NNEW(v,double,mt**nk);
       memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
-      
       NNEW(stx,double,6*mi[0]**ne);
       NNEW(fn,double,mt**nk);
       
@@ -2460,6 +2460,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv);
 
       memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+
       if(*ithermal!=2){
 	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stx[k];
@@ -2653,10 +2654,43 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     if( icutb == 0 )
     {
         /* Adapter: Write coupling data */
+
+    	NNEW(v,double,mt**nk);
+    	NNEW(fn,double,mt**nk);
+    	NNEW(stn,double,6**nk);
+	    NNEW(stx,double,6*mi[0]**ne);
+  
+    	memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+    	
+		// iout=-1 means that the displacements and temperatures are assumed to be known 			and used to calculate strains, stresses...., with no result output
+		iout=-1;
+    	icmd=3;// calculate only stress (not stiffness)
+
+    results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
+	    elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
+	    ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
+	    prestr,iprestr,filab,eme,emn,een,iperturb,
+	    f,fn,nactdof,&iout,qa,vold,b,nodeboun,
+	    ndirboun,xbounact,nboun,ipompc,
+	    nodempc,coefmpc,labmpc,nmpc,nmethod,cam,&neq[1],veold,accold,
+            &bet,&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
+	    xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
+            ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
+            xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
+            ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
+	    nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,
+            &reltime,&ne0,xforc,nforc,thicke,shcon,nshcon,
+            sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
+            mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
+	    islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
+            inoel,nener,orname,network,ipobody,xbodyact,ibody);
+
+		simulationData.fn = fn;
+        memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+
         Precice_WriteCouplingData( &simulationData );
         /* Adapter: Advance the coupling */
         Precice_Advance( &simulationData );
-        
         /* Adapter: If the coupling does not converge, read the checkpoint */
         if( Precice_IsReadCheckpointRequired() )
         {
@@ -2667,8 +2701,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             }
             Precice_FulfilledReadCheckpoint();
         }
+
+		SFREE(v);SFREE(stx);SFREE(fn);
     }
-      
     /* printing the energies (only for dynamic calculations) */
 
     if((icutb==0)&&(*nmethod==4)&&(*ithermal<2)){
@@ -2725,33 +2760,33 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       for(k=0;k<*nboun;++k){xbounact[k]=xbounini[k];}
       if((*ithermal==1)||(*ithermal>=3)){
-	for(k=0;k<*nk;++k){t1act[k]=t1ini[k];}
+	    for(k=0;k<*nk;++k){t1act[k]=t1ini[k];}
       }
       for(k=0;k<neq[1];++k){
-	  f[k]=fini[k];
+	    f[k]=fini[k];
       }
       if(*nmethod==4){
-	for(k=0;k<mt**nk;++k){
-	  veold[k]=veini[k];
-	  accold[k]=accini[k];
-	}
-	for(k=0;k<neq[1];++k){
-//	  f[k]=fini[k];
-	  fext[k]=fextini[k];
-	  cv[k]=cvini[k];
-	}
+	    for(k=0;k<mt**nk;++k){
+	      veold[k]=veini[k];
+	      accold[k]=accini[k];
+	    }
+	    for(k=0;k<neq[1];++k){
+//	      f[k]=fini[k];
+	      fext[k]=fextini[k];
+	      cv[k]=cvini[k];
+	    }
       }
       if(*ithermal!=2){
-	  for(k=0;k<6*mi[0]*ne0;++k){
-	      sti[k]=stiini[k];
-	      eme[k]=emeini[k];
-	  }
+	    for(k=0;k<6*mi[0]*ne0;++k){
+	        sti[k]=stiini[k];
+	        eme[k]=emeini[k];
+	    }
       }
       if(*nener==1)
 	  for(k=0;k<mi[0]*ne0;++k){ener[k]=enerini[k];}
 
       for(k=0;k<*nstate_*mi[0]*(ne0+maxprevcontel);++k){
-	  xstate[k]=xstateini[k];
+	    xstate[k]=xstateini[k];
       }	  
 
       qam[0]=qamold[0];
