@@ -29,7 +29,7 @@ Before installing the adapter, CalculiX itself must be downloaded and installed 
 It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building.
 
 ### Adapter
-The adapter makes use of an additional input configuration file in YAML format. Therefore, the YAML parser "yaml-cpp" needs to be downloaded and installed from GitHub: https://github.com/jbeder/yaml-cpp. The building procedure is described in a *README* file included in the package.
+The adapter makes use of an additional input configuration file in YAML format. Therefore, the YAML parser "yaml-cpp" needs to be installed. It can either be [built from the source code](https://github.com/jbeder/yaml-cpp) (see the included README file), or installed from the OS repositories. **Note:** If you use Boost 1.67 or newer, then you also need to install yaml-cpp 0.6 or newer.
 
 The adapter source code can be downloaded from https://github.com/precice/calculix-adapter. The adapter is installed via a *Makefile*. It contains five variables that need to be adapted to your system:
 
