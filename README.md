@@ -23,7 +23,7 @@ This adapter was developed for CalculiX version 2.13. Other versions may be comp
 
 ## Building the Adapter
 ### CalculiX
-Before installing the adapter, CalculiX itself must be downloaded and installed from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX.
+Before installing the adapter, CalculiX itself must be downloaded from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX. You can also find detailed instructions for installing SPOOLES and ARPACK and coupled CalculiX on the [wiki page](https://github.com/precice/calculix-adapter/wiki/Installation-instructions-for-CalculiX)
 
 ### preCICE
 It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building.
