@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                 */
-/*              Copyright (C) 1998-2017 Guido Dhondt                          */
+/*              Copyright (C) 1998-2018 Guido Dhondt                          */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -58,7 +58,7 @@ ITG *kon=NULL, *nodeboun=NULL, *ndirboun=NULL, *ipompc=NULL,
     *nplicon=NULL, *nplkcon=NULL, *inotr=NULL, *iponor=NULL, *knor=NULL,
     *ikforc=NULL, *ilforc=NULL, *iponoel=NULL, *inoel=NULL, *nshcon=NULL,
     *ncocon=NULL,*ibody=NULL,*ielprop=NULL,*islavsurf=NULL,
-    *ipoinpc=NULL,icfd=0,mt,nxstate,nload0,iload,*iuel=NULL;
+    *ipoinpc=NULL,mt,nxstate,nload0,iload,*iuel=NULL;
      
 ITG nk,ne,nboun,nmpc,nforc,nload,nprint=0,nset,nalset,nentries=17,
   nmethod,neq[3]={0,0,0},i,mpcfree=1,mei[4],j,nzl,nam,nbounold=0,
@@ -69,12 +69,12 @@ ITG nk,ne,nboun,nmpc,nforc,nload,nprint=0,nset,nalset,nentries=17,
   jout[2]={1,1},nlabel,nkon=0,idrct,jmax[2],iexpl,nevtot=0,ifacecount=0,
   iplas=0,npmat_=0,mi[3]={0,3,1},ntrans,mpcend=-1,namtot_=0,iumat=0,
   icascade=0,maxlenmpc,mpcinfo[4],ne1d=0,ne2d=0,infree[4]={0,0,0,0},
-  callfrommain,nflow=0,jin=0,irstrt=0,nener=0,jrstrt=0,nenerold,
-  nline,ipoinp[2*nentries],*inp=NULL,ntie,ntie_=0,mcs=0,nprop_=0,
+  callfrommain,nflow=0,jin=0,irstrt[2]={0,0},nener=0,jrstrt=0,nenerold,
+  nline,*ipoinp=NULL,*inp=NULL,ntie,ntie_=0,mcs=0,nprop_=0,
   nprop=0,itpamp=0,iviewfile,nkold,nevdamp_=0,npt_=0,cyclicsymmetry,
   nmethodl,iaxial=1,inext=0,icontact=0,nobject=0,nobject_=0,iit=-1,
   nzsprevstep[3],memmpcref_,mpcfreeref=-1,maxlenmpcref,*nodempcref=NULL,
-  *ikmpcref=NULL;
+  *ikmpcref=NULL,isens=0,namtot=0,nstam=0,ndamp=0,nef=0;
 
 ITG *meminset=NULL,*rmeminset=NULL;
 
@@ -90,9 +90,10 @@ double *co=NULL, *xboun=NULL, *coefmpc=NULL, *xforc=NULL,*clearini=NULL,
         *t1old=NULL, *eme=NULL, *plicon=NULL, *pslavsurf=NULL, *plkcon=NULL,
 	*xstate=NULL, *trab=NULL, *ener=NULL, *shcon=NULL, *cocon=NULL,
         *cs=NULL,*tietol=NULL,*fmpc=NULL,*prop=NULL,*t0g=NULL,*t1g=NULL,
-    *xbody=NULL,*xbodyold=NULL,*coefmpcref=NULL;
+        *xbody=NULL,*xbodyold=NULL,*coefmpcref=NULL,*dacon=NULL,*vel=NULL,
+        *velo=NULL,*veloo=NULL;
     
-double ctrl[40]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,-1.};
+double ctrl[56]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,-1.,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.5,0.5,20.5,1.5,1.5,0.001,0.1,100.5,60.5};
 
 double fei[3],*xmodal=NULL,timepar[5],
     alpha,ttime=0.,qaold[2]={0.,0.},physcon[13]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
@@ -103,7 +104,7 @@ double fei[3],*xmodal=NULL,timepar[5],
  */
 char preciceParticipantName[256] = "", configFilename[256] = "config.yml";
 int preciceUsed = 0;
-    
+
 #ifdef CALCULIX_MPI
 MPI_Init(&argc, &argv) ;
 MPI_Comm_rank(MPI_COMM_WORLD, &myid) ;
@@ -116,7 +117,7 @@ else{
     if(strcmp1(argv[i],"-i")==0) {
     strcpy(jobnamec,argv[i+1]);strcpy1(jobnamef,argv[i+1],132);jin++;break;}
     if(strcmp1(argv[i],"-v")==0) {
-	printf("\nThis is Version 2.13\n\n");
+	printf("\nThis is Version 2.15\n\n");
 	FORTRAN(stop,());
     }
   }
@@ -125,7 +126,7 @@ else{
   for(i=1;i<argc;i++){
     if(strcmp1(argv[i],"-o")==0) {
     strcpy(output,argv[i+1]);break;}
-      
+
     // Get preCICE participantName
     if(strcmp1(argv[i],"-precice-participant")==0) {
         strcpy(preciceParticipantName,argv[i+1]);
@@ -137,7 +138,8 @@ else{
     }
   }
 }
-setenv("CCX_JOBNAME_GETJOBNAME",jobnamec,1);
+//setenv("CCX_JOBNAME_GETJOBNAME",jobnamec,1);
+putenv("CCX_JOBNAME_GETJOBNAME=jobnamec");
 
 #ifdef BAM
 ITG lop=0,lrestart=0,kstep=1,kinc=1;
@@ -148,12 +150,12 @@ FORTRAN(uexternaldb,(&lop,&lrestart,time,&dtime,&kstep,&kinc));
 FORTRAN(openfile,(jobnamef,output));
 
 printf("\n************************************************************\n\n");
-printf("CalculiX Version 2.13, Copyright(C) 1998-2017 Guido Dhondt\n");
+printf("CalculiX Version 2.15, Copyright(C) 1998-2018 Guido Dhondt\n");
 printf("CalculiX comes with ABSOLUTELY NO WARRANTY. This is free\n");
 printf("software, and you are welcome to redistribute it under\n");
 printf("certain conditions, see gpl.htm\n\n");
 printf("************************************************************\n\n");
-printf("You are using an executable made on So 8. Okt 22:10:07 CEST 2017\n");
+printf("You are using an executable made on Sa 15. Dez 15:34:34 CET 2018\n");
 fflush(stdout);
 
 istep=0;
@@ -175,6 +177,8 @@ kode=0;
  isolver=3;
 #endif
 
+ NNEW(ipoinp,ITG,2*nentries);
+
 /* conservative estimate of the fields to be allocated */
 
  readinput(jobnamec,&inpc,&nline,&nset_,ipoinp,&inp,&ipoinpc,ithermal,&nuel_); 
@@ -187,10 +191,10 @@ NNEW(iuel,ITG,4*nuel_);
 FORTRAN(allocation,(&nload_,&nforc_,&nboun_,&nk_,&ne_,&nmpc_,&nset_,&nalset_,
    &nmat_,&ntmat_,&npmat_,&norien_,&nam_,&nprint_,mi,&ntrans_,
    set,meminset,rmeminset,&ncs_,&namtot_,&ncmat_,&memmpc_,&ne1d,
-   &ne2d,&nflow,jobnamec,&irstrt,ithermal,&nener,&nstate_,&istep,
+   &ne2d,&nflow,jobnamec,irstrt,ithermal,&nener,&nstate_,&istep,
    inpc,ipoinp,inp,&ntie_,&nbody_,&nprop_,ipoinpc,&nevdamp_,&npt_,&nslavs,
    &nkon_,&mcs,&mortar,&ifacecount,&nintpoint,infree,&nheading_,&nobject_,
-   iuel));
+   iuel,&iprestr,&nstam,&ndamp,&nef));
 
 SFREE(set);SFREE(meminset);SFREE(rmeminset);mt=mi[1]+1;
 NNEW(heading,char,66*nheading_);
@@ -206,7 +210,7 @@ nload=0;nbody=0;nforc=0;nboun=0;nk=0;nmpc=0;nam=0;
    - change the dimension of label in geomview.f
    - change the documentation (tex-file)  */
 
-nlabel=47;
+nlabel=48;
 
 while(istat>=0) {
 
@@ -219,7 +223,7 @@ while(istat>=0) {
   nzs[1]=nzs_;
 //  nprint=nprint_;
 
-  if((istep==0)||(irstrt<0)) {
+  if((istep==0)||(irstrt[0]<0)) {
     ne=ne_;
     nset=nset_;
     nalset=nalset_;
@@ -267,7 +271,7 @@ while(istat>=0) {
     NNEW(nodeboun,ITG,nboun_);
     NNEW(ndirboun,ITG,nboun_);
     NNEW(typeboun,char,nboun_+1);
-    if((istep == 0)||((irstrt<0)&&(nam_>0)))NNEW(iamboun,ITG,nboun_);
+    if((istep == 0)||((irstrt[0]<0)&&(nam_>0)))NNEW(iamboun,ITG,nboun_);
     NNEW(xboun,double,nboun_);
     NNEW(ikboun,ITG,nboun_);
     NNEW(ilboun,ITG,nboun_);
@@ -288,7 +292,7 @@ while(istat>=0) {
 
     NNEW(nodeforc,ITG,2*nforc_);
     NNEW(ndirforc,ITG,nforc_);
-    if((istep == 0)||((irstrt<0)&&(nam_>0)))NNEW(iamforc,ITG,nforc_);
+    if((istep == 0)||((irstrt[0]<0)&&(nam_>0)))NNEW(iamforc,ITG,nforc_);
     NNEW(idefforc,ITG,nforc_);
     NNEW(xforc,double,nforc_);
     NNEW(ikforc,ITG,nforc_);
@@ -297,7 +301,7 @@ while(istat>=0) {
     /* distributed facial loads */
 
     NNEW(nelemload,ITG,2*nload_);
-    if((istep == 0)||((irstrt<0)&&(nam_>0)))NNEW(iamload,ITG,2*nload_);
+    if((istep == 0)||((irstrt[0]<0)&&(nam_>0)))NNEW(iamload,ITG,2*nload_);
     NNEW(idefload,ITG,nload_);
     NNEW(sideload,char,20*nload_);
     NNEW(xload,double,2*nload_);
@@ -331,6 +335,10 @@ while(istat>=0) {
 
     NNEW(rhcon,double,2*ntmat_*nmat);
     NNEW(nrhcon,ITG,nmat);
+
+    /* damping */
+
+    if(ndamp>0){NNEW(dacon,double,nmat);}
 
     /* specific heat */
 
@@ -375,7 +383,7 @@ while(istat>=0) {
 
     /* material orientation */
 
-    if((istep == 0)||((irstrt<0)&&(norien>0))) {
+    if((istep == 0)||((irstrt[0]<0)&&(norien>0))) {
 	NNEW(orname,char,80*norien);
 	NNEW(orab,double,7*norien);
 	NNEW(ielorien,ITG,mi[2]*ne_);
@@ -383,20 +391,20 @@ while(istat>=0) {
 
     /* transformations */
 
-    if((istep == 0)||((irstrt<0)&&(ntrans>0))) {
+    if((istep == 0)||((irstrt[0]<0)&&(ntrans>0))) {
 	NNEW(trab,double,7*ntrans);
 	NNEW(inotr,ITG,2*nk_);
     }
 
     /* amplitude definitions */
 
-    if((istep == 0)||((irstrt<0)&&(nam_>0))) {
+    if((istep == 0)||((irstrt[0]<0)&&(nam_>0))) {
 	NNEW(amname,char,80*nam_);
 	NNEW(amta,double,2*namtot_);
 	NNEW(namta,ITG,3*nam_);
     }
 
-    if((istep == 0)||((irstrt<0)&&(ithermal[0]>0))) {
+    if((istep == 0)||((irstrt[0]<0)&&(ithermal[0]>0))) {
 	NNEW(t0,double,nk_);
 	NNEW(t1,double,nk_);
 	if((ne1d!=0)||(ne2d!=0)){
@@ -414,12 +422,18 @@ while(istat>=0) {
 	DMEMSET(t1,0,nk_,1.2357111319);
     }
     
-    if((istep == 0)||((irstrt<0)&&(ithermal[0]>0)&&(nam_>0)))NNEW(iamt1,ITG,nk_);
+    if((istep == 0)||((irstrt[0]<0)&&(ithermal[0]>0)&&(nam_>0)))NNEW(iamt1,ITG,nk_);
 
-    if((istep==0)||((irstrt<0)&&(iprestr>0)))NNEW(prestr,double,6*mi[0]*ne_);
+    if((istep==0)||((irstrt[0]<0)&&(iprestr>0)))NNEW(prestr,double,6*mi[0]*ne_);
 
     NNEW(vold,double,mt*nk_);
     NNEW(veold,double,mt*nk_);
+
+    /* CFD-results */
+
+    NNEW(vel,double,8*nef);
+    NNEW(velo,double,8*nef);
+    NNEW(veloo,double,8*nef);
 
     NNEW(ielmat,ITG,mi[2]*ne_);
 
@@ -439,6 +453,7 @@ while(istat>=0) {
 
     if(nobject_>0){
       NNEW(objectset,char,324*nobject_);
+      for(i=0;i<324*nobject_;i++){objectset[i]=' ';}
     }
     
     /* temporary fields for cyclic symmetry calculations */
@@ -538,7 +553,7 @@ while(istat>=0) {
 
   /* allocation of fields in the restart file */
 
-  if(irstrt<0){
+  if(irstrt[0]<0){
     NNEW(nodebounold,ITG,nboun_);
     NNEW(ndirbounold,ITG,nboun_);
     NNEW(xbounold,double,nboun_);
@@ -596,15 +611,16 @@ while(istat>=0) {
             cocon,ncocon,physcon,&nflow,
             ctrl,&maxlenmpc,&ne1d,&ne2d,&nener,vold,nodebounold,
             ndirbounold,xbounold,xforcold,xloadold,t1old,eme,
-            sti,ener,xstate,jobnamec,&irstrt,&ttime,
+            sti,ener,xstate,jobnamec,irstrt,&ttime,
             qaold,output,typeboun,inpc,ipoinp,inp,tieset,tietol,
             &ntie,fmpc,cbody,ibody,xbody,&nbody,&nbody_,xbodyold,&nam_,
-	    ielprop,&nprop,&nprop_,prop,&itpamp,&iviewfile,ipoinpc,&icfd,
+	    ielprop,&nprop,&nprop_,prop,&itpamp,&iviewfile,ipoinpc,
 	    &nslavs,t0g,t1g,&network,&cyclicsymmetry,idefforc,idefload,
 	    idefbody,&mortar,&ifacecount,islavsurf,pslavsurf,clearini,
 	    heading,&iaxial,&nobject,objectset,&nprint_,iuel,&nuel_,
 	    nodempcref,coefmpcref,ikmpcref,&memmpcref_,&mpcfreeref,
-	    &maxlenmpcref,&memmpc_));
+	    &maxlenmpcref,&memmpc_,&isens,&namtot,&nstam,dacon,vel,&nef,
+	    velo,veloo));
 
 #ifdef CALCULIX_EXTERNAL_BEHAVIOURS_SUPPORT
   for(i=0;i!=nmat;++i){
@@ -637,7 +653,7 @@ while(istat>=0) {
     tiedcontact(&ntie, tieset, &nset, set,istartset, iendset, ialset,
        lakon, ipkon, kon,tietol,&nmpc, &mpcfree, &memmpc_,
        &ipompc, &labmpc, &ikmpc, &ilmpc,&fmpc, &nodempc, &coefmpc,
-       ithermal, co, vold,&icfd,&nmpc_,mi,&nk,&istep,ikboun,&nboun,
+       ithermal, co, vold,&nef,&nmpc_,mi,&nk,&istep,ikboun,&nboun,
        kind1,kind2);
 
     /* reallocating space in the first step */
@@ -744,6 +760,8 @@ while(istat>=0) {
 
     RENEW(rhcon,double,2*ntmat_*nmat);
     RENEW(nrhcon,ITG,nmat);
+
+    if(ndamp>0){RENEW(dacon,double,nmat);}
 
     RENEW(shcon,double,4*ntmat_*nmat);
     RENEW(nshcon,ITG,nmat);
@@ -1083,8 +1101,8 @@ while(istat>=0) {
   /* nmethod=10: electromagnetic eigenvalue problems */
   /* nmethod=11: superelement creation or Green function calculation */
   /* nmethod=12: sensitivity analysis  */
-    
-    if(preciceUsed) {
+     
+if(preciceUsed) {
         int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
         int isDynamic = nmethod == 4;
         int isThermalAnalysis = ithermal[0] >= 2;
@@ -1096,29 +1114,30 @@ while(istat>=0) {
             mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
             mpcinfo[3]=maxlenmpc;
             
-            nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun,
-                              &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
-                              &nforc,&nelemload,&sideload,xload,&nload,
-                              nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc,
-                              &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
-                              alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
-                              t0,t1,t1old,ithermal,prestr,&iprestr,
-                              &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
-                              jout,timepar,eme,xbounold,xforcold,xloadold,
-                              veold,accold,amname,amta,namta,
-                              &nam,iamforc,&iamload,iamt1,&alpha,
-                              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
-                              &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
-                              &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
-                              mpcinfo,output,
-                              shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
-                              set,&nset,istartset,iendset,ialset,&nprint,prlab,
-                              prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
-                              cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
-                              &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
-                              ics,&nintpoint,&mortar,
-                              &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
-                              xmodal,&iaxial,&inext,&nprop,&network,orname,preciceParticipantName,configFilename);
+            nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun, 
+	     &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
+             &nforc,&nelemload,&sideload,xload,&nload, 
+	     nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc, 
+	     &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
+	     alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
+             t0,t1,t1old,ithermal,prestr,&iprestr, 
+	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
+	     jout,timepar,eme,xbounold,xforcold,xloadold,
+	     veold,accold,amname,amta,namta,
+	     &nam,iamforc,&iamload,iamt1,&alpha,
+             &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
+	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
+	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
+	     mpcinfo,output,
+             shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
+             set,&nset,istartset,iendset,ialset,&nprint,prlab,
+             prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
+             cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
+	     &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
+	     ics,&nintpoint,&mortar,
+	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
+	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
+	     velo,veloo,preciceParticipantName,configFilename);
             
             memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
             maxlenmpc=mpcinfo[3];
@@ -1133,29 +1152,30 @@ while(istat>=0) {
                 mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
                 mpcinfo[3]=maxlenmpc;
                 
-                nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun,
-                                  &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
-                                  &nforc,&nelemload,&sideload,xload,&nload,
-                                  nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc,
-                                  &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
-                                  alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
-                                  t0,t1,t1old,ithermal,prestr,&iprestr,
-                                  &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
-                                  jout,timepar,eme,xbounold,xforcold,xloadold,
-                                  veold,accold,amname,amta,namta,
-                                  &nam,iamforc,&iamload,iamt1,&alpha,
-                                  &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
-                                  &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
-                                  &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
-                                  mpcinfo,output,
-                                  shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
-                                  set,&nset,istartset,iendset,ialset,&nprint,prlab,
-                                  prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
-                                  cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
-                                  &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
-                                  ics,&nintpoint,&mortar,
-                                  &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
-                                  xmodal,&iaxial,&inext,&nprop,&network,orname,preciceParticipantName,configFilename);
+                nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun, 
+	     &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
+             &nforc,&nelemload,&sideload,xload,&nload, 
+	     nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc, 
+	     &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
+	     alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
+             t0,t1,t1old,ithermal,prestr,&iprestr, 
+	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
+	     jout,timepar,eme,xbounold,xforcold,xloadold,
+	     veold,accold,amname,amta,namta,
+	     &nam,iamforc,&iamload,iamt1,&alpha,
+             &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
+	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
+	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
+	     mpcinfo,output,
+             shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
+             set,&nset,istartset,iendset,ialset,&nprint,prlab,
+             prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
+             cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
+	     &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
+	     ics,&nintpoint,&mortar,
+	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
+	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
+	     velo,veloo,preciceParticipantName,configFilename);
                 
                 memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
                 maxlenmpc=mpcinfo[3];
@@ -1166,29 +1186,30 @@ while(istat>=0) {
                 mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
                 mpcinfo[3]=maxlenmpc;
                 
-                nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun,
-                                  &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
-                                  &nforc,&nelemload,&sideload,xload,&nload,
-                                  nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc,
-                                  &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
-                                  alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
-                                  t0,t1,t1old,ithermal,prestr,&iprestr,
-                                  &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
-                                  jout,timepar,eme,xbounold,xforcold,xloadold,
-                                  veold,accold,amname,amta,namta,
-                                  &nam,iamforc,&iamload,iamt1,&alpha,
-                                  &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
-                                  &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
-                                  &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
-                                  mpcinfo,output,
-                                  shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
-                                  set,&nset,istartset,iendset,ialset,&nprint,prlab,
-                                  prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
-                                  cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
-                                  &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
-                                  ics,&nintpoint,&mortar,
-                                  &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
-                                  xmodal,&iaxial,&inext,&nprop,&network,orname,preciceParticipantName,configFilename);
+                nonlingeo_precice(&co,&nk,&kon,&ipkon,&lakon,&ne,nodeboun,ndirboun,xboun,&nboun, 
+	     &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
+             &nforc,&nelemload,&sideload,xload,&nload, 
+	     nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc, 
+	     &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
+	     alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
+             t0,t1,t1old,ithermal,prestr,&iprestr, 
+	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
+	     jout,timepar,eme,xbounold,xforcold,xloadold,
+	     veold,accold,amname,amta,namta,
+	     &nam,iamforc,&iamload,iamt1,&alpha,
+             &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
+	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
+	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
+	     mpcinfo,output,
+             shcon,nshcon,cocon,ncocon,physcon,&nflow,ctrl,
+             set,&nset,istartset,iendset,ialset,&nprint,prlab,
+             prset,&nener,ikforc,ilforc,trab,inotr,&ntrans,&fmpc,
+             cbody,ibody,xbody,&nbody,xbodyold,ielprop,prop,
+	     &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
+	     ics,&nintpoint,&mortar,
+	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
+	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
+	     velo,veloo,preciceParticipantName,configFilename);
                 
                 memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
                 maxlenmpc=mpcinfo[3];
@@ -1272,7 +1293,8 @@ while(istat>=0) {
 	     &ntie,tieset,&itpamp,&iviewfile,jobnamec,tietol,&nslavs,thicke,
 	     ics,&nintpoint,&mortar,
 	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
-	     xmodal,&iaxial,&inext,&nprop,&network,orname);
+	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
+	     velo,veloo);
 
 	memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
         maxlenmpc=mpcinfo[3];
@@ -1299,7 +1321,7 @@ while(istat>=0) {
              alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
              t0,t1,t1old,ithermal,prestr,&iprestr,vold,iperturb,sti,nzs,
 	     &kode,mei,fei,filab,
-	     eme,&iexpl,plicon,nplicon,plkcon,nplkcon,
+	     &iexpl,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,matname,mi,&ncmat_,&nstate_,&ener,jobnamec,
              output,set,&nset,istartset,iendset,ialset,&nprint,prlab,
              prset,&nener,&isolver,trab,inotr,&ntrans,&ttime,fmpc,cbody,
@@ -1334,9 +1356,9 @@ while(istat>=0) {
              alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
              t0,t1,t1old,ithermal,prestr,&iprestr, 
 	     vold,iperturb,sti,nzs,&kode,mei,fei,filab,
-	     eme,&iexpl,plicon,nplicon,plkcon,nplkcon,
+	     &iexpl,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,matname,mi,ics,cs,&mpcend,&ncmat_,
-             &nstate_,&mcs,&nkon,&ener,jobnamec,output,set,&nset,istartset,
+             &nstate_,&mcs,&nkon,jobnamec,output,set,&nset,istartset,
              iendset,ialset,&nprint,prlab,
              prset,&nener,&isolver,trab,inotr,&ntrans,&ttime,fmpc,cbody,
              ibody,xbody,&nbody,&nevtot,thicke,&nslavs,tietol,mpcinfo,
@@ -1370,7 +1392,8 @@ while(istat>=0) {
 	     xstate,&npmat_,matname,mi,&ncmat_,&nstate_,ener,output,
              set,&nset,istartset,iendset,ialset,&nprint,prlab,
              prset,&nener,&isolver,trab,inotr,&ntrans,&ttime,fmpc,cbody,
-	     ibody,xbody,&nbody,thicke,jobnamec,&nmat,ielprop,prop,orname);
+	     ibody,xbody,&nbody,thicke,jobnamec,&nmat,ielprop,prop,
+	     orname,typeboun);
 #else
             printf("*ERROR in CalculiX: the ARPACK library is not linked\n\n");
             FORTRAN(stop,());
@@ -1433,7 +1456,8 @@ while(istat>=0) {
             istartset,iendset,ialset,&nprint,prlab,
             prset,&nener,trab,&inotr,&ntrans,&fmpc,cbody,ibody,xbody,&nbody,
 	    xbodyold,&istep,&isolver,jq,output,&mcs,&nkon,ics,cs,&mpcend,
-	    ctrl,ikforc,ilforc,thicke,&nmat,typeboun,ielprop,prop,orname);
+	    ctrl,ikforc,ilforc,thicke,&nmat,typeboun,ielprop,prop,orname,
+	    &ndamp,dacon);
     }
   else if((nmethod==6)||(nmethod==7))
     {
@@ -1457,7 +1481,8 @@ while(istat>=0) {
             prset,&nener,trab,&inotr,&ntrans,&fmpc,cbody,ibody,xbody,&nbody,
             xbodyold,&istep,&isolver,jq,output,&mcs,&nkon,&mpcend,ics,cs,
 	    &ntie,tieset,&idrct,jmax,ctrl,&itpamp,tietol,&nalset,
-	    ikforc,ilforc,thicke,jobnamef,mei,&nmat,ielprop,prop,orname);
+	    ikforc,ilforc,thicke,jobnamef,mei,&nmat,ielprop,prop,orname,
+            typeboun);
     }
   else if((nmethod>7)&&(nmethod<12)){
 
@@ -1468,7 +1493,7 @@ while(istat>=0) {
              ndirboun,xboun,&nboun, 
 	     &ipompc,&nodempc,&coefmpc,&labmpc,&nmpc,nodeforc,ndirforc,xforc,
              &nforc,&nelemload,&sideload,xload,&nload, 
-	     nactdof,&icol,jq,&irow,neq,&nzl,&nmethod,&ikmpc, 
+	     nactdof,&icol,&jq,&irow,neq,&nzl,&nmethod,&ikmpc, 
 	     &ilmpc,ikboun,ilboun,elcon,nelcon,rhcon,nrhcon,
 	     alcon,nalcon,alzero,&ielmat,&ielorien,&norien,orab,&ntmat_,
              t0,t1,t1old,ithermal,prestr,&iprestr, 
@@ -1612,13 +1637,13 @@ while(istat>=0) {
 
   if((nmethod == 4)&&(iperturb[0]>1)) SFREE(accold);
 
-  if(irstrt>0){
+  if(irstrt[0]>0){
     jrstrt++;
-    if(jrstrt>=irstrt){
+    if(jrstrt>=irstrt[0]){
       jrstrt=0;
       FORTRAN(restartwrite,(&istep,&nset,&nload,&nforc,&nboun,&nk,&ne,
         &nmpc,&nalset,&nmat,&ntmat_,&npmat_,&norien,&nam,&nprint, 
-        mi,&ntrans,&ncs_,&namtot_,&ncmat_,&mpcend,&maxlenmpc,&ne1d,
+        mi,&ntrans,&ncs_,&namtot,&ncmat_,&mpcend,&maxlenmpc,&ne1d,
         &ne2d,&nflow,&nlabel,&iplas,&nkon,ithermal,&nmethod,iperturb,
         &nstate_,&nener,set,istartset,iendset,ialset,co,kon,ipkon,
         lakon,nodeboun,ndirboun,iamboun,xboun,ikboun,ilboun,ipompc,
@@ -1635,7 +1660,7 @@ while(istat>=0) {
 	ibody,xbody,&nbody,xbodyold,&ttime,qaold,cs,&mcs,output,
 	physcon,ctrl,typeboun,fmpc,tieset,&ntie,tietol,&nslavs,t0g,t1g,
 	&nprop,ielprop,prop,&mortar,&nintpoint,&ifacecount,islavsurf,
-	pslavsurf,clearini));
+	pslavsurf,clearini,irstrt,vel,&nef,velo,veloo));
     }
   } 
 	  
@@ -1655,7 +1680,7 @@ fclose(f1);
 /* deallocating the fields
    this section is addressed immediately after leaving calinput */
 
-SFREE(ipoinpc);SFREE(inpc);SFREE(inp);
+SFREE(ipoinpc);SFREE(inpc);SFREE(inp);SFREE(ipoinp);
 
 if(ncs_>0) SFREE(ics);
 if(mcs>0) SFREE(cs);
@@ -1687,6 +1712,7 @@ SFREE(elcon);SFREE(nelcon);SFREE(rhcon);SFREE(nrhcon);SFREE(shcon);SFREE(nshcon)
 SFREE(cocon);SFREE(ncocon);SFREE(alcon);SFREE(nalcon);SFREE(alzero);
 if(nprop>0){SFREE(ielprop);SFREE(prop);}
 if(npmat_>0){SFREE(plicon);SFREE(nplicon);SFREE(plkcon);SFREE(nplkcon);}
+if(ndamp>0){SFREE(dacon);}
 
 if(norien>0){SFREE(orname);SFREE(orab);SFREE(ielorien);}
 if(ntrans>0){SFREE(trab);SFREE(inotr);}
@@ -1704,7 +1730,7 @@ SFREE(ielmat);SFREE(matname);
 
 SFREE(sti);SFREE(eme);SFREE(ener);SFREE(xstate);
 
-SFREE(vold);SFREE(veold);
+SFREE(vold);SFREE(veold);SFREE(vel);SFREE(velo);SFREE(veloo);
 
 if((ne1d!=0)||(ne2d!=0)){
     SFREE(iponor);SFREE(xnor);SFREE(knor);SFREE(thicke);SFREE(offset);
