@@ -41,6 +41,7 @@ The adapter source code can be downloaded from https://github.com/precice/calcul
 
 Furthermore, you might need to adapt the name of the ARPACK library `libarpack_INTEL.a` to your setting. 
 Type "make" for building and "make clean" before a rebuild from the top-level directory of the adapter code, in which the *Makefile* is located. After building successfully, the executable "ccx_preCICE" is located in the "bin" folder.
+You may want to add this to your `$PATH`, or move it to a searchable `bin` directory.
 
 By default, the Makefile uses the `mpifort` compiler wrapper. You may need to change this to `mpif90` or to whatever your system uses.
 
