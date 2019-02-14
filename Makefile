@@ -1,9 +1,9 @@
 # Specify the locations of: the original CCX source, SPOOLES and ARPACK
-CCX             = $(HOME)/Software/Calculix/Calculix/2.15/ccx_2.15/CalculiX/ccx_2.15/src
-SPOOLES         = $(HOME)/Software/Calculix/SPOOLES.2.2
-ARPACK          = $(HOME)/Software/Calculix/ARPACK
-PRECICE_ROOT    = $(HOME)/Software/preCICE
-YAML            = $(HOME)/Software/yaml-cpp
+CCX             = $(HOME)/PathTo/CalculiX/ccx_2.15/src
+SPOOLES         = $(HOME)/PathTo/SPOOLES
+ARPACK          = $(HOME)/PathTo/ARPACK
+PRECICE_ROOT    = $(HOME)/PathTo/preCICE
+YAML            = $(HOME)/PathTo/yaml-cpp
 
 # Specify where to store the generated .o files
 OBJDIR 		= bin
@@ -15,6 +15,7 @@ INCLUDES = \
 	-I$(CCX) \
 	-I$(SPOOLES) \
 	-I$(PRECICE_ROOT)/src \
+    	-I$(ARPACK) \
 	-I$(YAML)/include
 
 LIBS = \
@@ -28,7 +29,7 @@ LIBS = \
 	-lboost_program_options \
     	-lpython2.7 \
     	-lstdc++ \
-	-L/home/daviske/Software/petsc/x86_64/lib -lpetsc \
+	-L$(PETSC_DIR)/$(PETSC_ARCH)/lib -lpetsc \
     	-lmpi_cxx \
     	-L$(YAML)/build -lyaml-cpp \
         -lxml2
@@ -56,10 +57,9 @@ else
 endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
-#FC = mpifort
-#FC = mpif90
-#FC = gfortran
-F77 = f77
+FC = mpifort
+# FC = mpif90
+# FC = gfortran
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
