@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include "PreciceInterface.h"
 #include "ConfigReader.h"
-#include "precice/bindings/c/SolverInterfaceC.h"
+#include "precice/SolverInterfaceC.h"
 
 void Precice_Setup( char * configFilename, char * participantName, SimulationData * sim )
 {

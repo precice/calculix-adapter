@@ -30,7 +30,16 @@ This adapter was developed for CalculiX version 2.15. Other versions may be comp
 Before installing the adapter, CalculiX itself must be downloaded from http://www.dhondt.de. CalculiX consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX". The installation procedure of CalculiX is described in the *README* files of the respective packages. Moreover, SPOOLES and ARPACK need to be installed for CalculiX. The procedure is also explained in the *README* files of CalculiX. You can also find detailed instructions for installing SPOOLES and ARPACK and coupled CalculiX on the [wiki page](https://github.com/precice/calculix-adapter/wiki/Installation-instructions-for-CalculiX)
 
 ### preCICE
-It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Building.
+It is assumed that preCICE has been installed successfully beforehand. Concerning installation instructions for preCICE, have a look at the preCICE-wiki pages on GitHub: https://github.com/precice/precice/wiki/Get-preCICE.
+
+#### Notes on preCICE versions
+
+1. This adapter expects the preCICE C bindings in `[prefix]/include/precice/SolverInterfaceC.h` and gets this path from pkg-config. In other words, this assumes that preCICE (at least v1.4.0) has been built & installed with CMake (e.g. using a Debian package). In case you want to keep using preCICE built with SCons, see the changes invoked by [Pull Request #14](https://github.com/precice/calculix-adapter/pull/14).
+2. Starting from preCICE v1.2.0, the name (and the respective paths) of the language "adapters" have changed to language "bindings". This affects the line `#include "precice/bindings/c/SolverInterfaceC.h"` in `calculix-adapter/adapter/PreciceInterface.c`. To compile with older preCICE versions, change `bindings` to `adapters`.
+
+## Running Simulations
+### Layout of the YAML Configuration File
+The layout of the YAML configuration file, which should be named *config.yml* (default name), is explained by means of an example for an FSI simulation:
 
 ### Adapter
 The adapter makes use of an additional input configuration file in YAML format. Therefore, the YAML parser "yaml-cpp" needs to be installed. It can either be [built from the source code](https://github.com/jbeder/yaml-cpp) (see the included README file), or installed from the OS repositories. **Note:** If you use Boost 1.67 or newer, then you also need to install yaml-cpp 0.6 or newer.
@@ -48,12 +57,6 @@ Type "make" for building and "make clean" before a rebuild from the top-level di
 You may want to add this to your `$PATH`, or move it to a searchable `bin` directory.
 
 By default, the Makefile uses the `mpifort` compiler wrapper. You may need to change this to `mpif90` or to whatever your system uses.
-
-**Note:** Starting from preCICE v1.2, the name (and the respective paths) of the language "adapters" have changed to language "bindings". This affects the line `#include "precice/bindings/c/SolverInterfaceC.h"` in `calculix-adapter/adapter/PreciceInterface.c`. To compile with older preCICE versions, change `bindings` to `adapters`.
-
-## Running Simulations
-### Layout of the YAML Configuration File
-The layout of the YAML configuration file, which should be named *config.yml* (default name), is explained by means of an example for an FSI simulation:
 
 ```
 participants:
