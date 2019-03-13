@@ -124,7 +124,7 @@ For example:
 The input file for this example would be *flap.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
 ### Nearest-Projection Mapping
-In order to use nearest-projection (NP) mapping, a few additional changes are required. The first is that the interface surface file (.sur) must be added to the Calculix input file. An example of the addition to the input file is given below
+In order to use nearest-projection mapping, a few additional changes are required. The first is that the interface surface file (.sur) must be added to the Calculix input file. An example of the addition to the input file is given below
 
 ```
 *INCLUDE, INPUT=all.msh
