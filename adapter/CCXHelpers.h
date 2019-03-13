@@ -139,7 +139,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * 
  * @param co: CalculiX array with the coordinates of all the nodes
  * @param faceCenters: output array with the face centers of the input element faces
  */
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters );
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs );
 
 /**
  * @brief Gets a list of node IDs from a list of input element faces
@@ -306,6 +306,6 @@ void missingDfluxBCError();
 /**
  * @brief Terminate program if a FILM BC is not defined when using Robin BC for coupling (e.g. missing interface.flm file)
  */
-void missingFilmBCError();
+void missingFilmBCError(); 
 
 #endif // CCXHELPERS_H

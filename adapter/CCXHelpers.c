@@ -34,6 +34,7 @@ ITG getSetID( char * setName, char * set, ITG nset )
 	{
 		if( strcmp1( &set[i * nameLength], setName ) == 0 )
 		{
+			printf("Set ID Found \n");
 			return i;
 		}
 	}
@@ -41,11 +42,14 @@ ITG getSetID( char * setName, char * set, ITG nset )
 
 	if( setName[0] == (char) 'N' )
 	{
+		printf("Set ID NOT Found \n");
 		nodeSetNotFoundError( setName );
 	}
 	else if ( setName[0] == (char) 'S' )
 	{
+		printf("Set ID NOT Found \n");
 		faceSetNotFoundError( setName );
+		return -1;
 	}
 }
 
@@ -63,8 +67,10 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
 	{
 		elements[k] = ialset[i] / 10;
 		faces[k] = ialset[i] % 10;
+		//printf("faces[k] = %d \n", faces[k]);
 		k++;
 	}
+	//printf( "The elements in the getSurfaceElementsAndFaces are = %d\n", elements);
 }
 
 void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int mt, double * coordinates )
@@ -79,6 +85,7 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int
 		coordinates[i * 3 + 0] = co[nodeIdx * 3 + 0] + v[nodeIdx * mt + 1];
 		coordinates[i * 3 + 1] = co[nodeIdx * 3 + 1] + v[nodeIdx * mt + 2];
 		coordinates[i * 3 + 2] = co[nodeIdx * 3 + 2] + v[nodeIdx * mt + 3];
+
 	}
 }
 
@@ -163,7 +170,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * 
    }
  */
 
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters )
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs )
 {
 
 	// Assume all tetra elements -- maybe implement checking later...
@@ -187,6 +194,8 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 			ITG nodeNum = faceNodes[faceIdx][j];
 			ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
 			ITG nodeIdx = ( nodeID - 1 ) * 3;
+			// The nodeIdx is already multiplied by 3, therefore it must be divided by 3 ONLY when checking if coordinates match getNodeCoordinates
+
 			x += co[nodeIdx + 0];
 			y += co[nodeIdx + 1];
 			z += co[nodeIdx + 2];
@@ -197,6 +206,8 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 		faceCenters[i * 3 + 2] = z / 3;
 
 	}
+
+	
 }
 
 /*
@@ -211,7 +222,7 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 
 void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * tetraFaceNodes )
 {
-
+	//printf("Entering getTetraFaceNodes \n");
 	// Assume all tetra elements -- maybe implement checking later...
 
 	// Node numbering for faces of tetrahedral elements (in the documentation the number is + 1)
@@ -219,11 +230,15 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 	ITG i, j, k;
 
+	
+
 	for( i = 0 ; i < numElements ; i++ )
 	{
 
 		ITG faceIdx = faces[i] - 1;
 		ITG elementIdx = elements[i] - 1;
+
+		//printf("Element number is = %d \n", elementIdx);
 
 		for( j = 0 ; j < 3 ; j++ )
 		{
@@ -231,13 +246,18 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 			ITG nodeNum = faceNodes[faceIdx][j];
 			ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
 
+			//printf("nodeID number is = %d \n", nodeID);
+
 			for( k = 0 ; k < numNodes ; k++ )
 			{
+
 				if( nodes[k] == nodeID )
 				{
 					tetraFaceNodes[i*3 + j] = k;
+				//	printf("tetraFaceNodes = %d \n", tetraFaceNodes[i*3 + j]);
 				}
 			}
+			
 		}
 	}
 }
@@ -455,6 +475,8 @@ void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndic
 		xforc[xforcIndices[3 * i + 1]] = forces[3 * i + 1];
 		// z-component
 		xforc[xforcIndices[3 * i + 2]] = forces[3 * i + 2];
+
+		printf("Forces on the surface are %f, %f and %f \n", xforc[xforcIndices[3 * i]],xforc[xforcIndices[3 * i + 1]],xforc[xforcIndices[3 * i + 2]]);
 	}
 }
 
@@ -499,7 +521,7 @@ void nodeSetNotFoundError( char * setName )
 
 void faceSetNotFoundError( char * setName )
 {
-	printf( "ERROR: Set %s does not exist! Please check that the interface names are correct and that .sur file is provided.\n", setName );
+	printf( "ERROR: Set %s does not exist! Please check the following: \n 1) If nearest projection mapping is required, check that the interface names are correct and that .sur file is provided.\n 2) If nearest-projection mapping is not required, remove 'nodes-mesh-mesh-connectivity' and replace with 'nodes-mesh' in the config.yml file", setName );
 	fflush( stdout );
 	exit( EXIT_FAILURE );
 }

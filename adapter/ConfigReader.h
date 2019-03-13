@@ -14,6 +14,7 @@ typedef struct InterfaceConfig {
 	char * facesMeshName;
 	char * nodesMeshName;
 	char * patchName;
+	int map;
 	int numWriteData;
 	int numReadData;
 	char ** writeDataNames;
