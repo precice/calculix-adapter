@@ -24,6 +24,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
 	// Read the YAML config file
 	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
+	
 
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, preciceConfigFilename, 0, 1 );
@@ -333,9 +334,13 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->xbounIndices = NULL;
 	interface->xloadIndices = NULL;
 	interface->xforcIndices = NULL;
+	interface->mapNPType = NULL;
+	//Mapping Type
 
 	// The patch identifies the set used as interface in Calculix
 	interface->name = config->patchName;
+	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
+	interface->mapNPType = config->map;
 
 	// Nodes mesh
 	interface->nodesMeshID = -1;
@@ -358,7 +363,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, SimulationData * sim )
 {
-
+	//printf("Entering ConfigureFaceCentersMesh \n");
 	char * faceSetName = toFaceSetName( interface->name );
 	interface->faceSetID = getSetID( faceSetName, sim->set, sim->nset );
 	interface->numElements = getNumSetElements( interface->faceSetID, sim->istartset, sim->iendset );
@@ -368,20 +373,25 @@ void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, Si
 	getSurfaceElementsAndFaces( interface->faceSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs, interface->faceIDs );
 
 	interface->faceCenterCoordinates = malloc( interface->numElements * 3 * sizeof( double ) );
-	getTetraFaceCenters( interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates );
+	interface->preciceFaceCenterIDs = malloc( interface->numElements * 3 * sizeof( int ) );
+	getTetraFaceCenters( interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs );
+	
 
 	interface->faceCentersMeshID = precicec_getMeshID( interface->faceCentersMeshName );
 	interface->preciceFaceCenterIDs = malloc( interface->numElements * sizeof( int ) );
-	precicec_setMeshVertices( interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs );
+	
+	precicec_setMeshVertices( interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs); 
 
 }
 
 void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, SimulationData * sim )
 {
 
+	//printf("Entering configureNodesMesh \n");
 	char * nodeSetName = toNodeSetName( interface->name );
 	interface->nodeSetID = getSetID( nodeSetName, sim->set, sim->nset );
 	interface->numNodes = getNumSetElements( interface->nodeSetID, sim->istartset, sim->iendset );
+	//printf("numNodes = %d \n", interface->numNodes);
 	interface->nodeIDs = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
 
 	interface->nodeCoordinates = malloc( interface->numNodes * 3 * sizeof( double ) );
@@ -389,11 +399,34 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 
 	if( interface->nodesMeshName != NULL )
 	{
+		//printf("nodesMeshName is not null \n");
 		interface->nodesMeshID = precicec_getMeshID( interface->nodesMeshName );
-		interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
+		//interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
+		interface->preciceNodeIDs = malloc( interface->numNodes * 3 * sizeof( int ) );
+		//getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, sim->vold, sim->mt, interface->nodeCoordinates, interface->preciceNodeIDs );
 		precicec_setMeshVertices( interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs );
 	}
 
+	if (interface->mapNPType == 1) 
+	{
+			PreciceInterface_NodeConnectivity( interface, sim );
+	}
+}
+
+void PreciceInterface_NodeConnectivity( PreciceInterface * interface, SimulationData * sim )
+{
+	int numElements;
+	char * faceSetName = toFaceSetName( interface->name );
+	interface->faceSetID = getSetID( faceSetName, sim->set, sim->nset );
+	numElements = getNumSetElements( interface->faceSetID, sim->istartset, sim->iendset );
+	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
+	interface->elementIDs = malloc( numElements * sizeof( ITG ) );
+	interface->faceIDs = malloc( numElements * sizeof( ITG ) );
+	interface->faceCenterCoordinates = malloc( numElements * 3 * sizeof( double ) );
+	getSurfaceElementsAndFaces( interface->faceSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs, interface->faceIDs );
+	interface->numElements = numElements;
+	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
+	PreciceInterface_ConfigureTetraFaces( interface, sim );
 }
 
 void PreciceInterface_EnsureValidNodesMeshID( PreciceInterface * interface )
@@ -409,9 +442,9 @@ void PreciceInterface_EnsureValidNodesMeshID( PreciceInterface * interface )
 void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, SimulationData * sim )
 {
 	int i;
-
+	printf("Setting node connectivity for nearest projection mapping: \n");
 	if( interface->nodesMeshName != NULL )
-	{
+	{	
 		interface->triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
 		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->triangles );
 

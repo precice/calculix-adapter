@@ -23,12 +23,18 @@ void ConfigReader_Read( char * configFilename, char * participantName, char ** p
 	*numInterface = config["participants"][participantName]["interfaces"].size();
 	*interfaces = (InterfaceConfig*) malloc( sizeof( InterfaceConfig ) * *numInterface );
 
+	
+
 	for( int i = 0 ; i < *numInterface ; i++ )
 	{
-
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
 			( *interfaces )[i].nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
+		}
+		else if ( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"] ) 
+		{
+			( *interfaces )[i].nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].as<std::string>().c_str() );
+			( *interfaces )[i].map = 1;
 		}
 		else
 		{
@@ -44,15 +50,10 @@ void ConfigReader_Read( char * configFilename, char * participantName, char ** p
 			( *interfaces )[i].facesMeshName = NULL;
 		}
 
-		if( config["participants"][participantName]["interfaces"][i]["mesh"] )
-		{
-			( *interfaces )[i].facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
-		}
-
 		std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();
 		std::transform( patchName.begin(), patchName.end(), patchName.begin(), toupper );
 		( *interfaces )[i].patchName = strdup( patchName.c_str() );
-
+		
 		( *interfaces )[i].numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
 		( *interfaces )[i].numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
 
@@ -90,7 +91,7 @@ void ConfigReader_Read( char * configFilename, char * participantName, char ** p
 			{
 				( *interfaces )[i].readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
 			}
-		}
+		}	
 
 	}
 }

@@ -64,6 +64,9 @@ typedef struct PreciceInterface {
 	int * xbounIndices;
 	int * xforcIndices;
 
+	// Mapping type if nearest-projection mapping
+	int mapNPType;
+
 
 	enum CouplingDataType readData;
 	enum CouplingDataType writeData;
@@ -259,6 +262,14 @@ void PreciceInterface_EnsureValidNodesMeshID( PreciceInterface * interface );
  * @param sim
  */
 void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, SimulationData * sim );
+
+/**
+ * @brief Configures the node connectivity for nearest-projection mapping
+ * @param interface
+ * @param sim
+ * @param config
+ */
+void PreciceInterface_NodeConnectivity( PreciceInterface * interface, SimulationData * sim );
 
 /**
  * @brief Configures the coupling data for CHT or FSI
