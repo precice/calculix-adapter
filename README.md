@@ -123,6 +123,28 @@ For example:
 
 The input file for this example would be *flap.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
+### Nearest-Projection Mapping
+In order to use nearest-projection (NP) mapping, a few additional changes are required. The first is that the interface surface file (.sur) must be added to the Calculix input file. An example of the addition to the input file is given below
+
+```
+*INCLUDE, INPUT=all.msh
+*INCLUDE, INPUT=fix1.nam
+*INCLUDE, INPUT=fix2.nam
+*INCLUDE, INPUT=fix3.nam
+*INCLUDE, INPUT=interface.nam
+*INCLUDE, INPUT=interface.sur
+*MATERIAL, Name=EL
+```
+This surface file is generated during the mesh generation process. The second addition is to the config.yml. In order for the adapter to know that the surface mesh must be read, the line 
+```
+- nodes-mesh
+```
+must be changed to
+```
+- nodes-mesh-with-connectivity
+```
+Note that an error will only occur if nodes-mesh-with-connectivity is specified without a .sur file.
+
 ## References
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
 
