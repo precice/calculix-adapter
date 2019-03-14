@@ -21,27 +21,27 @@ OBJDIR = bin
 
 # Includes and libs
 INCLUDES = \
-    -I./ \
-    -I./adapter \
-    -I$(CCX) \
-    -I$(SPOOLES) \
-    $(PKGCONF_CFLAGS) \
-    -I$(ARPACK) \
-    -I$(YAML)/include
+	-I./ \
+	-I./adapter \
+	-I$(CCX) \
+	-I$(SPOOLES) \
+	$(PKGCONF_CFLAGS) \
+	-I$(ARPACK) \
+	-I$(YAML)/include
 
 LIBS = \
-    $(SPOOLES)/spooles.a \
-    $(PKGCONF_LIBS) \
-    -lstdc++ \
-    -L$(YAML)/build -lyaml-cpp \
+	$(SPOOLES)/spooles.a \
+	$(PKGCONF_LIBS) \
+	-lstdc++ \
+	-L$(YAML)/build -lyaml-cpp \
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-    LIBS += $(ARPACK)/libarpack_MAC.a
+	LIBS += $(ARPACK)/libarpack_MAC.a
 else
-    LIBS += $(ARPACK)/libarpack_INTEL.a
-    LIBS += -lpthread -lm -lc
+	LIBS += $(ARPACK)/libarpack_INTEL.a
+	LIBS += -lpthread -lm -lc
 endif
 
 # Compilers and flags
@@ -52,9 +52,9 @@ CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATR
 
 # OS-specific options
 ifeq ($(UNAME_S),Darwin)
-        CC = /usr/local/bin/gcc
+	CC = /usr/local/bin/gcc
 else
-        CC = mpicc
+	CC = mpicc
 endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
@@ -74,20 +74,20 @@ SCCXF += getflux.f getkdeltatemp.f
 
 # Source files in this folder and in the adapter directory
 $(OBJDIR)/%.o : %.c
-    $(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : %.f
-    $(FC) $(FFLAGS) -c $< -o $@
+	$(FC) $(FFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.c
-    $(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-    g++ -std=c++11 -I$(YAML)/include -c $< -o $@ $(LIBS)
-        #$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	g++ -std=c++11 -I$(YAML)/include -c $< -o $@ $(LIBS)
+	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
-    $(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : $(CCX)/%.f
-    $(FC) $(FFLAGS) -c $< -o $@
+	$(FC) $(FFLAGS) -c $< -o $@
 
 # Generate list of object files from the source files, prepend $(OBJDIR)
 OCCXF = $(SCCXF:%.f=$(OBJDIR)/%.o)
@@ -98,13 +98,13 @@ OCCXC += $(OBJDIR)/ConfigReader.o
 
 
 $(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.15.a
-    $(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.15.a $(LIBS)
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.15.a $(LIBS)
 
 $(OBJDIR)/ccx_2.15.a: $(OCCXF) $(OCCXC)
-    ar vr $@ $?
+	ar vr $@ $?
 
 $(OBJDIR):
-    mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR)
 
 clean:
-    rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.15.a $(OBJDIR)/ccx_preCICE
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.15.a $(OBJDIR)/ccx_preCICE
