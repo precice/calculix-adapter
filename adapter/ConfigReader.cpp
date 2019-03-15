@@ -49,6 +49,11 @@ void ConfigReader_Read( char * configFilename, char * participantName, char ** p
 		{
 			( *interfaces )[i].facesMeshName = NULL;
 		}
+		
+		if( config["participants"][participantName]["interfaces"][i]["mesh"] )
+		{
+			( *interfaces )[i].facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
+		}
 
 		std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();
 		std::transform( patchName.begin(), patchName.end(), patchName.begin(), toupper );
