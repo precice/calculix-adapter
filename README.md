@@ -16,6 +16,10 @@ This adapter was developed for CalculiX version 2.15. Other versions may be comp
         - [CalculiX](#calculix)
         - [preCICE](#precice)
         - [Adapter](#adapter)
+	- [Building on superMUC](#building-on-supermuc)
+	- [Module List](#module-list)
+	- [Makefile Changes](#makefile-changes)
+	- [Adapter Installation](#adapter-installation)
 	- [Running Simulations](#running-simulations)
 		- [Layout of the YAML Configuration File](#layout-of-the-yaml-configuration-file)
         - [CalculiX Case Input File](#calculix-case-input-file)
@@ -63,11 +67,26 @@ To install SPOOLES, some changes are necessary.
 1. makefile ~/SPOOLES.2.2/Tree/src/makeGlobalLib contains an error: file "drawTree.c" does not exist and should be replaced by "tree.c".
 2. Changes to the Make.inc file must be done according to the CalculiX install [Manual](http://www.dhondt.de/INST_CCX_2_8_MAC_02_10_2015.pdf), page 16 and 17.
 
-In installing up ARPACK for installation, the HOME directory needs to be specified in the ARmake.inc file. No changes are necessary for the Makefile. To install ARPACK, run "make lib" in the ARPACk directory.
+In installing ARPACK, the HOME directory needs to be specified in the "ARmake.inc" file. No changes are necessary for the Makefile. To install ARPACK, run "make lib" in the ARPACk directory.
 
 Any problems with the installation of SPOOLES and ARPACK can be searched in the installation [instructions](http://www.dhondt.de/INST_CCX_2_8_MAC_02_10_2015.pdf).
 
-### Modules
+To install yaml-cpp, run in the source directory:
+
+```
+mkdir build
+cd build
+cmake ..
+
+make
+make install
+```
+yaml-cpp 0.5.3 is known to work. Newer version may also work. yaml-cpp can be downloaded from 
+```
+wget https://github.com/jbeder/yaml-cpp/archive/release-0.5.3.tar.gz -O - | tar xz 
+```
+
+### Module List
 The following modules available in superMUC are known to work for the CalculiX adapter installation. 
 1. python/3.5_anaconda_nompi
 2. scons/3.0.1  
@@ -77,15 +96,15 @@ The following modules available in superMUC are known to work for the CalculiX a
 6. gcc/6
 7. mpi.intel/2017
 
-### Makefile changes
-Line 61: "FC = mpifort" can be commented out and replaced with "FC = gfortran". 
+### Makefile Changes
 The paths to the CalculiX CCX, SPOOLES, ARPACK and YAML must be specified.
+Line 61: "FC = mpifort" can be commented out and replaced with "FC = gfortran". 
 
 The path to the pkgconfig file needs to be stated. The command "export PKG_CONFIG_PATH=/path/to/lib/pkgconfig" must be provided. It is easier to install preCICE with the "CMAKE_INSTALL_PREFIX" set to the path where preCICE is installed.
 
 ### Adapter Installation
 
-To install the adapter, the command with the following configurations works: 
+To install the adapter, the command with the following configurations is known to work: 
 ```
 cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/path -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 ```
