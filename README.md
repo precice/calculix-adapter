@@ -201,7 +201,7 @@ must be changed to
 ```
 - nodes-mesh-with-connectivity
 ```
-Note that an error will only occur if nodes-mesh-with-connectivity is specified without a .sur file.
+Note that an error will only occur if nodes-mesh-with-connectivity is specified without a .sur file. The calculix-adapter with nearest-projection mapping only supports tetrahedral elements (C3D10) as preCICE only works with surface triangles for nearest-projection mapping.
 
 ## References
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
