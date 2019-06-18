@@ -2632,6 +2632,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     	NNEW(fn,double,mt**nk);
     	NNEW(stn,double,6**nk);
 	    NNEW(stx,double,6*mi[0]**ne);
+    	NNEW(inum,ITG,*nk);
   
     	memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
     	
@@ -2675,7 +2676,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             Precice_FulfilledReadCheckpoint();
         }
 
-		SFREE(v);SFREE(stx);SFREE(fn);
+		SFREE(v);SFREE(stn);SFREE(stx);SFREE(fn);SFREE(inum);
     }
    
     /* printing the energies (only for dynamic calculations) */
