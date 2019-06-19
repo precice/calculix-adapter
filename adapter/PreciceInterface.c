@@ -190,12 +190,12 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				case FORCES:
 				// Read and set forces as concentrated loads (Neumann BC)
 				precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xforcIndices, sim->xforc);
+				setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
 				break;
 			case DISPLACEMENTS:
 				// Read and set displacements as single point constraints (Dirichlet BC)
 				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
+				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xbounIndices, sim->xboun );
 				break;
 			case DISPLACEMENTDELTAS:
 				printf( "DisplacementDeltas cannot be used as read data\n" );
@@ -277,15 +277,15 @@ void Precice_WriteCouplingData( SimulationData * sim )
 				free( T );
 				break;
 			case DISPLACEMENTS:
-				getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
+				getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				break;
 			case DISPLACEMENTDELTAS:
-				getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
+				getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				break;
 			case FORCES:
-				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
+				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
 				precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 				break;
 			}
@@ -319,6 +319,8 @@ void Precice_FreeData( SimulationData * sim )
 
 void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config )
 {
+
+	interface->dim = precicec_getDimensions();
 
 	// Initialize pointers as NULL
 	interface->elementIDs = NULL;
@@ -394,15 +396,15 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	//printf("numNodes = %d \n", interface->numNodes);
 	interface->nodeIDs = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
 
-	interface->nodeCoordinates = malloc( interface->numNodes * 3 * sizeof( double ) );
-	getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
+	interface->nodeCoordinates = malloc( interface->numNodes * interface->dim * sizeof( double ) );
+	getNodeCoordinates( interface->nodeIDs, interface->numNodes, interface->dim, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
 	if( interface->nodesMeshName != NULL )
 	{
 		//printf("nodesMeshName is not null \n");
 		interface->nodesMeshID = precicec_getMeshID( interface->nodesMeshName );
-		//interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
-		interface->preciceNodeIDs = malloc( interface->numNodes * 3 * sizeof( int ) );
+		interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
+		//interface->preciceNodeIDs = malloc( interface->numNodes * 3 * sizeof( int ) );
 		//getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, sim->vold, sim->mt, interface->nodeCoordinates, interface->preciceNodeIDs );
 		precicec_setMeshVertices( interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs );
 	}

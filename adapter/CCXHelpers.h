@@ -86,12 +86,13 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param coordinates: output array with the coordinates of the input nodes
  */
-void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int mt, double * coordinates );
+void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double * v, int mt, double * coordinates );
 
 /**
  * @brief getNodeTemperatures
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes
+ * @param dim: coupling dimension
  * @param v: CalculiX array containing the temperatures
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param temperatures: output array with the temperatures of the input nodes
@@ -106,28 +107,30 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
  * @param mt: CalculiX variable describing the number of force variables in fn
  * @param forces: output array with the forces of the input nodes
  */
-void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * forces );
+void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, double * forces );
 
 /**
  * @brief getNodeDisplacements
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes
+ * @param dim: coupling dimension
  * @param v: CalculiX solution array containing the displacements
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacements: output array with the displacements in preCICE-conform order of the input nodes
  */
-void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, ITG mt, double * displacements );
+void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, ITG mt, double * displacements );
 
 /**
  * @brief getNodeDisplacementDeltas
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes
+ * @param dim: coupling dimension
  * @param v: CalculiX solution array containing the displacements
  * @param v_init: Calculix solution array containing the displacements of the last converged step
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacementDeltas: output array with the displacementDeltas in preCICE-conform order of the input nodes
  */
-void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * v_init, int mt, double * displacementDeltas );
+void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, int mt, double * displacementDeltas );
 
 /**
  * @brief Computes the center of one of the faces of a tetrahedral element
@@ -241,19 +244,21 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
  * @param nodes: list of node IDs
  * @param forces: force values to apply
  * @param numNodes: number of nodes
+ * @param dim: coupling dimension
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc );
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
  * @param displacements: displacement values to apply
  * @param numNodes: number of nodes
+ * @param dim: coupling dimension
  * @param xbounIndices: indices of the xboun array to modify
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
-void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun );
+void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * xbounIndices, double * xboun );
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod

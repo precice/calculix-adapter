@@ -73,19 +73,16 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
 	//printf( "The elements in the getSurfaceElementsAndFaces are = %d\n", elements);
 }
 
-void getNodeCoordinates( ITG * nodes, ITG numNodes, double * co, double * v, int mt, double * coordinates )
+void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double * v, int mt, double * coordinates )
 {
 
-	ITG i;
+	ITG i, j;
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
 		//The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
-		coordinates[i * 3 + 0] = co[nodeIdx * 3 + 0] + v[nodeIdx * mt + 1];
-		coordinates[i * 3 + 1] = co[nodeIdx * 3 + 1] + v[nodeIdx * mt + 2];
-		coordinates[i * 3 + 2] = co[nodeIdx * 3 + 2] + v[nodeIdx * mt + 3];
-
+		for( j = 0 ; j < dim ; j++ ) coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
 	}
 }
 
@@ -102,57 +99,42 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
 	}
 }
 
-void getNodeForces( ITG * nodes, ITG numNodes, double * fn, ITG mt, double * forces )
+void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, double * forces )
 {
-	ITG i;
+	ITG i, j;
 
 	for ( i = 0 ; i < numNodes ; i++ ) 
 	{
 		int nodeIdx = nodes[i] - 1;
-		//x-component of the forces
-		forces[3 * i] = fn[nodeIdx * mt + 1];
-		//y-component of the forces
-		forces[3 * i + 1] = fn[nodeIdx * mt + 2];
-		//z-component of the forces
-		forces[3 * i + 2] = fn[nodeIdx * mt + 3];
+		for( j = 0 ; j < dim ; j++ ) forces[dim * i + j] = fn[nodeIdx * mt + j + 1];
 	}
 }
 
-void getNodeDisplacements( ITG * nodes, ITG numNodes, double * v, int mt, double * displacements )
+void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, int mt, double * displacements )
 {
 
 	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
 	// where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
-	ITG i;
+	ITG i, j;
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		//x-component of the displacements
-		displacements[3 * i] = v[nodeIdx * mt + 1];
-		//y-component of the displacements
-		displacements[3 * i + 1] = v[nodeIdx * mt + 2];
-		//z-component of the displacements
-		displacements[3 * i + 2] = v[nodeIdx * mt + 3];
+		for( j = 0 ; j < dim ; j++ ) displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
 	}
 }
 
-void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, double * v, double * v_init, int mt, double * displacementDeltas )
+void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, int mt, double * displacementDeltas )
 {
 
 	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
 	// where 0 index corresponds to temp; 1, 2, 3 indices correspond to the displacements, respectively
-	ITG i;
+	ITG i, j;
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		//x-component of the displacementDeltas
-		displacementDeltas[3 * i] = v[nodeIdx * mt + 1] - v_init[nodeIdx * mt + 1];
-		//y-component of the displacements
-		displacementDeltas[3 * i + 1] = v[nodeIdx * mt + 2] - v_init[nodeIdx * mt + 2];
-		//z-component of the displacements
-		displacementDeltas[3 * i + 2] = v[nodeIdx * mt + 3] - v_init[nodeIdx * mt + 3];
+		for( j = 0 ; j < dim ; j++ ) displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
 	}
 }
 
@@ -462,36 +444,26 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 	}
 }
 
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int * xforcIndices, double * xforc )
+void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc )
 {
-	ITG i;
+	ITG i, j;
 
 	for ( i = 0 ; i < numNodes ; i++ ) 
 	{
 		int nodeIdx = nodes[i] - 1;
-		// x-component
-		xforc[xforcIndices[3 * i]] = forces[3 * i];
-		// y-component
-		xforc[xforcIndices[3 * i + 1]] = forces[3 * i + 1];
-		// z-component
-		xforc[xforcIndices[3 * i + 2]] = forces[3 * i + 2];
+		for( j = 0 ; j < dim ; j++ ) xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
 
 		printf("Forces on the surface are %f, %f and %f \n", xforc[xforcIndices[3 * i]],xforc[xforcIndices[3 * i + 1]],xforc[xforcIndices[3 * i + 2]]);
 	}
 }
 
-void setNodeDisplacements( double * displacements, ITG numNodes, int * xbounIndices, double * xboun )
+void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * xbounIndices, double * xboun )
 {
-	ITG i;
+	ITG i, j;
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
-		// x-component
-		xboun[xbounIndices[3 * i]] = displacements[3 * i];
-		// y-component
-		xboun[xbounIndices[3 * i + 1]] = displacements[3 * i + 1];
-		// z-component
-		xboun[xbounIndices[3 * i + 2]] = displacements[3 * i + 2];
+		for( j = 0 ; j < dim ; j++ ) xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
 	}
 }
 
