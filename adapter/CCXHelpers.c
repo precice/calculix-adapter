@@ -67,10 +67,8 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
 	{
 		elements[k] = ialset[i] / 10;
 		faces[k] = ialset[i] % 10;
-		//printf("faces[k] = %d \n", faces[k]);
 		k++;
 	}
-	//printf( "The elements in the getSurfaceElementsAndFaces are = %d\n", elements);
 }
 
 void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double * v, int mt, double * coordinates )
@@ -204,7 +202,6 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 
 void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * tetraFaceNodes )
 {
-	//printf("Entering getTetraFaceNodes \n");
 	// Assume all tetra elements -- maybe implement checking later...
 
 	// Node numbering for faces of tetrahedral elements (in the documentation the number is + 1)
@@ -220,15 +217,11 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 		ITG faceIdx = faces[i] - 1;
 		ITG elementIdx = elements[i] - 1;
 
-		//printf("Element number is = %d \n", elementIdx);
-
 		for( j = 0 ; j < 3 ; j++ )
 		{
 
 			ITG nodeNum = faceNodes[faceIdx][j];
 			ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
-
-			//printf("nodeID number is = %d \n", nodeID);
 
 			for( k = 0 ; k < numNodes ; k++ )
 			{
@@ -236,7 +229,6 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 				if( nodes[k] == nodeID )
 				{
 					tetraFaceNodes[i*3 + j] = k;
-				//	printf("tetraFaceNodes = %d \n", tetraFaceNodes[i*3 + j]);
 				}
 			}
 			
@@ -452,8 +444,6 @@ void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * x
 	{
 		int nodeIdx = nodes[i] - 1;
 		for( j = 0 ; j < dim ; j++ ) xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
-
-		printf("Forces on the surface are %f, %f and %f \n", xforc[xforcIndices[3 * i]],xforc[xforcIndices[3 * i + 1]],xforc[xforcIndices[3 * i + 2]]);
 	}
 }
 
