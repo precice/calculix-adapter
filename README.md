@@ -122,8 +122,8 @@ participants:
         interfaces:
         - nodes-mesh: Calculix_Mesh
           patch: interface
-          read-data: [Forces0]
-          write-data: [DisplacementDeltas0]
+          read-data: [Forces]
+          write-data: [DisplacementDeltas]
 
 precice-config-file: ../precice-config.xml
 ```
@@ -132,7 +132,7 @@ The adapter allows to use several participants in one simulation (e.g. several i
 One participant may have several FSI interfaces. Note that each interface specification starts with a dash.  
 For FSI simulations the mesh type of an interface is always "nodes-mesh", i.e. the mesh is defined node-wise, not element-wise. The name of this mesh, "Calculix_Mesh", must match the mesh name given in the preCICE configuration file.  
 For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (here: "interface").  
-In the current FSI example, the adapter reads forces from preCICE and feeds displacement deltas (not absolute displacements, but the change of the displacements relative to the last time step) to preCICE. This is defined with the keywords "read-data" and "write-data", respectively. The names (here: "Forces0" and "DisplacementDeltas0") again need to match the specifications in the preCICE configuration file. Note that the "0" appending the data names is not optional. Since it is possible to define several interfaces, the data specifications need to be numbered starting from zero (e.g. Forces0, Forces1, Forces2, ...). In the current example, the coupled fluid solver expects displacement deltas instead of displacements. However, the adapter is capable of writing either type. Just use "write-data: [Displacements0]" for absolute displacements rather than relative changes being transferred in each time step. Note that the square brackets imply that several read- and write-data types can be used on a single interface. This is not needed for FSI simulations (but for CHT simulations). Lastly, the "precice-config-file" needs to be identified including its location. In this example, the file is called *precice-config.xml* and is located one directory above the folder, in which the YAML configuration file lies.
+In the current FSI example, the adapter reads forces from preCICE and feeds displacement deltas (not absolute displacements, but the change of the displacements relative to the last time step) to preCICE. This is defined with the keywords "read-data" and "write-data", respectively. The names (here: "Forces" and "DisplacementDeltas") again need to match the specifications in the preCICE configuration file. In the current example, the coupled fluid solver expects displacement deltas instead of displacements. However, the adapter is capable of writing either type. Just use "write-data: [Displacements]" for absolute displacements rather than relative changes being transferred in each time step. Note that the square brackets imply that several read- and write-data types can be used on a single interface. This is not needed for FSI simulations (but for CHT simulations). Lastly, the "precice-config-file" needs to be identified including its location. In this example, the file is called *precice-config.xml* and is located one directory above the folder, in which the YAML configuration file lies.
 
 ### CalculiX Case Input File
 An exemplary CalculiX case input file may look like the following:

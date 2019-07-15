@@ -167,45 +167,45 @@ void Precice_ReadCouplingData( SimulationData * sim )
 	{
 		for( i = 0 ; i < numInterfaces ; i++ )
 		{
-		for( j = 0 ; j < interfaces[i]->numReadData ; j++ )
-		{
-			switch( interfaces[i]->readData[j] )
+			for( j = 0 ; j < interfaces[i]->numReadData ; j++ )
 			{
-			case TEMPERATURE:
-				// Read and set temperature BC
-				precicec_readBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
-				setNodeTemperatures( interfaces[i]->nodeScalarData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
-				break;
-			case HEAT_FLUX:
-				// Read and set heat flux BC
-				precicec_readBlockScalarData( interfaces[i]->fluxDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
-				setFaceFluxes( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
-				break;
-			case CONVECTION:
-				// Read and set sink temperature in convective film BC
-				precicec_readBlockScalarData( interfaces[i]->kDeltaTemperatureReadDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
-				setFaceSinkTemperatures( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
-				// Read and set heat transfer coefficient in convective film BC
-				precicec_readBlockScalarData( interfaces[i]->kDeltaReadDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
-				setFaceHeatTransferCoefficients( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
-				break;
-				case FORCES:
-				// Read and set forces as concentrated loads (Neumann BC)
-				precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
-				break;
-			case DISPLACEMENTS:
-				// Read and set displacements as single point constraints (Dirichlet BC)
-				precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xbounIndices, sim->xboun );
-				break;
-			case DISPLACEMENTDELTAS:
-				printf( "DisplacementDeltas cannot be used as read data\n" );
-				fflush( stdout );
-				exit( EXIT_FAILURE );
-				break;
+				switch( interfaces[i]->readData[j] )
+				{
+				case TEMPERATURE:
+					// Read and set temperature BC
+					precicec_readBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
+					setNodeTemperatures( interfaces[i]->nodeScalarData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
+					break;
+				case HEAT_FLUX:
+					// Read and set heat flux BC
+					precicec_readBlockScalarData( interfaces[i]->fluxDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
+					setFaceFluxes( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
+					break;
+				case CONVECTION:
+					// Read and set sink temperature in convective film BC
+					precicec_readBlockScalarData( interfaces[i]->kDeltaTemperatureReadDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
+					setFaceSinkTemperatures( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
+					// Read and set heat transfer coefficient in convective film BC
+					precicec_readBlockScalarData( interfaces[i]->kDeltaReadDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
+					setFaceHeatTransferCoefficients( interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload );
+					break;
+                                case FORCES:
+					// Read and set forces as concentrated loads (Neumann BC)
+					precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
+					break;
+				case DISPLACEMENTS:
+					// Read and set displacements as single point constraints (Dirichlet BC)
+					precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xbounIndices, sim->xboun );
+					break;
+				case DISPLACEMENTDELTAS:
+					printf( "DisplacementDeltas cannot be used as read data\n" );
+					fflush( stdout );
+					exit( EXIT_FAILURE );
+					break;
+				}
 			}
-		}
 		}
 	}
 }
@@ -225,76 +225,76 @@ void Precice_WriteCouplingData( SimulationData * sim )
 	{
 		for( i = 0 ; i < numInterfaces ; i++ )
 		{
-		for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
-		{
-			switch( interfaces[i]->writeData[j] )
+			for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
 			{
-			case TEMPERATURE:
-				getNodeTemperatures( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeScalarData );
-				precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
-				break;
-			case HEAT_FLUX:
-				iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
-				FORTRAN( getflux, ( sim->co,
-									sim->ntmat_,
-									sim->vold,
-									sim->cocon,
-									sim->ncocon,
-									&iset,
-									sim->istartset,
-									sim->iendset,
-									sim->ipkon,
-									*sim->lakon,
-									sim->kon,
-									sim->ialset,
-									sim->ielmat,
-									sim->mi,
-									interfaces[i]->faceCenterData
-									)
-						 );
-				precicec_writeBlockScalarData( interfaces[i]->fluxDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
-				break;
-			case CONVECTION:
-				iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
-				double * myKDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
-				double * T = malloc( interfaces[i]->numElements * sizeof( double ) );
-				FORTRAN( getkdeltatemp, ( sim->co,
-										  sim->ntmat_,
-										  sim->vold,
-										  sim->cocon,
-										  sim->ncocon,
-										  &iset,
-										  sim->istartset,
-										  sim->iendset,
-										  sim->ipkon,
-										  *sim->lakon,
-										  sim->kon,
-										  sim->ialset,
-										  sim->ielmat,
-										  sim->mi,
-										  myKDelta,
-										  T
-										  )
-						 );
-				precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, myKDelta );
-				precicec_writeBlockScalarData( interfaces[i]->kDeltaTemperatureWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, T );
-				free( myKDelta );
-				free( T );
-				break;
-			case DISPLACEMENTS:
-				getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
-				precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				break;
-			case DISPLACEMENTDELTAS:
-				getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
-				precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				break;
-			case FORCES:
-				getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
-				precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-				break;
+				switch( interfaces[i]->writeData[j] )
+				{
+				case TEMPERATURE:
+					getNodeTemperatures( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeScalarData );
+					precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
+					break;
+				case HEAT_FLUX:
+					iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
+					FORTRAN( getflux, ( sim->co,
+										sim->ntmat_,
+										sim->vold,
+										sim->cocon,
+										sim->ncocon,
+										&iset,
+										sim->istartset,
+										sim->iendset,
+										sim->ipkon,
+										*sim->lakon,
+										sim->kon,
+										sim->ialset,
+										sim->ielmat,
+										sim->mi,
+										interfaces[i]->faceCenterData
+										)
+							 );
+					precicec_writeBlockScalarData( interfaces[i]->fluxDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData );
+					break;
+				case CONVECTION:
+					iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
+					double * myKDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
+					double * T = malloc( interfaces[i]->numElements * sizeof( double ) );
+					FORTRAN( getkdeltatemp, ( sim->co,
+											  sim->ntmat_,
+											  sim->vold,
+											  sim->cocon,
+											  sim->ncocon,
+											  &iset,
+											  sim->istartset,
+											  sim->iendset,
+											  sim->ipkon,
+											  *sim->lakon,
+											  sim->kon,
+											  sim->ialset,
+											  sim->ielmat,
+											  sim->mi,
+											  myKDelta,
+											  T
+											  )
+							 );
+					precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, myKDelta );
+					precicec_writeBlockScalarData( interfaces[i]->kDeltaTemperatureWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, T );
+					free( myKDelta );
+					free( T );
+					break;
+				case DISPLACEMENTS:
+					getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
+					precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					break;
+				case DISPLACEMENTDELTAS:
+					getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
+					precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					break;
+				case FORCES:
+					getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
+					precicec_writeBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					break;
+				}
 			}
-		}
 		}
 
 		if( precicec_isActionRequired( "write-initial-data" ) )
