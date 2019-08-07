@@ -486,7 +486,6 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->temperatureDataID = precicec_getDataID( "Temperature", interface->nodesMeshID );
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, TEMPERATURE );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
-			break;
 		}
 		else if ( strcmp( config->readDataNames[i], "Heat-Flux" ) == 0 )
 		{
@@ -495,7 +494,6 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			getXloadIndices( "DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices );
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
-			break;
 		}
 		else if ( strcmp1( config->readDataNames[i], "Sink-Temperature-" ) == 0 )
 		{
@@ -518,7 +516,6 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->forcesDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
 			getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
-			break;
 		}
 		else if ( strcmp1( config->readDataNames[i], "Displacements" ) == 0 )
 		{
@@ -528,7 +525,6 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->displacementsDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
-			break;
 		}
 		else
 		{
@@ -547,14 +543,12 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->writeData[i] = TEMPERATURE;
 			interface->temperatureDataID = precicec_getDataID( "Temperature", interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
-			break;
 		}
 		else if ( strcmp( config->writeDataNames[i], "Heat-Flux" ) == 0 )
 		{
 			interface->writeData[i] = HEAT_FLUX;
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
-			break;
 		}
 		else if ( strcmp1( config->writeDataNames[i], "Sink-Temperature-" ) == 0 )
 		{
