@@ -36,8 +36,10 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  *  Forces - dynamics data to be read/written (by the Calculix adapter)
  *  Displacements - dynamics data to be read/written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
+ *  Velocities - FSI data to be written (by the Calculix adapter)
+ *  Positions - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType { TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS };
+enum CouplingDataType { TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
 
 /**
  * @brief Returns node set name with internal CalculiX format
@@ -119,6 +121,17 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
  * @param displacements: output array with the displacements in preCICE-conform order of the input nodes
  */
 void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, ITG mt, double * displacements );
+
+/**
+ * @brief getNodeVelocities
+ * @param nodes: input node IDs
+ * @param numNodes: number of input nodes
+ * @param dim: coupling dimension
+ * @param ve: CalculiX solution array containing the velocities
+ * @param mt: CalculiX variable describing the number of solution variables in the solution array v
+ * @param velocities: output array with the velocities in preCICE-conform order of the input nodes
+ */
+void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, ITG mt, double * velocities );
 
 /**
  * @brief getNodeDisplacementDeltas
