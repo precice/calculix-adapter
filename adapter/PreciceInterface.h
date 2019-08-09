@@ -69,8 +69,10 @@ typedef struct PreciceInterface {
 	int mapNPType;
 
 
-	enum CouplingDataType readData;
-	enum CouplingDataType writeData;
+	int numReadData;
+	int numWriteData;
+	enum CouplingDataType *readData;
+	enum CouplingDataType *writeData;
 
 } PreciceInterface;
 
