@@ -204,6 +204,16 @@ void Precice_ReadCouplingData( SimulationData * sim )
 					fflush( stdout );
 					exit( EXIT_FAILURE );
 					break;
+				case VELOCITIES:
+					printf( "Velocities cannot be used as read data\n" );
+					fflush( stdout );
+					exit( EXIT_FAILURE );
+					break;
+				case POSITIONS:
+					printf( "Positions cannot be used as read data.\n" );
+					fflush( stdout );
+					exit( EXIT_FAILURE );
+					break;
 				}
 			}
 		}
@@ -288,6 +298,14 @@ void Precice_WriteCouplingData( SimulationData * sim )
 				case DISPLACEMENTDELTAS:
 					getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
 					precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					break;
+				case VELOCITIES:
+					getNodeVelocities( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->veold, sim->mt, interfaces[i]->nodeVectorData );
+					precicec_writeBlockVectorData( interfaces[i]->velocitiesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					break;
+				case POSITIONS:
+					getNodeCoordinates( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->co, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
+					precicec_writeBlockVectorData( interfaces[i]->positionsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
 					break;
 				case FORCES:
 					getNodeForces( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->fn, sim->mt, interfaces[i]->nodeVectorData );
@@ -573,6 +591,20 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = DISPLACEMENTDELTAS;
 			interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+		}
+		else if ( strcmp1( config->writeDataNames[i], "Positions" ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->writeData[i] = POSITIONS;
+			interface->positionsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
+			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
+		}
+		else if ( strcmp1( config->writeDataNames[i], "Velocities" ) == 0 )
+		{
+			PreciceInterface_EnsureValidNodesMeshID( interface );
+			interface->writeData[i] = VELOCITIES;
+			interface->velocitiesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
 		else if ( strcmp1( config->writeDataNames[i], "Forces" ) == 0 )

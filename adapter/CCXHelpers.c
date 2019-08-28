@@ -136,6 +136,20 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
 	}
 }
 
+void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, int mt, double * velocities )
+{
+
+	// CalculiX variable mt = 4 : temperature rate + 3 velocities (depends on the type of analysis)
+	// where 0 index corresponds to temp rate; 1, 2, 3 indices correspond to the velocities, respectively
+	ITG i, j;
+
+	for( i = 0 ; i < numNodes ; i++ )
+	{
+		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+		for( j = 0 ; j < dim ; j++ ) velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
+	}
+}
+
 /*
    int getNodesPerFace(char * lakon, int elementIdx) {
 
