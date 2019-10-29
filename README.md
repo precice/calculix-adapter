@@ -8,7 +8,7 @@ This adapter was developed for **CalculiX version 2.15.** Other versions may be 
 
 ## Start here
 
-Our [wiki](https://github.com/precice/openfoam-adapter/wiki) will help you start. 
+Our [wiki](https://github.com/precice/calculix-adapter/wiki) will help you start. 
 
 ## References
 
