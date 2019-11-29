@@ -114,6 +114,11 @@ bool Precice_IsWriteCheckpointRequired()
 	return precicec_isActionRequired( "write-iteration-checkpoint" );
 }
 
+bool Precice_IsCouplingTimestepComplete()
+{
+	return precicec_isCouplingTimestepComplete();
+}
+
 void Precice_FulfilledReadCheckpoint()
 {
 	precicec_fulfilledAction( "read-iteration-checkpoint" );

@@ -188,6 +188,12 @@ bool Precice_IsReadCheckpointRequired();
 bool Precice_IsWriteCheckpointRequired();
 
 /**
+ * @brief Returns true if coupling timestep is complete
+ * @return
+ */
+bool Precice_IsCouplingTimestepComplete();
+
+/**
  * @brief Tells preCICE that the checkpoint has been read
  */
 void Precice_FulfilledReadCheckpoint();
