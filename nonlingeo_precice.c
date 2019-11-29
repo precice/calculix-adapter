@@ -1114,7 +1114,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
 	  memcpy(&vini[0],&vold[0],sizeof(double)*mt**nk);
 
-	  if( Precice_IsWriteCheckpointRequired() || simulationData.coupling_explicit)
+	  if( Precice_IsWriteCheckpointRequired() == simulationData.coupling_implicit)
       	  {
           	Precice_WriteIterationCheckpoint( &simulationData, vini );
           	if( Precice_IsWriteCheckpointRequired() ) Precice_FulfilledWriteCheckpoint();

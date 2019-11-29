@@ -48,7 +48,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	Precice_InitializeData( sim );
 
 	// find if coupling is implicit or explicit. Implicit coupling will return true at the very beginning and explicit will always return false
-	sim->coupling_explicit = !Precice_IsWriteCheckpointRequired();
+	sim->coupling_implicit = Precice_IsWriteCheckpointRequired();
 
 }
 

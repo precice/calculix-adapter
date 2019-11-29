@@ -133,7 +133,7 @@ typedef struct SimulationData {
 	double coupling_init_dtheta;
 	double precice_dt;
 	double solver_dt;
-	bool coupling_explicit;
+	bool coupling_implicit;
 
 } SimulationData;
 
