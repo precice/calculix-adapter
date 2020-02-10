@@ -113,12 +113,12 @@ bool Precice_IsWriteCheckpointRequired()
 
 void Precice_FulfilledReadCheckpoint()
 {
-	precicec_fulfilledAction( "read-iteration-checkpoint" );
+	precicec_markActionFulfilled( "read-iteration-checkpoint" );
 }
 
 void Precice_FulfilledWriteCheckpoint()
 {
-	precicec_fulfilledAction( "write-iteration-checkpoint" );
+	precicec_markActionFulfilled( "write-iteration-checkpoint" );
 }
 
 void Precice_ReadIterationCheckpoint( SimulationData * sim, double * v )
@@ -317,7 +317,7 @@ void Precice_WriteCouplingData( SimulationData * sim )
 
 		if( precicec_isActionRequired( "write-initial-data" ) )
 		{
-			precicec_fulfilledAction( "write-initial-data" );
+			precicec_markActionFulfilled( "write-initial-data" );
 		}
 	}
 }
