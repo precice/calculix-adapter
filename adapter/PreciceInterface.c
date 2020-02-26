@@ -365,7 +365,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
   // Initialize data ids to -1
 	interface->temperatureDataID = -1;
 	interface->fluxDataID = -1;
-	interface->sinkTemperatureDataID = -1;
 	interface->kDeltaWriteDataID = -1;
 	interface->kDeltaTemperatureWriteDataID = -1;
 	interface->kDeltaReadDataID = -1;

@@ -51,7 +51,6 @@ typedef struct PreciceInterface {
 	// preCICE Data IDs
 	int temperatureDataID;
 	int fluxDataID;
-	int sinkTemperatureDataID;
 	int kDeltaWriteDataID;
 	int kDeltaTemperatureWriteDataID;
 	int kDeltaReadDataID;
