@@ -360,7 +360,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->xbounIndices = NULL;
 	interface->xloadIndices = NULL;
 	interface->xforcIndices = NULL;
-	interface->mapNPType = NULL;
 
   // Initialize data ids to -1
 	interface->temperatureDataID = -1;
