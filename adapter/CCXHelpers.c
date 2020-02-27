@@ -11,21 +11,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* toNodeSetName( char * name )
+char* toNodeSetName( char const * name )
 {
 	char * prefix = "N";
 	char * suffix = "N";
 	return concat( prefix, name, suffix );
 }
 
-char* toFaceSetName( char * name )
+char* toFaceSetName( char const * name )
 {
 	char * prefix = "S";
 	char * suffix = "T";
 	return concat( prefix, name, suffix );
 }
 
-ITG getSetID( char * setName, char * set, ITG nset )
+ITG getSetID( char const * setName, char const * set, ITG nset )
 {
 
 	ITG i;
@@ -251,7 +251,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 	}
 }
 
-void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char * sideload, ITG * xloadIndices )
+void getXloadIndices( char const * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char const * sideload, ITG * xloadIndices )
 {
 
 	ITG i, k;
@@ -487,7 +487,7 @@ bool isSteadyStateSimulation( ITG * nmethod )
 	return *nmethod == 1;
 }
 
-char* concat( char * prefix, char * string, char * suffix )
+char* concat( char const * prefix, char const * string, char const * suffix )
 {
 	int nameLength = strlen( string ) + strlen( prefix ) + strlen( suffix ) + 1;
 	char * result = malloc( nameLength );
@@ -499,14 +499,14 @@ char* concat( char * prefix, char * string, char * suffix )
 
 /* Errors messages */
 
-void nodeSetNotFoundError( char * setName )
+void nodeSetNotFoundError( char const * setName )
 {
 	printf( "ERROR: Set %s does not exist! Please check that the interface names are correct and that .nam file is provided.\n", setName );
 	fflush( stdout );
 	exit( EXIT_FAILURE );
 }
 
-void faceSetNotFoundError( char * setName )
+void faceSetNotFoundError( char const * setName )
 {
 	printf( "ERROR: Set %s does not exist! Please check the following: \n 1) If nearest projection mapping is required, check that the interface names are correct and that .sur file is provided.\n 2) If nearest-projection mapping is not required, remove 'nodes-mesh-mesh-connectivity' and replace with 'nodes-mesh' in the config.yml file", setName );
 	fflush( stdout );
