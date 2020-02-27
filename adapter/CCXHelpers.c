@@ -427,7 +427,6 @@ void setXload( double * xload, int * xloadIndices, double * values, int numValue
 
 	for( i = 0 ; i < numValues ; i++ )
 	{
-		double temp = xload[xloadIndices[i] + indexOffset];
 		xload[xloadIndices[i] + indexOffset] = values[i];
 	}
 }
