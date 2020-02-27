@@ -13,7 +13,7 @@
 #include <string.h>
 #include <algorithm>
 
-void ConfigReader_Read( char * configFilename, char * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
+void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
 {
 
 	YAML::Node config = YAML::LoadFile( configFilename );

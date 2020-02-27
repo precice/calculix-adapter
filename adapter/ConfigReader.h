@@ -21,7 +21,7 @@ typedef struct InterfaceConfig {
 	char ** readDataNames;
 } InterfaceConfig;
 
-void ConfigReader_Read(char * configFilename, char * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterfaces);
+void ConfigReader_Read(char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterfaces);
 
 
 #endif
