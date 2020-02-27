@@ -462,8 +462,10 @@ void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * x
 
 	for ( i = 0 ; i < numNodes ; i++ ) 
 	{
-		int nodeIdx = nodes[i] - 1;
-		for( j = 0 ; j < dim ; j++ ) xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
+    }
 	}
 }
 
@@ -473,7 +475,10 @@ void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * 
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
-		for( j = 0 ; j < dim ; j++ ) xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
+		for( j = 0 ; j < dim ; j++ ) 
+    {
+      xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
+    }
 	}
 }
 
