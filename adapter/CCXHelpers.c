@@ -9,6 +9,7 @@
 
 #include "CCXHelpers.h"
 #include <stdlib.h>
+#include <string.h>
 
 char* toNodeSetName( char * name )
 {
