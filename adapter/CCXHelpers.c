@@ -327,6 +327,7 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 				missingTemperatureBCError();
 			}
 		}
+    break;
 	case DISPLACEMENTS:
 		for( i = 0 ; i < numNodes ; i++ )
 		{
@@ -350,6 +351,9 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 				missingDisplacementBCError();
 			}
 		}
+    break;
+  default:
+    unreachableError();
 	}
 }
 
@@ -411,6 +415,8 @@ int getXloadIndexOffset( enum xloadVariable xloadVar )
 		return 0;
 	case FILM_T:
 		return 1;
+  default:
+    unreachableError();
 	}
 }
 
@@ -530,6 +536,12 @@ void missingDfluxBCError()
 void missingFilmBCError()
 {
 	printf( "ERROR: Cannot apply FILM BC to one or more interface elements.  Please make sure that a .flm file is provided for the interface, when using a Robin coupling BC.\n" );
+	exit( EXIT_FAILURE );
+}
+
+void unreachableError()
+{
+	printf( "ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n" );
 	exit( EXIT_FAILURE );
 }
 
