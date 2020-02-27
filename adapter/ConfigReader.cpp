@@ -10,8 +10,9 @@
 #include "ConfigReader.hpp"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
-#include <string.h>
+#include <cstring>
 #include <algorithm>
+#include <cstdlib>
 
 void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
 {
