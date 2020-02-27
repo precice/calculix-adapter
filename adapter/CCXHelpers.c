@@ -512,6 +512,22 @@ char* concat( char const * prefix, char const * string, char const * suffix )
 	return result;
 }
 
+bool isPrefix(const char * string, const char * prefix)
+{
+    char sc, pc;
+    do {
+        sc =*string++;
+        pc =*prefix++;
+        if (pc == '\0') return true;
+    } while (sc == pc);
+    return false;
+}
+
+bool isEqual(const char * lhs, const char * rhs)
+{
+  return strcmp(lhs, rhs) == 0;
+}
+
 /* Errors messages */
 
 void nodeSetNotFoundError( char const * setName )

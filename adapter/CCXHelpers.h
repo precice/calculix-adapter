@@ -287,6 +287,20 @@ bool isSteadyStateSimulation( ITG * nmethod );
  */
 char * concat(char const * prefix, char const * string, char const * suffix);
 
+/**
+ * @brief Checks wheather one zero-terminated string is prefixed by another
+ * @param string the string to inspect
+ * @param prefix the prefix to look for
+ */
+bool isPrefix(const char * string, const char * prefix);
+
+/**
+ * @brief Checks wheather two zero-terminated strings are identical
+ * @param lhs the left-hand string
+ * @param rhs the right-hand string
+ */
+bool isEqual(const char * lhs, const char * rhs);
+
 /* Error messages */
 
 /**

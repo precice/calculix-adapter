@@ -508,7 +508,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 	for( i = 0 ; i < config->numReadData ; i++ )
 	{
 		
-		if( strcmp( config->readDataNames[i], "Temperature" ) == 0 )
+		if( isEqual( config->readDataNames[i], "Temperature" ) )
 		{
 
 			PreciceInterface_EnsureValidNodesMeshID( interface );
@@ -518,7 +518,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, TEMPERATURE );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( strcmp( config->readDataNames[i], "Heat-Flux" ) == 0 )
+		else if ( isEqual( config->readDataNames[i], "Heat-Flux" ) )
 		{
 			interface->readData[i] = HEAT_FLUX;
 			interface->xloadIndices = malloc( interface->numElements * sizeof( int ) );
@@ -526,7 +526,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( strcmp1( config->readDataNames[i], "Sink-Temperature-" ) == 0 )
+		else if ( isPrefix( config->readDataNames[i], "Sink-Temperature-" ) )
 		{
 			interface->readData[i] = CONVECTION;
 			interface->xloadIndices = malloc( interface->numElements * sizeof( int ) );
@@ -534,12 +534,12 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaTemperatureReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( strcmp1( config->readDataNames[i], "Heat-Transfer-Coefficient-" ) == 0 )
+		else if ( isPrefix( config->readDataNames[i], "Heat-Transfer-Coefficient-" ) )
 		{
 			interface->kDeltaReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( strcmp1( config->readDataNames[i], "Forces" ) == 0 )
+		else if ( isEqual( config->readDataNames[i], "Forces" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->readData[i] = FORCES;
@@ -548,7 +548,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( strcmp1( config->readDataNames[i], "Displacements" ) == 0 )
+		else if ( isEqual( config->readDataNames[i], "Displacements" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->readData[i] = DISPLACEMENTS;
@@ -568,59 +568,59 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
         if (config->numWriteData > 0) interface->writeData = malloc( config->numWriteData * sizeof( int ) );
 	for( i = 0 ; i < config->numWriteData ; i++ )
 	{
-		if( strcmp( config->writeDataNames[i], "Temperature" ) == 0 )
+		if( isEqual( config->writeDataNames[i], "Temperature" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = TEMPERATURE;
 			interface->temperatureDataID = precicec_getDataID( "Temperature", interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp( config->writeDataNames[i], "Heat-Flux" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "Heat-Flux" ) )
 		{
 			interface->writeData[i] = HEAT_FLUX;
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Sink-Temperature-" ) == 0 )
+		else if ( isPrefix( config->writeDataNames[i], "Sink-Temperature-" ) )
 		{
 			interface->writeData[i] = CONVECTION;
 			interface->kDeltaTemperatureWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Heat-Transfer-Coefficient-" ) == 0 )
+		else if ( isPrefix( config->writeDataNames[i], "Heat-Transfer-Coefficient-" ) )
 		{
 			interface->kDeltaWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Displacements" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "Displacements" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = DISPLACEMENTS;
 			interface->displacementsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "DisplacementDeltas" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "DisplacementDeltas" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = DISPLACEMENTDELTAS;
 			interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Positions" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "Positions" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = POSITIONS;
 			interface->positionsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Velocities" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "Velocities" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = VELOCITIES;
 			interface->velocitiesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( strcmp1( config->writeDataNames[i], "Forces" ) == 0 )
+		else if ( isEqual( config->writeDataNames[i], "Forces" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = FORCES;
