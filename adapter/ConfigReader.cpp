@@ -124,7 +124,9 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 
 void InterfaceConfig_Free(InterfaceConfig * interface)
 {
+	printf( "Freeing InterfaceConfig\n" );
   if (interface == nullptr) return;
+	printf( "Freeing something\n" );
 
   // Owning char arrays
 	free(interface->facesMeshName);
@@ -144,4 +146,5 @@ void InterfaceConfig_Free(InterfaceConfig * interface)
 
   // The interface itself
   free(interface);
+	printf( "Done freeing interfaceconfig\n" );
 }

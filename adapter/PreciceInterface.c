@@ -25,7 +25,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	// Read the YAML config file
 	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
 	
-	printf( "CP 1\n" );
+	printf( "CP 1 : Num %d\n", sim->numPreciceInterfaces );
 	fflush( stdout );
 
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
@@ -42,8 +42,8 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
+    InterfaceConfig const * config = interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
-    InterfaceConfig * config = *interfaces + i;
 
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
     InterfaceConfig_Free(config);
@@ -371,6 +371,8 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 	interface->dim = precicec_getDimensions();
 
+  printf("PI Create 1");
+
 	// Initialize pointers as NULL
 	interface->elementIDs = NULL;
 	interface->faceIDs = NULL;
@@ -399,6 +401,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->velocitiesDataID = -1;
 	interface->forcesDataID = -1;
 
+  printf("PI Create 2");
 	//Mapping Type
 
   printf("Interface Patch Name %s", config->patchName);
@@ -407,6 +410,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
 	interface->mapNPType = config->map;
 
+  printf("PI Create 3");
 	// Nodes mesh
 	interface->nodesMeshID = -1;
 	interface->nodesMeshName = NULL;
@@ -415,6 +419,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureNodesMesh( interface, sim );
   }
 
+  printf("PI Create 4");
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
 	interface->faceCentersMeshName = NULL;
@@ -426,8 +431,10 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureTetraFaces( interface, sim );
 	}
 
+  printf("PI Create 5");
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
 
+  printf("PI Create End");
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, SimulationData * sim )
