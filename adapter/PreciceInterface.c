@@ -101,7 +101,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
     InterfaceConfig const * config = interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 
-    hexdump("interface:", interfaces + i, sizeof(InterfaceConfig));
+    hexDump("interface:", interfaces + i, sizeof(InterfaceConfig));
 
     printf( "Create Interface");
     fflush( stdout );
