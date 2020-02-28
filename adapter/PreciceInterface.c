@@ -45,7 +45,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
     printf( "Loop init - %d\n", i);
     fflush( stdout );
 
-    InterfaceConfig const * config = interfaces + i;
+    InterfaceConfig * config = interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 
     InterfaceConfig_Print(config);
