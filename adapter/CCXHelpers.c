@@ -51,7 +51,9 @@ ITG getSetID( char const * setName, char const * set, ITG nset )
 		printf("Set ID NOT Found \n");
 		faceSetNotFoundError( setName );
 		return -1;
-	}
+	} else {
+    unreachableError();
+  }
 }
 
 ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset )
