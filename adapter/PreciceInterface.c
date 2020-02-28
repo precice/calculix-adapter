@@ -392,13 +392,14 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
-	interface->faceCentersMeshName = strdup( config->facesMeshName );
+	interface->faceCentersMeshName = NULL;
+  if ( config->facesMeshName ) {
+	  interface->faceCentersMeshName = strdup( config->facesMeshName );
 		//Only configure a face center mesh if necesary; i.e. do not configure it for FSI simulations, also do not configure tetra faces if no face center mesh is used (as in FSI simulations)
-		if ( interface->faceCentersMeshName != NULL) {
-			PreciceInterface_ConfigureFaceCentersMesh( interface, sim );
+    PreciceInterface_ConfigureFaceCentersMesh( interface, sim );
 		// Triangles of the nodes mesh (needs to be called after the face centers mesh is configured!)
-			PreciceInterface_ConfigureTetraFaces( interface, sim );
-		}
+    PreciceInterface_ConfigureTetraFaces( interface, sim );
+	}
 
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
 
