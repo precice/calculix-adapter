@@ -416,7 +416,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	fflush( stdout );
 	//Mapping Type
 
-  printf("Interface Patch Name %s", config->patchName);
+  printf("Interface Patch Name %s, %d", config->patchName, strlen(config->patchName));
 	fflush( stdout );
 	// The patch identifies the set used as interface in Calculix
 	interface->name = strdup( config->patchName );
