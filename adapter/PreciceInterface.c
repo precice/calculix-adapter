@@ -43,7 +43,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
-    InterfaceConfig * config = &interfaces[i];
+    InterfaceConfig * config = *interfaces + i;
 
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
     InterfaceConfig_Free(config);
