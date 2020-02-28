@@ -55,11 +55,11 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
     printf( "Free Interface\n");
 	fflush( stdout );
-    InterfaceConfig_Free(config);
+    //InterfaceConfig_Free(config);
 	}
 	printf( "CP 4 - after loop\n" );
 	fflush( stdout );
-  free(interfaces);
+  //free(interfaces);
 
 	printf( "CP 5\n");
 	fflush( stdout );
