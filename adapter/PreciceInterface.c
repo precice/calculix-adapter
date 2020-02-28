@@ -387,8 +387,11 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 	// Nodes mesh
 	interface->nodesMeshID = -1;
-	interface->nodesMeshName = strdup( config->nodesMeshName );
-	PreciceInterface_ConfigureNodesMesh( interface, sim );
+	interface->nodesMeshName = NULL;
+  if ( config->nodesMeshName ) {
+    interface->nodesMeshName = strdup( config->nodesMeshName );
+    PreciceInterface_ConfigureNodesMesh( interface, sim );
+  }
 
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
