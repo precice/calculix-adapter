@@ -28,6 +28,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 	*interfaces = (InterfaceConfig*) calloc( *numInterface, sizeof( InterfaceConfig ) );
 
   printf("Config Read begin interface loop");
+    fflush( stdout );
 
 	for( int i = 0 ; i < *numInterface ; i++ )
 	{
@@ -38,6 +39,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
     InterfaceConfig& interface = *currentInterfacePointer;
 
     printf("Loop CP 1");
+    fflush( stdout );
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
 			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
