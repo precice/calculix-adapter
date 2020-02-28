@@ -25,12 +25,20 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	// Read the YAML config file
 	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
 	
+	printf( "CP 1\n" );
+	fflush( stdout );
 
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, preciceConfigFilename, 0, 1 );
 
+	printf( "CP 2\n" );
+	fflush( stdout );
+
 	// Create interfaces as specified in the config file
 	sim->preciceInterfaces = (struct PreciceInterface**) malloc( sim->numPreciceInterfaces * sizeof( PreciceInterface* ) );
+
+	printf( "CP 3 - before loop\n" );
+	fflush( stdout );
 
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
@@ -40,16 +48,29 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
     InterfaceConfig_Free(config);
 	}
+	printf( "CP 4 - after loop\n" );
+	fflush( stdout );
   free(interfaces);
+
+	printf( "CP 5\n");
+	fflush( stdout );
 
 	// Initialize variables needed for the coupling
 	NNEW( sim->coupling_init_v, double, sim->mt * sim->nk );
 
+	printf( "CP 6\n");
+	fflush( stdout );
 	// Initialize preCICE
 	sim->precice_dt = precicec_initialize();
 
+	printf( "CP 7\n");
+	fflush( stdout );
+
 	// Initialize coupling data
 	Precice_InitializeData( sim );
+
+	printf( "CP 8\n");
+	fflush( stdout );
 
 }
 
@@ -380,6 +401,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 	//Mapping Type
 
+  printf("Interface Patch Name %s", config->patchName);
 	// The patch identifies the set used as interface in Calculix
 	interface->name = strdup( config->patchName );
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
