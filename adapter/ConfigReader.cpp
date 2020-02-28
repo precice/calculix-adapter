@@ -22,7 +22,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 	*preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
 
 	*numInterface = config["participants"][participantName]["interfaces"].size();
-	*interfaces = (InterfaceConfig*) calloc( *numInterfaces, sizeof( InterfaceConfig ) );
+	*interfaces = (InterfaceConfig*) calloc( *numInterface, sizeof( InterfaceConfig ) );
 
 	
 
