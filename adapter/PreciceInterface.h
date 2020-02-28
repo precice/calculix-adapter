@@ -239,7 +239,7 @@ void Precice_FreeData( SimulationData * sim );
  * @param sim
  * @param config
  */
-void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
