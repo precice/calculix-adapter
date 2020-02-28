@@ -13,7 +13,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdlib>
-#include <iterators>
+#include <iterator>
 
 void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
 {
