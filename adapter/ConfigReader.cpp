@@ -13,6 +13,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdlib>
+#include <iterators>
 
 void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
 {
@@ -28,9 +29,10 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 
 	for( int i = 0 ; i < *numInterface ; i++ )
 	{
-    InterfaceConfig * interfacePointer = ( *interfaces )[i];
-    new ( interfacePointer ) InterfaceConfig();
-    InterfaceConfig& interface = *interfacePointer;
+    InterfaceConfig * currentInterfacePointer = *interfaces;
+    std::advance( currentInterfacePointer, i );
+    new ( currentInterfacePointer ) InterfaceConfig();
+    InterfaceConfig& interface = *currentInterfacePointer;
 
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
