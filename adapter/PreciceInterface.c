@@ -498,7 +498,7 @@ void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, Simulat
 	}
 }
 
-void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config )
+void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config )
 {
 
 	interface->nodeScalarData = malloc( interface->numNodes * sizeof( double ) );

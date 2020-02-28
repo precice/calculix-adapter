@@ -282,7 +282,7 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
  * @param sim
  * @param config
  */
-void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Frees the memory
