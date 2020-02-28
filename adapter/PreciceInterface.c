@@ -42,10 +42,17 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
+    printf( "Loop init - %d\n", i);
+    fflush( stdout );
+
     InterfaceConfig const * config = interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 
+    printf( "Create Interface");
+    fflush( stdout );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
+    printf( "Free Interface");
+	fflush( stdout );
     InterfaceConfig_Free(config);
 	}
 	printf( "CP 4 - after loop\n" );
@@ -372,6 +379,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->dim = precicec_getDimensions();
 
   printf("PI Create 1");
+	fflush( stdout );
 
 	// Initialize pointers as NULL
 	interface->elementIDs = NULL;
@@ -402,15 +410,18 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->forcesDataID = -1;
 
   printf("PI Create 2");
+	fflush( stdout );
 	//Mapping Type
 
   printf("Interface Patch Name %s", config->patchName);
+	fflush( stdout );
 	// The patch identifies the set used as interface in Calculix
 	interface->name = strdup( config->patchName );
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
 	interface->mapNPType = config->map;
 
   printf("PI Create 3");
+	fflush( stdout );
 	// Nodes mesh
 	interface->nodesMeshID = -1;
 	interface->nodesMeshName = NULL;
@@ -420,6 +431,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
   }
 
   printf("PI Create 4");
+	fflush( stdout );
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
 	interface->faceCentersMeshName = NULL;
@@ -432,9 +444,11 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	}
 
   printf("PI Create 5");
+	fflush( stdout );
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
 
   printf("PI Create End");
+	fflush( stdout );
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, SimulationData * sim )
