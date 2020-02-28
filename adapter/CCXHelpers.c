@@ -421,7 +421,6 @@ int getXloadIndexOffset( enum xloadVariable xloadVar )
 	 * - the first component corresponds to the flux value and the heat transfer coefficient
 	 * - the second component corresponds to the sink temperature
 	 * */
-	int indexOffset;
 	switch( xloadVar )
 	{
 	case DFLUX:
