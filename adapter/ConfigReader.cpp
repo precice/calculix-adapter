@@ -163,10 +163,10 @@ void InterfaceConfig_Print(InterfaceConfig const * interface)
 
   int i;
   for( i = 0; i < interface->numWriteData; ++i) {
-    printf("Write Data %d: %s", i, interface->writeDataNames[i]);
+    printf("Write Data %d: %s\n", i, interface->writeDataNames[i]);
   }
 
   for( i = 0; i < interface->numReadData; ++i) {
-    printf("Read Data %d: %s", i, interface->readDataNames[i]);
+    printf("Read Data %d: %s\n", i, interface->readDataNames[i]);
   }
 }
