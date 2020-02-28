@@ -50,10 +50,10 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
     InterfaceConfig_Print(config);
 
-    printf( "Create Interface");
+    printf( "Create Interface\n");
     fflush( stdout );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
-    printf( "Free Interface");
+    printf( "Free Interface\n");
 	fflush( stdout );
     InterfaceConfig_Free(config);
 	}
@@ -377,10 +377,11 @@ void Precice_FreeData( SimulationData * sim )
 
 void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config )
 {
+  InterfaceConfig_Print(config);
 
 	interface->dim = precicec_getDimensions();
 
-  printf("PI Create 1");
+  printf("PI Create 1\n");
 	fflush( stdout );
 
 	// Initialize pointers as NULL
@@ -411,7 +412,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->velocitiesDataID = -1;
 	interface->forcesDataID = -1;
 
-  printf("PI Create 2");
+  printf("PI Create 2\n");
 	fflush( stdout );
 	//Mapping Type
 
@@ -422,7 +423,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
 	interface->mapNPType = config->map;
 
-  printf("PI Create 3");
+  printf("PI Create 3\n");
 	fflush( stdout );
 	// Nodes mesh
 	interface->nodesMeshID = -1;
@@ -432,7 +433,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureNodesMesh( interface, sim );
   }
 
-  printf("PI Create 4");
+  printf("PI Create 4\n");
 	fflush( stdout );
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
@@ -445,11 +446,11 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureTetraFaces( interface, sim );
 	}
 
-  printf("PI Create 5");
+  printf("PI Create 5\n");
 	fflush( stdout );
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
 
-  printf("PI Create End");
+  printf("PI Create End\n");
 	fflush( stdout );
 }
 

@@ -19,7 +19,7 @@
 void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
 {
   using std::printf;
-  printf("Config Read begin");
+  printf("Config Read begin\n");
 	YAML::Node config = YAML::LoadFile( configFilename );
 
 	*preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
@@ -27,7 +27,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 	*numInterface = config["participants"][participantName]["interfaces"].size();
 	*interfaces = (InterfaceConfig*) calloc( *numInterface, sizeof( InterfaceConfig ) );
 
-  printf("Config Read begin interface loop");
+  printf("Config Read begin interface loop\n");
     fflush( stdout );
 
 	for( int i = 0 ; i < *numInterface ; i++ )
@@ -38,7 +38,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
     new ( currentInterfacePointer ) InterfaceConfig();
     InterfaceConfig& interface = *currentInterfacePointer;
 
-    printf("Loop CP 1");
+    printf("Loop CP 1\n");
     fflush( stdout );
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
@@ -53,7 +53,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 		{
 			interface.nodesMeshName = NULL;
 		}
-    printf("Loop CP 2");
+    printf("Loop CP 2\n");
 
 		if( config["participants"][participantName]["interfaces"][i]["faces-mesh"] )
 		{
@@ -63,24 +63,24 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 		{
 			interface.facesMeshName = NULL;
 		}
-    printf("Loop CP 3");
+    printf("Loop CP 3\n");
 		
 		if( config["participants"][participantName]["interfaces"][i]["mesh"] )
 		{
 			interface.facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
 		}
-    printf("Loop CP 4");
+    printf("Loop CP 4\n");
 
 		std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();
 		std::transform( patchName.begin(), patchName.end(), patchName.begin(), toupper );
 		interface.patchName = strdup( patchName.c_str() );
 
-    printf("Loop CP 5");
+    printf("Loop CP 5\n");
 		
 		interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
 		interface.numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
 
-    printf("Loop CP 6");
+    printf("Loop CP 6\n");
 
 		if( interface.numWriteData == 0 )
 		{
@@ -100,7 +100,7 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 			}
 		}
 
-    printf("Loop CP 7");
+    printf("Loop CP 7\n");
 
 		if( interface.numReadData == 0 )
 		{
@@ -119,9 +119,9 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 				interface.readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
 			}
 		}	
-    printf("Loop End");
+    printf("Loop End\n");
 	}
-  printf("Config Read end");
+  printf("Config Read end\n");
 }
 
 void InterfaceConfig_Free(InterfaceConfig * interface)
