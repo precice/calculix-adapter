@@ -23,5 +23,6 @@ typedef struct InterfaceConfig {
 
 void ConfigReader_Read(char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterfaces);
 
+void InterfaceConfig_Free(InterfaceConfig * interface);
 
 #endif

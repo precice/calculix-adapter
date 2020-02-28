@@ -108,3 +108,24 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
 	}
 }
 
+void InterfaceConfig_Free(InterfaceConfig * interface)
+{
+  if (interface == nullptr) return;
+
+  // Owning char arrays
+	free(interface->facesMeshName);
+	free(interface->nodesMeshName);
+	free(interface->patchName);
+
+  // Owning arrays of char arrays
+  char ** writeDataNamesEnd = interface->writeDataNames+interface->numWriteData;
+  std::for_each(interface->writeDataNames, writeDataNamesEnd, free);
+  free(interface->writeDataNames);
+
+  char ** readDataNamesEnd = interface->readDataNames +interface->numReadData;
+  std::for_each(interface->readDataNames, readDataNamesEnd,  free);
+  free(interface->readDataNames);
+
+  // The interface itself
+  free(interface);
+}

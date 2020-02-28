@@ -35,9 +35,13 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
+    InterfaceConfig * config = &interfaces[i];
 
-		PreciceInterface_Create( sim->preciceInterfaces[i], sim, &interfaces[i] );
+		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
+    InterfaceConfig_Free(config);
 	}
+  free(interfaces);
+
 	// Initialize variables needed for the coupling
 	NNEW( sim->coupling_init_v, double, sim->mt * sim->nk );
 
@@ -341,7 +345,7 @@ void Precice_FreeData( SimulationData * sim )
 	precicec_finalize();
 }
 
-void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config )
+void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config )
 {
 
 	interface->dim = precicec_getDimensions();
@@ -377,18 +381,18 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	//Mapping Type
 
 	// The patch identifies the set used as interface in Calculix
-	interface->name = config->patchName;
+	interface->name = strdup( config->patchName );
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
 	interface->mapNPType = config->map;
 
 	// Nodes mesh
 	interface->nodesMeshID = -1;
-	interface->nodesMeshName = config->nodesMeshName;
+	interface->nodesMeshName = strdup( config->nodesMeshName );
 	PreciceInterface_ConfigureNodesMesh( interface, sim );
 
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
-	interface->faceCentersMeshName = config->facesMeshName;
+	interface->faceCentersMeshName = strdup( config->facesMeshName );
 		//Only configure a face center mesh if necesary; i.e. do not configure it for FSI simulations, also do not configure tetra faces if no face center mesh is used (as in FSI simulations)
 		if ( interface->faceCentersMeshName != NULL) {
 			PreciceInterface_ConfigureFaceCentersMesh( interface, sim );
