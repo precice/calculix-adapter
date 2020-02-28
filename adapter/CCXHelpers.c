@@ -10,6 +10,7 @@
 #include "CCXHelpers.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 char* toNodeSetName( char const * name )
 {
@@ -50,10 +51,9 @@ ITG getSetID( char const * setName, char const * set, ITG nset )
 	{
 		printf("Set ID NOT Found \n");
 		faceSetNotFoundError( setName );
-		return -1;
-	} else {
-    unreachableError();
-  }
+	}
+  unreachableError();
+  return -1;
 }
 
 ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset )
@@ -433,6 +433,7 @@ int getXloadIndexOffset( enum xloadVariable xloadVar )
 		return 1;
   default:
     unreachableError();
+    return -1;
 	}
 }
 
