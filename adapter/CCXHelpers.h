@@ -292,7 +292,7 @@ char * concat(char const * prefix, char const * string, char const * suffix);
  * @param string the string to inspect
  * @param prefix the prefix to look for
  */
-bool isPrefix(const char * string, const char * prefix);
+bool startsWith(const char * string, const char * prefix);
 
 /**
  * @brief Checks wheather two zero-terminated strings are identical

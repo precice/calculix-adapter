@@ -513,7 +513,7 @@ char* concat( char const * prefix, char const * string, char const * suffix )
 	return result;
 }
 
-bool isPrefix(const char * string, const char * prefix)
+bool startsWith(const char * string, const char * prefix)
 {
     char sc, pc;
     do {

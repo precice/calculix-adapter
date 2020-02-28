@@ -530,7 +530,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( isPrefix( config->readDataNames[i], "Sink-Temperature-" ) )
+		else if ( startsWith( config->readDataNames[i], "Sink-Temperature-" ) )
 		{
 			interface->readData[i] = CONVECTION;
 			interface->xloadIndices = malloc( interface->numElements * sizeof( int ) );
@@ -538,7 +538,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaTemperatureReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( isPrefix( config->readDataNames[i], "Heat-Transfer-Coefficient-" ) )
+		else if ( startsWith( config->readDataNames[i], "Heat-Transfer-Coefficient-" ) )
 		{
 			interface->kDeltaReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
@@ -585,13 +585,13 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->fluxDataID = precicec_getDataID( "Heat-Flux", interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isPrefix( config->writeDataNames[i], "Sink-Temperature-" ) )
+		else if ( startsWith( config->writeDataNames[i], "Sink-Temperature-" ) )
 		{
 			interface->writeData[i] = CONVECTION;
 			interface->kDeltaTemperatureWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isPrefix( config->writeDataNames[i], "Heat-Transfer-Coefficient-" ) )
+		else if ( startsWith( config->writeDataNames[i], "Heat-Transfer-Coefficient-" ) )
 		{
 			interface->kDeltaWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
