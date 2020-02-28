@@ -150,3 +150,23 @@ void InterfaceConfig_Free(InterfaceConfig * interface)
   free(interface);
 	printf( "Done freeing interfaceconfig\n" );
 }
+
+void InterfaceConfig_Print(InterfaceConfig const * interface)
+{
+	printf("Patch Name: "); 
+  if (interface->patchName)     printf("%s", interface->patchName);
+	printf("\nFaces Mesh: "); 
+  if (interface->facesMeshName) printf("%s", interface->facesMeshName);
+	printf("\nNodes Mesh: "); 
+  if (interface->nodesMeshName) printf("%s", interface->nodesMeshName);
+  printf("\n");
+
+  int i;
+  for( i = 0; i < interface->numWriteData; ++i) {
+    printf("Write Data %d: %s", i, interface->writeDataNames[i]);
+  }
+
+  for( i = 0; i < interface->numReadData; ++i) {
+    printf("Read Data %d: %s", i, interface->readDataNames[i]);
+  }
+}

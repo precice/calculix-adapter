@@ -25,4 +25,6 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 
 void InterfaceConfig_Free(InterfaceConfig * interface);
 
+void InterfaceConfig_Print(InterfaceConfig const * interface);
+
 #endif
