@@ -118,12 +118,14 @@ void InterfaceConfig_Free(InterfaceConfig * interface)
 	free(interface->patchName);
 
   // Owning arrays of char arrays
-  char ** writeDataNamesEnd = interface->writeDataNames+interface->numWriteData;
+  char ** writeDataNamesEnd = interface->writeDataNames;
+  std::advance(writeDataNamesEnd, interface->numWriteData);
   std::for_each(interface->writeDataNames, writeDataNamesEnd, free);
   free(interface->writeDataNames);
 
-  char ** readDataNamesEnd = interface->readDataNames +interface->numReadData;
-  std::for_each(interface->readDataNames, readDataNamesEnd,  free);
+  char ** readDataNamesEnd = interface->readDataNames;
+  std::advance(readDataNamesEnd, interface->numReadData);
+  std::for_each(interface->readDataNames, readDataNamesEnd, free);
   free(interface->readDataNames);
 
   // The interface itself
