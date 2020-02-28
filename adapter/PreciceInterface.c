@@ -8,22 +8,32 @@
  *********************************************************************************************/
 
 #include <stdlib.h>
+#include <assert.h>
 #include "PreciceInterface.h"
 #include "ConfigReader.h"
 #include "precice/SolverInterfaceC.h"
 
 void Precice_Setup( char * configFilename, char * participantName, SimulationData * sim )
 {
+  assert(sim != NULL);
+  assert(configFilename != NULL);
+  assert(participantName != NULL);
 
 	printf( "Setting up preCICE participant %s, using config file: %s\n", participantName, configFilename );
 	fflush( stdout );
 
-	int i;
-	char * preciceConfigFilename;
-	InterfaceConfig * interfaces;
+	char * preciceConfigFilename = NULL;
+	InterfaceConfig * interfaces = NULL;
+  int numPreciceInterfaces = 0;
 
 	// Read the YAML config file
-	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &sim->numPreciceInterfaces );
+	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &numPreciceInterfaces );
+
+  assert(interfaces != NULL);
+  assert(preciceConfigFilename != NULL);
+  assert(numPreciceInterfaces > 0);
+
+  sim->numPreciceInterfaces = numPreciceInterfaces;
 	
 	printf( "CP 1 : Num %d\n", sim->numPreciceInterfaces );
 	fflush( stdout );
@@ -35,12 +45,13 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	fflush( stdout );
 
 	// Create interfaces as specified in the config file
-	sim->preciceInterfaces = (struct PreciceInterface**) malloc( sim->numPreciceInterfaces * sizeof( PreciceInterface* ) );
+	sim->preciceInterfaces = (struct PreciceInterface**) malloc( numPreciceInterfaces * sizeof( PreciceInterface* ) );
 
 	printf( "CP 3 - before loop\n" );
 	fflush( stdout );
 
-	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
+	int i;
+	for( i = 0 ; i < numPreciceInterfaces ; i++ )
 	{
     printf( "Loop init - %d\n", i);
     fflush( stdout );
@@ -54,8 +65,8 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
     fflush( stdout );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
     printf( "Free Interface\n");
-	fflush( stdout );
-    //InterfaceConfig_Free(config);
+	  fflush( stdout );
+    InterfaceConfig_Free(config);
 	}
 	printf( "CP 4 - after loop\n" );
 	fflush( stdout );
