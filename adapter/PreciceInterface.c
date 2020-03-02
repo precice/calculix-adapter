@@ -29,7 +29,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
   assert(adapterConfig.interfaces != NULL);
   assert(adapterConfig.preciceConfigFilename != NULL);
-  assert(adapterConfig.numPreciceInterfaces > 0);
+  assert(adapterConfig.numInterfaces > 0);
 
   sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 	
@@ -54,7 +54,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
     printf( "Loop init - %d\n", i);
     fflush( stdout );
 
-    InterfaceConfig * config = adapterConfig->interfaces + i;
+    InterfaceConfig * config = adapterConfig.interfaces + i;
     InterfaceConfig_Print(config);
 
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
@@ -65,7 +65,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	}
 	printf( "CP 4 - after loop\n" );
 	fflush( stdout );
-  AdapterConfig_Free(adapterConfig&);
+  AdapterConfig_Free(&adapterConfig);
 
 	printf( "CP 5\n");
 	fflush( stdout );
