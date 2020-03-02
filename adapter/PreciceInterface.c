@@ -43,7 +43,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	fflush( stdout );
 
 	// Create interfaces as specified in the config file
-	sim->preciceInterfaces = (struct PreciceInterface**) malloc( numPreciceInterfaces * sizeof( PreciceInterface* ) );
+	sim->preciceInterfaces = (struct PreciceInterface**) calloc( adapterConfig.numInterfaces, sizeof( PreciceInterface* ) );
 
 	printf( "CP 3 - before loop\n" );
 	fflush( stdout );
