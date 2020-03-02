@@ -8,32 +8,35 @@
  *********************************************************************************************/
 
 #include "ConfigReader.hpp"
+#include "ConfigReader.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <cstring>
+#include <cassert>
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
 
 
-void ConfigReader_Read( char const * configFilename, char const * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
+void ConfigReader_Read(char const * configFilename, char const * participantName, AdapterConfig * adapterConfig)
 {
   using std::printf;
   printf("Config Read begin\n");
 	YAML::Node config = YAML::LoadFile( configFilename );
 
-	*preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
+  adapterConfig->preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
 
-	*numInterface = config["participants"][participantName]["interfaces"].size();
-	*interfaces = (InterfaceConfig*) calloc( *numInterface, sizeof( InterfaceConfig ) );
+	int numInterfaces = config["participants"][participantName]["interfaces"].size();
+  adapterConfig->numInterfaces = numInterfaces;
+  adapterConfig->interfaces = calloc( numInterfaces, sizeof( InterfaceConfig ) );
 
   printf("Config Read begin interface loop\n");
-    fflush( stdout );
+  fflush( stdout );
 
-	for( int i = 0 ; i < *numInterface ; i++ )
+	for( int i = 0 ; i < numInterface ; i++ )
 	{
     printf("Loop at i %d", i);
-    InterfaceConfig * currentInterfacePointer = *interfaces;
+    InterfaceConfig * currentInterfacePointer = adapterConfig->interfaces;
     std::advance( currentInterfacePointer, i );
     new ( currentInterfacePointer ) InterfaceConfig();
     InterfaceConfig& interface = *currentInterfacePointer;
@@ -124,28 +127,32 @@ void ConfigReader_Read( char const * configFilename, char const * participantNam
   printf("Config Read end\n");
 }
 
-void InterfaceConfig_Free(InterfaceConfig * interface)
+void AdapterConfig_Free(AdapterConfig * adapterConfig)
 {
-	printf( "Freeing InterfaceConfig\n" );
-  if (interface == nullptr) return;
-	printf( "Freeing something\n" );
+  assert(adapterConfig != NULL);
+  free(adapterConfig->preciceConfigFilename);
 
-  // Owning char arrays
-	free(interface->facesMeshName);
-	free(interface->nodesMeshName);
-	free(interface->patchName);
+  int i;
+  for (i = 0; i < adapterConfig->numInterfaces; ++i) {
+    InterfaceConfig * interface = &adapterConfig->interfaces[i];
 
-  // Owning arrays of char arrays
-  char ** writeDataNamesEnd = interface->writeDataNames;
-  std::advance(writeDataNamesEnd, interface->numWriteData);
-  std::for_each(interface->writeDataNames, writeDataNamesEnd, free);
-  free(interface->writeDataNames);
+    // Owning char arrays
+    free(interface->facesMeshName);
+    free(interface->nodesMeshName);
+    free(interface->patchName);
 
-  char ** readDataNamesEnd = interface->readDataNames;
-  std::advance(readDataNamesEnd, interface->numReadData);
-  std::for_each(interface->readDataNames, readDataNamesEnd, free);
-  free(interface->readDataNames);
-	printf( "Done freeing interfaceconfig\n" );
+    // Owning arrays of char arrays
+    char ** writeDataNamesEnd = interface->writeDataNames;
+    std::advance(writeDataNamesEnd, interface->numWriteData);
+    std::for_each(interface->writeDataNames, writeDataNamesEnd, free);
+    free(interface->writeDataNames);
+
+    char ** readDataNamesEnd = interface->readDataNames;
+    std::advance(readDataNamesEnd, interface->numReadData);
+    std::for_each(interface->readDataNames, readDataNamesEnd, free);
+    free(interface->readDataNames);
+  }
+  free(adapterConfig->interfaces);
 }
 
 void InterfaceConfig_Print(InterfaceConfig const * interface)

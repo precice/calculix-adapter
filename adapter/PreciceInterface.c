@@ -22,24 +22,22 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	printf( "Setting up preCICE participant %s, using config file: %s\n", participantName, configFilename );
 	fflush( stdout );
 
-	char * preciceConfigFilename = NULL;
-	InterfaceConfig * interfaces = NULL;
-  int numPreciceInterfaces = 0;
+  AdapterConfig adapterConfig;
 
 	// Read the YAML config file
-	ConfigReader_Read( configFilename, participantName, &preciceConfigFilename, &interfaces, &numPreciceInterfaces );
+	ConfigReader_Read( configFilename, participantName, &adapterConfig);
 
-  assert(interfaces != NULL);
-  assert(preciceConfigFilename != NULL);
-  assert(numPreciceInterfaces > 0);
+  assert(adapterConfig.interfaces != NULL);
+  assert(adapterConfig.preciceConfigFilename != NULL);
+  assert(adapterConfig.numPreciceInterfaces > 0);
 
-  sim->numPreciceInterfaces = numPreciceInterfaces;
+  sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 	
 	printf( "CP 1 : Num %d\n", sim->numPreciceInterfaces );
 	fflush( stdout );
 
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
-	precicec_createSolverInterface( participantName, preciceConfigFilename, 0, 1 );
+	precicec_createSolverInterface( participantName, adapterConfig.preciceConfigFilename, 0, 1 );
 
 	printf( "CP 2\n" );
 	fflush( stdout );
@@ -56,21 +54,18 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
     printf( "Loop init - %d\n", i);
     fflush( stdout );
 
-    InterfaceConfig * config = interfaces + i;
-		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
-
+    InterfaceConfig * config = adapterConfig->interfaces + i;
     InterfaceConfig_Print(config);
+
+		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 
     printf( "Create Interface\n");
     fflush( stdout );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
-    printf( "Free Interface\n");
-	  fflush( stdout );
-    InterfaceConfig_Free(config);
 	}
 	printf( "CP 4 - after loop\n" );
 	fflush( stdout );
-  //free(interfaces);
+  AdapterConfig_Free(adapterConfig&);
 
 	printf( "CP 5\n");
 	fflush( stdout );
