@@ -599,7 +599,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaReadDataID = precicec_getDataID( config->readDataNames[i], interface->faceCentersMeshID );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( isEqual( config->readDataNames[i], "Forces" ) )
+		else if ( startsWith( config->readDataNames[i], "Forces" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->readData[i] = FORCES;
@@ -608,7 +608,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			getXforcIndices( interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices );
 			printf( "Read data '%s' found.\n", config->readDataNames[i] );
 		}
-		else if ( isEqual( config->readDataNames[i], "Displacements" ) )
+		else if ( startsWith( config->readDataNames[i], "Displacements" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->readData[i] = DISPLACEMENTS;
@@ -652,35 +652,35 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->kDeltaWriteDataID = precicec_getDataID( config->writeDataNames[i], interface->faceCentersMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isEqual( config->writeDataNames[i], "Displacements" ) )
+		else if ( startsWith( config->writeDataNames[i], "Displacements" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = DISPLACEMENTS;
 			interface->displacementsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isEqual( config->writeDataNames[i], "DisplacementDeltas" ) )
+		else if ( startsWith( config->writeDataNames[i], "DisplacementDeltas" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = DISPLACEMENTDELTAS;
 			interface->displacementDeltasDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isEqual( config->writeDataNames[i], "Positions" ) )
+		else if ( startsWith( config->writeDataNames[i], "Positions" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = POSITIONS;
 			interface->positionsDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isEqual( config->writeDataNames[i], "Velocities" ) )
+		else if ( startsWith( config->writeDataNames[i], "Velocities" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = VELOCITIES;
 			interface->velocitiesDataID = precicec_getDataID( config->writeDataNames[i], interface->nodesMeshID );
 			printf( "Write data '%s' found.\n", config->writeDataNames[i] );
 		}
-		else if ( isEqual( config->writeDataNames[i], "Forces" ) )
+		else if ( startsWith( config->writeDataNames[i], "Forces" ) )
 		{
 			PreciceInterface_EnsureValidNodesMeshID( interface );
 			interface->writeData[i] = FORCES;
