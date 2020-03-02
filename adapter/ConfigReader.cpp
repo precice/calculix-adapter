@@ -145,9 +145,6 @@ void InterfaceConfig_Free(InterfaceConfig * interface)
   std::advance(readDataNamesEnd, interface->numReadData);
   std::for_each(interface->readDataNames, readDataNamesEnd, free);
   free(interface->readDataNames);
-
-  // The interface itself
-  free(interface);
 	printf( "Done freeing interfaceconfig\n" );
 }
 
