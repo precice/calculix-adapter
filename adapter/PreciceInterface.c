@@ -49,7 +49,7 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	fflush( stdout );
 
 	int i;
-	for( i = 0 ; i < numPreciceInterfaces ; i++ )
+	for( i = 0 ; i < adapterConfig.numInterfaces; i++ )
 	{
     printf( "Loop init - %d\n", i);
     fflush( stdout );
