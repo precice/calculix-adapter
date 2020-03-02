@@ -27,11 +27,24 @@ typedef struct AdapterConfig {
   char * preciceConfigFilename;
 } AdapterConfig;
 
-
+/**  Reads the Adapter Config
+ *
+ * @precondition the adapterConfig is a pointer to an uninitialized struct of the type adapterConfig
+ *
+ * @param[in] configFilename the filename of the adapter config
+ * @param[in] participantName the name of the participant
+ * @param[inout] adapterConfig a pointer to write the configuration to
+ *
+ */
 void ConfigReader_Read(char const * configFilename, char const * participantName, AdapterConfig * adapterConfig);
 
+/** Frees all internal data held by an adapterConfig
+ *
+ * @precondition adapterConfig points to an initialized instance of adapterConfig.
+ * @precondition ConfigReader_Read was called on adapterConfig.
+ * @postcondition all memory held by the struct adapterConfig is freed
+ * @note This function does not free the pointer adapterConfig 
+ */
 void AdapterConfig_Free(AdapterConfig * adapterConfig);
-
-void InterfaceConfig_Print(InterfaceConfig const * interface);
 
 #endif

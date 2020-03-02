@@ -22,9 +22,8 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	printf( "Setting up preCICE participant %s, using config file: %s\n", participantName, configFilename );
 	fflush( stdout );
 
-  AdapterConfig adapterConfig;
-
 	// Read the YAML config file
+  AdapterConfig adapterConfig;
 	ConfigReader_Read( configFilename, participantName, &adapterConfig);
 
   assert(adapterConfig.interfaces != NULL);
@@ -33,60 +32,31 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
   sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 	
-	printf( "CP 1 : Num %d\n", sim->numPreciceInterfaces );
-	fflush( stdout );
-
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, adapterConfig.preciceConfigFilename, 0, 1 );
-
-	printf( "CP 2\n" );
-	fflush( stdout );
 
 	// Create interfaces as specified in the config file
 	sim->preciceInterfaces = (struct PreciceInterface**) calloc( adapterConfig.numInterfaces, sizeof( PreciceInterface* ) );
 
-	printf( "CP 3 - before loop\n" );
-	fflush( stdout );
-
 	int i;
 	for( i = 0 ; i < adapterConfig.numInterfaces; i++ )
 	{
-    printf( "Loop init - %d\n", i);
-    fflush( stdout );
-
     InterfaceConfig * config = adapterConfig.interfaces + i;
-    InterfaceConfig_Print(config);
-
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
-
-    printf( "Create Interface\n");
-    fflush( stdout );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
 	}
-	printf( "CP 4 - after loop\n" );
-	fflush( stdout );
-  AdapterConfig_Free(&adapterConfig);
 
-	printf( "CP 5\n");
-	fflush( stdout );
+  // At this point we are done with the configuration
+  AdapterConfig_Free(&adapterConfig);
 
 	// Initialize variables needed for the coupling
 	NNEW( sim->coupling_init_v, double, sim->mt * sim->nk );
 
-	printf( "CP 6\n");
-	fflush( stdout );
 	// Initialize preCICE
 	sim->precice_dt = precicec_initialize();
 
-	printf( "CP 7\n");
-	fflush( stdout );
-
 	// Initialize coupling data
 	Precice_InitializeData( sim );
-
-	printf( "CP 8\n");
-	fflush( stdout );
-
 }
 
 void Precice_InitializeData( SimulationData * sim )
@@ -387,9 +357,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 
 	interface->dim = precicec_getDimensions();
 
-  printf("PI Create 1\n");
-	fflush( stdout );
-
 	// Initialize pointers as NULL
 	interface->elementIDs = NULL;
 	interface->faceIDs = NULL;
@@ -418,19 +385,12 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->velocitiesDataID = -1;
 	interface->forcesDataID = -1;
 
-  printf("PI Create 2\n");
-	fflush( stdout );
 	//Mapping Type
-
-  printf("Interface Patch Name %s, %zu", config->patchName, strlen(config->patchName));
-	fflush( stdout );
 	// The patch identifies the set used as interface in Calculix
 	interface->name = strdup( config->patchName );
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
 	interface->mapNPType = config->map;
 
-  printf("PI Create 3\n");
-	fflush( stdout );
 	// Nodes mesh
 	interface->nodesMeshID = -1;
 	interface->nodesMeshName = NULL;
@@ -439,8 +399,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureNodesMesh( interface, sim );
   }
 
-  printf("PI Create 4\n");
-	fflush( stdout );
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
 	interface->faceCentersMeshName = NULL;
@@ -452,12 +410,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     PreciceInterface_ConfigureTetraFaces( interface, sim );
 	}
 
-  printf("PI Create 5\n");
-	fflush( stdout );
 	PreciceInterface_ConfigureCouplingData( interface, sim, config );
-
-  printf("PI Create End\n");
-	fflush( stdout );
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, SimulationData * sim )
