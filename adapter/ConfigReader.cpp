@@ -28,7 +28,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 
 	int numInterfaces = config["participants"][participantName]["interfaces"].size();
   adapterConfig->numInterfaces = numInterfaces;
-  adapterConfig->interfaces = calloc( numInterfaces, sizeof( InterfaceConfig ) );
+  adapterConfig->interfaces = (InterfaceConfig*) calloc( numInterfaces, sizeof( InterfaceConfig ) );
 
   printf("Config Read begin interface loop\n");
   fflush( stdout );
