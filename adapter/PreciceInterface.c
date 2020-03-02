@@ -353,8 +353,6 @@ void Precice_FreeData( SimulationData * sim )
 
 void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config )
 {
-  InterfaceConfig_Print(config);
-
 	interface->dim = precicec_getDimensions();
 
 	// Initialize pointers as NULL
