@@ -33,7 +33,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
   printf("Config Read begin interface loop\n");
   fflush( stdout );
 
-	for( int i = 0 ; i < numInterface ; i++ )
+	for( int i = 0 ; i < numInterfaces ; i++ )
 	{
     printf("Loop at i %d", i);
     InterfaceConfig * currentInterfacePointer = adapterConfig->interfaces;
