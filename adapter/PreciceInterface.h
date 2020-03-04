@@ -133,6 +133,7 @@ typedef struct SimulationData {
 	double coupling_init_dtheta;
 	double precice_dt;
 	double solver_dt;
+	bool coupling_implicit;
 
 } SimulationData;
 
@@ -185,6 +186,12 @@ bool Precice_IsReadCheckpointRequired();
  * @return
  */
 bool Precice_IsWriteCheckpointRequired();
+
+/**
+ * @brief Returns true if coupling timestep is complete
+ * @return
+ */
+bool Precice_IsCouplingTimestepComplete();
 
 /**
  * @brief Tells preCICE that the checkpoint has been read

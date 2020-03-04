@@ -1089,6 +1089,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* Adapter: Create the interfaces and initialize the coupling */
   printf("About to enter preCICE setup in Calculix with names %s and %s \n", preciceParticipantName, configFilename);
   Precice_Setup( configFilename, preciceParticipantName, &simulationData );
+  // Initialize for the first step because Precice_IsCouplingTimestepComplete will return false until the end of the first step
+  if( !simulationData.coupling_implicit ) Precice_WriteIterationCheckpoint( &simulationData, vini );
   
   /* Adapter: Give preCICE the control of the time stepping */
   while( Precice_IsCouplingOngoing() ){
@@ -1114,11 +1116,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
 	  memcpy(&vini[0],&vold[0],sizeof(double)*mt**nk);
 
-	  if( Precice_IsWriteCheckpointRequired() )
+	  if( Precice_IsWriteCheckpointRequired() ) // implicit coupling
       	  {
           	Precice_WriteIterationCheckpoint( &simulationData, vini );
           	Precice_FulfilledWriteCheckpoint();
           }
+      if( Precice_IsCouplingTimestepComplete() && !simulationData.coupling_implicit ) // explicit coupling
+      Precice_WriteIterationCheckpoint( &simulationData, vini );
+
 	  
 	  for(k=0;k<*nboun;++k){xbounini[k]=xbounact[k];}
 	  if((*ithermal==1)||(*ithermal>=3)){

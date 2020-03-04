@@ -47,6 +47,9 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	// Initialize coupling data
 	Precice_InitializeData( sim );
 
+	// find if coupling is implicit or explicit. Implicit coupling will return true at the very beginning and explicit will always return false
+	sim->coupling_implicit = Precice_IsWriteCheckpointRequired();
+
 }
 
 void Precice_InitializeData( SimulationData * sim )
@@ -109,6 +112,11 @@ bool Precice_IsReadCheckpointRequired()
 bool Precice_IsWriteCheckpointRequired()
 {
 	return precicec_isActionRequired( "write-iteration-checkpoint" );
+}
+
+bool Precice_IsCouplingTimestepComplete()
+{
+	return precicec_isCouplingTimestepComplete();
 }
 
 void Precice_FulfilledReadCheckpoint()
