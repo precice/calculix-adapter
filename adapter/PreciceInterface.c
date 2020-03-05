@@ -589,7 +589,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 			interface->xbounIndices = malloc( interface->numNodes * 3 * sizeof( int ) );
 			interface->displacementsDataID = precicec_getDataID( config->readDataNames[i], interface->nodesMeshID );
 			getXbounIndices( interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS );
-			printf( "Read data '%s' found with ID # '%d'.\n", config->readDataNames[i] );
+			printf( "Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->displacementsDataID );
 		}
 		else
 		{
