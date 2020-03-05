@@ -32,14 +32,14 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  * @brief Type of coupling data
  *  Temperature - Dirichlet
  *  Heat Flux - Neumann
- *  Convection - Robin
+ *  Sink Temperature & Heat Transfer Coefficient - Robin
  *  Forces - dynamics data to be read/written (by the Calculix adapter)
  *  Displacements - dynamics data to be read/written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
  *  Velocities - FSI data to be written (by the Calculix adapter)
  *  Positions - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType { TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
+enum CouplingDataType { TEMPERATURE, HEAT_FLUX, SINK_TEMPERATURE, HEAT_TRANSFER_COEFF, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
 
 /**
  * @brief Returns node set name with internal CalculiX format
