@@ -32,28 +32,28 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  * @brief Type of coupling data
  *  Temperature - Dirichlet
  *  Heat Flux - Neumann
- *  Convection - Robin
+ *  Sink Temperature & Heat Transfer Coefficient - Robin
  *  Forces - dynamics data to be read/written (by the Calculix adapter)
  *  Displacements - dynamics data to be read/written (by the Calculix adapter)
  *  DisplacementDeltas - FSI data to be written (by the Calculix adapter)
  *  Velocities - FSI data to be written (by the Calculix adapter)
  *  Positions - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType { TEMPERATURE, HEAT_FLUX, CONVECTION, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
+enum CouplingDataType { TEMPERATURE, HEAT_FLUX, SINK_TEMPERATURE, HEAT_TRANSFER_COEFF, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
 
 /**
  * @brief Returns node set name with internal CalculiX format
  * Prepends and appends an N: e.g. If the input name is "interface",
  * it returns NinterfaceN
  */
-char* toNodeSetName( char * name );
+char* toNodeSetName( char const * name );
 
 /**
  * @brief Returns face set name with internal CalculiX format
  * Prepends an S and appends a T: e.g. If the input name is "interface",
  * it returns SinterfaceT
  */
-char* toFaceSetName( char * name );
+char* toFaceSetName( char const * name );
 
 /**
  * @brief Returns id of a set given its name
@@ -61,7 +61,7 @@ char* toFaceSetName( char * name );
  * @param set: CalculiX array for all the set names
  * @param nset: CalculiX variable for the number of sets
  */
-ITG getSetID( char * setName, char * set, ITG nset );
+ITG getSetID( char const * setName, char const * set, ITG nset );
 
 /**
  * @brief Returns number of elements in a set
@@ -155,7 +155,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
  * @param co: CalculiX array with the coordinates of all the nodes
  * @param faceCenters: output array with the face centers of the input element faces
  */
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs );
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters );
 
 /**
  * @brief Gets a list of node IDs from a list of input element faces
@@ -181,7 +181,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
  * @param sideload: CalculiX array containing the faces to which the DFLUX or FILM boundary conditions are applied
  * @param xloadIndices: output list of indices of the xload array
  */
-void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char * sideload, ITG * xloadIndices );
+void getXloadIndices( char const * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char const * sideload, ITG * xloadIndices );
 
 /**
  * @brief Gets the indices of the xboun array where the boundary conditions must be applied
@@ -261,7 +261,7 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
+void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
@@ -285,7 +285,21 @@ bool isSteadyStateSimulation( ITG * nmethod );
  * @param string
  * @param suffix
  */
-char * concat(char * prefix, char * string, char * suffix);
+char * concat(char const * prefix, char const * string, char const * suffix);
+
+/**
+ * @brief Checks wheather one zero-terminated string is prefixed by another
+ * @param string the string to inspect
+ * @param prefix the prefix to look for
+ */
+bool startsWith(const char * string, const char * prefix);
+
+/**
+ * @brief Checks wheather two zero-terminated strings are identical
+ * @param lhs the left-hand string
+ * @param rhs the right-hand string
+ */
+bool isEqual(const char * lhs, const char * rhs);
 
 /* Error messages */
 
@@ -293,13 +307,13 @@ char * concat(char * prefix, char * string, char * suffix);
  * @brief Terminate program if a node set is not defined for the interface (e.g. missing interface.nam file)
  * @param setName
  */
-void nodeSetNotFoundError( char * setName );
+void nodeSetNotFoundError( char const * setName );
 
 /**
  * @brief Terminate program if a face set is not defined for the interface (e.g. missing interface.sur file)
  * @param setName
  */
-void faceSetNotFoundError( char * setName );
+void faceSetNotFoundError( char const * setName );
 
 /**
  * @brief Terminate program if a temperature BC is not defined when using Dirichlet BC for coupling (e.g. missing line under *BOUNDARY)
@@ -325,5 +339,10 @@ void missingDfluxBCError();
  * @brief Terminate program if a FILM BC is not defined when using Robin BC for coupling (e.g. missing interface.flm file)
  */
 void missingFilmBCError(); 
+
+/**
+ * @brief Terminate program if the adapter reaches an unreachable state. This should never occur.
+ */
+void unreachableError(); 
 
 #endif // CCXHELPERS_H
