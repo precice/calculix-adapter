@@ -25,8 +25,8 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
   adapterConfig->preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
 
 	int numInterfaces = config["participants"][participantName]["interfaces"].size();
-  adapterConfig->numInterfaces = numInterfaces;
-  adapterConfig->interfaces = (InterfaceConfig*) calloc( numInterfaces, sizeof( InterfaceConfig ) );
+  	adapterConfig->numInterfaces = numInterfaces;
+  	adapterConfig->interfaces = (InterfaceConfig*) calloc( numInterfaces, sizeof( InterfaceConfig ) );
 
 	for( int i = 0 ; i < numInterfaces ; i++ )
 	{
@@ -38,6 +38,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
 			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
+			interface.map = 0;
 		}
 		else if ( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"] ) 
 		{
@@ -70,43 +71,50 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 		interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
 		interface.numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
 
-		if( interface.numWriteData == 0 )
+		if( config["participants"][participantName]["interfaces"][i]["write-data"] )
 		{
-			// write-data is a string
-			interface.numWriteData = 1;
-			interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
-			interface.writeDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"].as<std::string>().c_str() );
-		}
-		else
-		{
-			// write-data is an array
-			interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
-
-			for( int j = 0 ; j < interface.numWriteData ; j++ )
+			if( interface.numWriteData == 0 )
 			{
-				interface.writeDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"][j].as<std::string>().c_str() );
+				// write-data is a string
+				interface.numWriteData = 1;
+				interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
+				interface.writeDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"].as<std::string>().c_str() );
+			}
+			else
+			{
+				// write-data is an array
+				interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
+
+				for( int j = 0 ; j < interface.numWriteData ; j++ )
+				{
+					interface.writeDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"][j].as<std::string>().c_str() );
+				}
 			}
 		}
 
-		if( interface.numReadData == 0 )
+		if( config["participants"][participantName]["interfaces"][i]["read-data"] )
 		{
-			// read-data is a string
-			interface.numReadData = 1;
-			interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
-			interface.readDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"].as<std::string>().c_str() );
-		}
-		else
-		{
-			// read-data is an array
-			interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
-
-			for( int j = 0 ; j < interface.numReadData ; j++ )
+			if( interface.numReadData == 0 )
 			{
-				interface.readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
+				// read-data is a string
+				interface.numReadData = 1;
+				interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
+				interface.readDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"].as<std::string>().c_str() );
 			}
-		}	
+			else
+			{
+				// read-data is an array
+				interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
+
+				for( int j = 0 ; j < interface.numReadData ; j++ )
+				{
+					interface.readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
+				}
+			}	
+		}
 	}
 }
+
 
 void AdapterConfig_Free(AdapterConfig * adapterConfig)
 {
