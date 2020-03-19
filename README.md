@@ -6,6 +6,12 @@ The adapter was initially developed for conjugate heat transfer (CHT) simulation
 
 This adapter was developed for **CalculiX version 2.16.** Other versions may be compatible, yet they have not been tested. Please let us know if you want to use a different version.
 
+Adapters for other versions of CalculiX and preCICE are available in various branches. Branches compatible with **preCICE v2.x:**
+ - master
+ - v2.15_preCICE2.x
+ 
+ All other branches are compatible with **preCICE v1.x**. 
+ 
 ## Start here
 
 Our [wiki](https://github.com/precice/calculix-adapter/wiki) will help you start. 
