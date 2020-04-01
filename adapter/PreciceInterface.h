@@ -42,6 +42,7 @@ typedef struct PreciceInterface {
 	char * faceCentersMeshName;
 	int * preciceFaceCenterIDs;
 	int * triangles;
+	int * quads;
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;

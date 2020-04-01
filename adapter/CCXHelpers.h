@@ -171,6 +171,19 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * tetraFaceNodes );
 
 /**
+ * @brief Gets a list of node IDs from a list of input element faces
+ * @param elements: list of element IDs
+ * @param faces: list of local face IDs
+ * @param nodes: list of node IDs
+ * @param numElements: number of input elements
+ * @param numNodes: number of input nodes
+ * @param kon: CalculiX array with the connectivity information
+ * @param ipkon: CalculiX array (see description in ccx_2.10.pdf)
+ * @param quadFaceNodes: output list of node IDs that belong to the input element faces
+ */
+void getQuadFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * quadFaceNodes );
+
+/**
  * @brief Gets the indices of the xload where the DFLUX and FILM boundary conditions must be applied
  * @param loadType: DFLUX or FILM
  * @param elementIDs: list of IDs of elements on which the boundary conditions must be applied

@@ -12,6 +12,8 @@
 #include "PreciceInterface.h"
 #include "ConfigReader.h"
 #include "precice/SolverInterfaceC.h"
+//#include "../extras/bindings/c/include/precice/SolverInterfaceC.h"
+//#include "/home/daviske/Software/preciceDevelopment/precice/extras/bindings/c/include/precice/SolverInterfaceC.h"
 
 void Precice_Setup( char * configFilename, char * participantName, SimulationData * sim )
 {
@@ -479,6 +481,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 		//getNodeCoordinates( interface->nodeIDs, interface->numNodes, sim->co, sim->vold, sim->mt, interface->nodeCoordinates, interface->preciceNodeIDs );
 		precicec_setMeshVertices( interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs );
 	}
+    
 
 	if (interface->mapNPType == 1) 
 	{
@@ -498,7 +501,6 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
 	interface->faceCenterCoordinates = malloc( numElements * 3 * sizeof( double ) );
 	getSurfaceElementsAndFaces( interface->faceSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs, interface->faceIDs );
 	interface->numElements = numElements;
-	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
 	PreciceInterface_ConfigureTetraFaces( interface, sim );
 }
 
@@ -515,16 +517,31 @@ void PreciceInterface_EnsureValidNodesMeshID( PreciceInterface * interface )
 void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, SimulationData * sim )
 {
 	int i;
+	int quadType = 1;
 	printf("Setting node connectivity for nearest projection mapping: \n");
 	if( interface->nodesMeshName != NULL )
 	{	
-		interface->triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
-		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->triangles );
+		if (quadType == 1)
+			{
+				printf("Setting quads for NP mapping \n");
+				interface->quads = malloc( interface->numElements * 4 * sizeof( ITG ) );
+				getQuadFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->quads );
+				
+				for( i = 0 ; i < interface->numElements ; i++ )
+				{
+					precicec_setMeshQuadWithEdges( interface->nodesMeshID, interface->quads[4*i], interface->quads[4*i+1], interface->quads[4*i+2], interface->quads[4*i+3] );
+				}
+			}
+			else
+			{
+				interface->triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
+				getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->triangles );
 
-		for( i = 0 ; i < interface->numElements ; i++ )
-		{
-			precicec_setMeshTriangleWithEdges( interface->nodesMeshID, interface->triangles[3*i], interface->triangles[3*i+1], interface->triangles[3*i+2] );
-		}
+				for( i = 0 ; i < interface->numElements ; i++ )
+				{
+					precicec_setMeshTriangleWithEdges( interface->nodesMeshID, interface->triangles[3*i], interface->triangles[3*i+1], interface->triangles[3*i+2] );
+				}
+			}
 	}
 }
 

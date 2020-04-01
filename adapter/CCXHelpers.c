@@ -63,7 +63,6 @@ ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset )
 
 void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG * iendset, ITG * elements, ITG * faces )
 {
-
 	ITG i, k = 0;
 
 	for( i = istartset[setID]-1 ; i < iendset[setID] ; i++ )
@@ -82,11 +81,13 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
+		//printf("nodeID = %d @ counter i = %d \n",nodeIdx,i);
 		//The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
 		for( j = 0 ; j < dim ; j++ )
-    {
-      coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
-    }
+    	{
+      		coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
+    	}
+		//printf("Coordinates are = %f , %f , %f \n",coordinates[i * dim + 0], coordinates[i * dim + 1], coordinates[i * dim + 2]);
 	}
 }
 
@@ -241,8 +242,6 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 	ITG i, j, k;
 
-	
-
 	for( i = 0 ; i < numElements ; i++ )
 	{
 
@@ -251,7 +250,6 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 		for( j = 0 ; j < 3 ; j++ )
 		{
-
 			ITG nodeNum = faceNodes[faceIdx][j];
 			ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
 
@@ -261,6 +259,49 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 				if( nodes[k] == nodeID )
 				{
 					tetraFaceNodes[i*3 + j] = k;
+				}
+			}
+			
+		}
+	}
+}
+
+void getQuadFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * quadFaceNodes )
+{
+	// Set for quad faces
+
+	// Node numbering for faces of Hex elements (in the documentation the number is + 1)
+	int faceNodes[6][4] = { { 0,1,2,3 }, { 4,7,6,5 }, { 0,4,5,1 }, { 1,5,6,2 }, { 2,6,7,3 }, { 3,7,4,0 } };
+
+	ITG i, j, k;
+
+	
+	printf("numElements = %d \n", numElements);
+	printf("numNodes = %d \n", numNodes);
+	for( i = 0 ; i < numElements ; i++ )
+	{
+
+		ITG faceIdx = faces[i] - 1;
+		ITG elementIdx = elements[i] - 1;
+		printf("faceIdx = %d \n", faceIdx);
+		printf("elementIdx = %d \n", elementIdx);
+
+		for( j = 0 ; j < 4 ; j++ )
+		{
+
+			ITG nodeNum = faceNodes[faceIdx][j];
+			ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
+			printf("nodeID = %d \n",nodeID);
+
+			for( k = 0 ; k < numNodes ; k++ )
+			{
+
+				if( nodes[k] == nodeID )
+				{
+					printf("nodes[k] = %d \n",nodes[k]);
+					printf("k = %d \n",k);
+					quadFaceNodes[i*4 + j] = k;
+					printf("[i*3 + j] = %d \n",(i*4 + j));
 				}
 			}
 			
