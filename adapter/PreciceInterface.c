@@ -337,6 +337,20 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->mapNPType = NULL;
 	//Mapping Type
 
+	// Initialize data ids to -1
+	interface->temperatureDataID = -1;
+	interface->fluxDataID = -1;
+	interface->sinkTemperatureDataID = -1;
+	interface->kDeltaWriteDataID = -1;
+	interface->kDeltaTemperatureWriteDataID = -1;
+	interface->kDeltaReadDataID = -1;
+	interface->kDeltaTemperatureReadDataID = -1;
+	interface->displacementsDataID = -1;
+	interface->displacementDeltasDataID = -1;
+	interface->positionsDataID = -1;
+	interface->velocitiesDataID = -1;
+	interface->forcesDataID = -1;
+
 	// The patch identifies the set used as interface in Calculix
 	interface->name = config->patchName;
 	// Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else 
