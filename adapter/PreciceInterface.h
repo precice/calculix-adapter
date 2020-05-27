@@ -51,7 +51,6 @@ typedef struct PreciceInterface {
 	// preCICE Data IDs
 	int temperatureDataID;
 	int fluxDataID;
-	int sinkTemperatureDataID;
 	int kDeltaWriteDataID;
 	int kDeltaTemperatureWriteDataID;
 	int kDeltaReadDataID;
@@ -240,7 +239,7 @@ void Precice_FreeData( SimulationData * sim );
  * @param sim
  * @param config
  */
-void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
@@ -283,7 +282,7 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
  * @param sim
  * @param config
  */
-void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Frees the memory
