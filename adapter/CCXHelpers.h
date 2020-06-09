@@ -155,7 +155,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
  * @param co: CalculiX array with the coordinates of all the nodes
  * @param faceCenters: output array with the face centers of the input element faces
  */
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs );
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters );
 
 /**
  * @brief Gets a list of node IDs from a list of input element faces
@@ -261,7 +261,7 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
+void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
