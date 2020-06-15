@@ -1304,7 +1304,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   //while((1.-theta>1.e-6)||(negpres==1)){
 
       /* Adapter: Create the interfaces and initialize the coupling */
-  printf("About to enter preCICE setup in Calculix with names %s and %s \n", preciceParticipantName, configFilename);
   Precice_Setup( configFilename, preciceParticipantName, &simulationData );
 
   /* Adapter: Give preCICE the control of the time stepping */
