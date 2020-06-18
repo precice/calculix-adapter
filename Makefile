@@ -1,8 +1,8 @@
 # See our wiki for getting the CalculiX dependencies:
 # https://github.com/precice/calculix-adapter/wiki/Installation-instructions-for-CalculiX
 # Set the following variables before building:
-# Path to original CalculiX source (e.g. $(HOME)/ccx_2.15/src )
-CCX             = $(HOME)/PathTo/CalculiX/ccx_2.15/src
+# Path to original CalculiX source (e.g. $(HOME)/ccx_2.16/src )
+CCX             = $(HOME)/PathTo/CalculiX/ccx_2.16/src
 # Path to SPOOLES main directory (e.g. $(HOME)/SPOOLES.2.2 )
 SPOOLES         = $(HOME)/PathTo/SPOOLES
 # Path to ARPACK main directory (e.g. $(HOME)/ARPACK )
@@ -64,7 +64,7 @@ FC = mpifort
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
-SCCXMAIN = ccx_2.15.c
+SCCXMAIN = ccx_2.16.c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c CCXHelpers.c PreciceInterface.c
@@ -97,14 +97,14 @@ OCCXC += $(OBJDIR)/ConfigReader.o
 
 
 
-$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.15.a
-	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.15.a $(LIBS)
+$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.16.a
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.16.a $(LIBS)
 
-$(OBJDIR)/ccx_2.15.a: $(OCCXF) $(OCCXC)
+$(OBJDIR)/ccx_2.16.a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.15.a $(OBJDIR)/ccx_preCICE
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.16.a $(OBJDIR)/ccx_preCICE

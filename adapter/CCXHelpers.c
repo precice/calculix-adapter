@@ -128,7 +128,7 @@ void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, int m
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
 		for( j = 0 ; j < dim ; j++ )
-    {
+  	{
       displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
     }
 	}
@@ -182,7 +182,7 @@ void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, int mt,
    }
  */
 
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs )
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters )
 {
 
 	// Assume all tetra elements -- maybe implement checking later...
@@ -473,7 +473,7 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 	}
 }
 
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc )
+void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc )
 {
 	ITG i, j;
 

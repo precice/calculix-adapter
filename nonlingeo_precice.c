@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                 */
-/*              Copyright (C) 1998-2018 Guido Dhondt                          */
+/*              Copyright (C) 1998-2019 Guido Dhondt                          */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -19,6 +19,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "CalculiX.h"
+#include "mortar.h"
 #ifdef SPOOLES
    #include "spooles.h"
 #endif
@@ -83,12 +84,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	     ITG **islavsurfp,double **pslavsurfp,double **clearinip,
 	     ITG *nmat,double *xmodal,ITG *iaxial,ITG *inext,ITG *nprop,
 	     ITG *network,char *orname,double *vel,ITG *nef,
-	     double *velo,double *veloo,
-	/* Adapter: Add variables for the participant name and the config file */
+	     double *velo,double *veloo,double *energy,ITG *itempuser,
+		 /* Adapter: Add variables for the participant name and the config file */
          char * preciceParticipantName, char * configFilename){
 
   char description[13]="            ",*lakon=NULL,jobnamef[396]="",
-      *sideface=NULL,*labmpc=NULL,*lakonf=NULL,
+      *sideface=NULL,*labmpc=NULL,*lakonf=NULL,*env,*envsys,
       *sideloadref=NULL,*sideload=NULL,stiffmatrix[132]=""; 
  
   ITG *inum=NULL,k,iout=0,icntrl,iinc=0,jprint=0,iit=-1,jnz=0,
@@ -113,7 +114,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       *jqrad=NULL,*ipointerrad=NULL,*integerglob=NULL,negpres=0,
       mass[2]={0,0}, stiffness=1, buckling=0, rhsi=1, intscheme=0,idiscon=0,
       coriolis=0,*ipneigh=NULL,*neigh=NULL,maxprevcontel,nslavs_prev_step,
-      *nelemface=NULL,*ipoface=NULL,*nodface=NULL,*ifreestream=NULL,iex,
+      *nelemface=NULL,*ipoface=NULL,*nodface=NULL,*ifreestream=NULL,
       *isolidsurf=NULL,*neighsolidsurf=NULL,*iponoel=NULL,*inoel=NULL,
       nface,nfreestream,nsolidsurf,i,icfd=0,id,*neij=NULL,
       node,networknode,iflagact=0,*nodorig=NULL,*ipivr=NULL,iglob=0,
@@ -123,10 +124,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       *ielmatf=NULL,*ielorienf=NULL,ialeatoric=0,nloadref,isym,
       *nelemloadref=NULL,*iamloadref=NULL,*idefload=NULL,nload_,
       *nelemload=NULL,*iamload=NULL,ncontacts=0,inccontact=0,nrhs=1,
-      j=0,*ifatie=NULL,n,inoelsize=0,isensitivity=0,*istartblk=NULL,
-      *iendblk=NULL,*nblket=NULL,*nblkze=NULL,nblk,*konf=NULL,*ielblk=NULL,
+      j=0,*ifatie=NULL,n,inoelsize=0,isensitivity=0,*konf=NULL,
       *iwork=NULL,nelt,lrgw,*igwk=NULL,itol,itmax,iter,ierr,iunit,ligw,
-      mei[4]={0,0,0,0},initial;
+      mei[4]={0,0,0,0},initial,*itreated=NULL,mscalmethod=-1,
+      isiz=0,num_cpus,sys_cpus,inull=0,ione=1,ne1d2d=0;
 
   double *stn=NULL,*v=NULL,*een=NULL,cam[5],*epn=NULL,*cg=NULL,
          *cdn=NULL,*vfa=NULL,*pslavsurfold=NULL,
@@ -155,26 +156,98 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	 *ad=NULL,*b=NULL,*aub=NULL,*adb=NULL,*pslavsurf=NULL,*pmastsurf=NULL,
 	 *x=NULL,*y=NULL,*z=NULL,*xo=NULL,sum1,sum2,flinesearch,
 	 *yo=NULL,*zo=NULL,*cdnr=NULL,*cdni=NULL,*fnext=NULL,*fnextini=NULL,
-	 allwk=0.,allwkini,energy[4]={0.,0.,0.,0.},energyini[4],
+         allwk=0.,allwkini,energyini[4]={0.,0.,0.,0.},xnull=0.,
 	 energyref,denergymax,dtcont,dtvol,wavespeed[*nmat],emax,r_abs,
          enetoll,dampwk=0.,dampwkini=0.,temax,*tmp=NULL,energystartstep[4],
 	 sizemaxinc,*adblump=NULL,*adcpy=NULL,*aucpy=NULL,*rwork=NULL,
-	 *sol=NULL,*rgwk=NULL,tol,*sb=NULL,*sx=NULL,delcon,alea;
-
-  FILE *f1;
+	 *sol=NULL,*rgwk=NULL,tol,*sb=NULL,*sx=NULL,delcon,alea,
+         *smscale=NULL,dtset,energym=0.,energymold=0.;
 	 
+  FILE *f1;
+
+  if(filab[4]!=' ') ne1d2d=1;
+
+  num_cpus=0;
+  sys_cpus=0;
+  
+  /* explicit user declaration prevails */
+  
+  envsys=getenv("NUMBER_OF_CPUS");
+  if(envsys){
+      sys_cpus=atoi(envsys);
+      if(sys_cpus<0) sys_cpus=0;
+  }
+  
+  /* automatic detection of available number of processors */
+  
+  if(sys_cpus==0){
+      sys_cpus=getSystemCPUs();
+      if(sys_cpus<1) sys_cpus=1;
+  }
+  
+  /* else global declaration, if any, applies */
+  
+  env = getenv("OMP_NUM_THREADS");
+  if(num_cpus==0){
+      if(env)
+	  num_cpus=atoi(env);
+      if(num_cpus<1) {
+	  num_cpus=1;
+      }else if(num_cpus>sys_cpus){
+	  num_cpus=sys_cpus;
+      }
+  }
+  
   // MPADD: initialize rmin to the tolerance
   enetoll=0.02;
   r_abs=0.0;
   emax=0.0;
   // MPADD end
 
-  delcon=ctrl[52];alea=ctrl[53];
+  delcon=ctrl[53];alea=ctrl[54];
 
 #ifdef SGI
   ITG token;
 #endif
   
+  /* declarations for mortar contact */
+
+  char *labmpc2=NULL;
+
+  ITG *nslavspc=NULL,*islavspc=NULL,nsspc,*nslavmpc=NULL,*islavmpc=NULL,nsmpc,
+      *nslavspc2=NULL,*islavspc2=NULL,nsspc2,*nslavmpc2=NULL,*islavmpc2=NULL,nsmpc2,
+      *nmastspc=NULL,*imastspc=NULL,nmspc,*nmastmpc=NULL,*imastmpc=NULL,nmmpc,
+      *nmastmpc2=NULL,*imastmpc2=NULL,nmmpc2,*islavactdof=NULL,iflag_fric,niwan,
+      *islavactini=NULL,iflagact_old,*islavactdoftie=NULL,
+      *irowtloc=NULL,*jqtloc=NULL,
+      nboun2,*ndirboun2=NULL,*nodeboun2=NULL,*irowtlocinv=NULL,*jqtlocinv=NULL,
+      nmpc2,*ipompc2=NULL,*nodempc2=NULL,iflagdualquad,
+      *ikboun2=NULL,*ilboun2=NULL,*ikmpc2=NULL,*ilmpc2=NULL,nk2,
+      *irowb=NULL,*jqb=NULL,*irowd=NULL,*jqd=NULL,*irowdtil=NULL,*jqdtil=NULL,
+      *irowbtil=NULL,*jqbtil=NULL,*irowbhelp=NULL,*jqbhelp=NULL,
+      *islavnodeinv=NULL,*islavelinv=NULL,*irowc2=NULL,*jqc2=NULL,nzsc2,*icolc2=NULL,
+      *jqbd=NULL,*irowbd=NULL,*jqbdtil=NULL,*irowbdtil=NULL,*jqbdtil2=NULL,*irowbdtil2=NULL,
+      *jqdd=NULL,*irowdd=NULL,*jqddtil=NULL,*irowddtil=NULL,*jqddtil2=NULL,*irowddtil2=NULL,
+      *jqddinv=NULL,*irowddinv=NULL,*jqtemp=NULL,*irowtemp=NULL,*icoltemp=NULL,nzstemp[3],
+      *irowbpg=NULL,*jqbpg=NULL,*irowbpgtil=NULL,*jqbpgtil=NULL,
+      *irowdpg=NULL,*jqdpg=NULL,*irowdpgtil=NULL,*jqdpgtil=NULL,
+      *nodeforc2=NULL,*ndirforc2=NULL,nforc2;
+  
+  double *adbtil=NULL,*aubtil=NULL,
+	 *lambdaiwan=NULL,*lambdaiwanini=NULL,*fextinitil=NULL,*finitil=NULL,
+	 *ftil=NULL,*fexttil=NULL,
+	 *xboun2=NULL,*coefmpc2=NULL,*bp=NULL,*gap=NULL,*slavnor=NULL,
+	 *slavtan=NULL,*cdisp=NULL,*cstress=NULL,*cfs=NULL,*cfm=NULL,*cfsini=NULL,
+         *cfstil=NULL,*cfsinitil=NULL,*bpini=NULL,
+	 *cstressini=NULL,*pslavdual=NULL,*pslavdualpg=NULL,*autloc=NULL,
+         *autlocinv=NULL,*Bd=NULL,*Bdhelp=NULL,
+	 *Dd=NULL,*Ddtil=NULL,*Bdtil=NULL,*auc2=NULL,*adc2=NULL,*aubd=NULL,
+	 *audd=NULL,*auddtil=NULL,*auddtil2=NULL,*auddinv=NULL,*bhat=NULL,*aubdtil=NULL,
+	 *aubdtil2=NULL,*Bpgd=NULL,*Bpgdtil=NULL,*auxtil2=NULL,*cvtil=NULL,*cvtilini=NULL,
+	 *Dpgd=NULL,*Dpgdtil=NULL,*xforc2=NULL;
+
+  /* end of declarations for mortar contact */
+
   icol=*icolp;irow=*irowp;co=*cop;vold=*voldp;
   ipkon=*ipkonp;lakon=*lakonp;kon=*konp;ielorien=*ielorienp;
   ielmat=*ielmatp;ener=*enerp;xstate=*xstatep;
@@ -191,7 +264,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   tmax=&timepar[3];
   tincf=&timepar[4];
 
-  /* Adapter: Put all the CalculiX data that is needed for the coupling into an array */
+    /* Adapter: Put all the CalculiX data that is needed for the coupling into an array */
   struct SimulationData simulationData = {
       .ialset = ialset,
       .ielmat = ielmat,
@@ -243,12 +316,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       maxprevcontel=*nintpoint;
       if(*nstate_!=0){
 	  if(maxprevcontel!=0){
-	      NNEW(islavsurfold,ITG,2**ifacecount+2);
-	      NNEW(pslavsurfold,double,3**nintpoint);
-	      memcpy(&islavsurfold[0],&islavsurf[0],
-		     sizeof(ITG)*(2**ifacecount+2));
-	      memcpy(&pslavsurfold[0],&pslavsurf[0],
-		     sizeof(double)*(3**nintpoint));
+	      MNEW(islavsurfold,ITG,2**ifacecount+2);
+	      MNEW(pslavsurfold,double,3**nintpoint);
+	      isiz=2**ifacecount+2;cpyparitg(islavsurfold,islavsurf,&isiz,&num_cpus);
+//	      memcpy(&islavsurfold[0],&islavsurf[0],
+//		     sizeof(ITG)*(2**ifacecount+2));
+	      isiz=3**nintpoint;cpypardou(pslavsurfold,pslavsurf,&isiz,&num_cpus);
+//	      memcpy(&pslavsurfold[0],&pslavsurf[0],
+//		     sizeof(double)*(3**nintpoint));
 	  }
       }
   }
@@ -279,12 +354,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   betam=xmodal[1];
 
   /* check whether, for a dynamic calculation, damping is involved */
-
+  
   if(*nmethod==4){
       if(*iexpl<=1){
+	  
+	  /* implicit dynamics */
+	  
 	  if((fabs(alpham)>1.e-30)||(fabs(betam)>1.e-30)){
-	      idamping=1;
-	      idampingwithoutcontact=1;
+	      idamping=1;idampingwithoutcontact=1;
 	  }else{
 	      for(i=0;i<*ne;i++){
 		  if(ipkon[i]<0) continue;
@@ -293,9 +370,22 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  }
 	      }
 	  }
+      }else{
+	  
+	  /* explicit dynamics */
+	  
+	  if(fabs(alpham)>1.e-30){
+	      idamping=1;idampingwithoutcontact=1;
+	  }
+	  if(fabs(betam)>1.e-30){
+	      printf(" *ERROR: in explicit dynamic calculations the damping is only\n");
+	      printf("         allowed to be mass proportional: the coefficient beta\n");
+	      printf("         of the stiffness proportional term must be zero\n");
+	      FORTRAN(stop,());
+	  }
       }
   }
-
+  
   /* check whether a sensitivity step may follow (whether design variables
      were defined */
 
@@ -314,40 +404,31 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       printf("        This is not allowed in a explicit dynamic calculation\n");
       FORTRAN(stop,());
   }
+      
+  /* determining the global values to be used as boundary conditions
+     for a submodel */
   
-  /* check whether the submodel is meant for a fluid-structure
-     interaction */
+  getglobalresults(jobnamec,&integerglob,&doubleglob,nboun,iamboun,xboun,
+		   nload,sideload,iamload,&iglob,nforc,iamforc,xforc,
+		   ithermal,nk,t1,iamt1,&sigma);
   
-/*  strcpy(fnffrd,jobnamec);
-  strcat(fnffrd,"f.frd");
-  if((jobnamec[396]!='\0')&&(strcmp1(&jobnamec[396],fnffrd)==0)){*/
-      
-      /* fluid-structure interaction: wait till after the compfluid
-         call */
-      
-/*      NNEW(integerglob,ITG,1);
-	NNEW(doubleglob,double,1);*/
-//  }else{
-      
-      /* determining the global values to be used as boundary conditions
-	 for a submodel */
-      
-      getglobalresults(jobnamec,&integerglob,&doubleglob,nboun,iamboun,xboun,
-		       nload,sideload,iamload,&iglob,nforc,iamforc,xforc,
-                       ithermal,nk,t1,iamt1,&sigma);
+  if(iglob<0){
+      printf(" *ERROR in nonlingeo: a submodel calculation for which\n");
+      printf("        the global model results from a *FREQUENCY\n");
+      printf("        calculation must be geometrically linear\n");
+      FORTRAN(stop,());
+  }
 
-      if(iglob<0){
-	  printf(" *ERROR in nonlingeo: a submodel calculation for which\n");
-	  printf("        the global model results from a *FREQUENCY\n");
-	  printf("        calculation must be geometrically linear\n");
-	  FORTRAN(stop,());
-      }
-//  }
+  /* reading temperatures from frd-file */
+  
+  if((itempuser[0]==2)&&(itempuser[1]!=itempuser[2])) {
+      utempread(t1,&itempuser[2],jobnamec);
+  }      
   
   /* invert nactdof */
   
   NNEW(nactdofinv,ITG,mt**nk);
-  NNEW(nodorig,ITG,*nk);
+  MNEW(nodorig,ITG,*nk);
   FORTRAN(gennactdofinv,(nactdof,nactdofinv,nk,mi,nodorig,
 			 ipkon,lakon,kon,ne));
   SFREE(nodorig);
@@ -360,6 +441,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   
   NNEW(f,double,neq[1]);
   NNEW(fext,double,neq[1]);
+  if(*mortar>1){
+      NNEW(ftil,double,neq[1]);
+      NNEW(fexttil,double,neq[1]);
+  }
   
   NNEW(b,double,neq[1]);
   NNEW(vini,double,mt**nk);
@@ -381,8 +466,20 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* assigning the body forces to the elements */ 
   
   if(*nbody>0){
+
+      /* check whether there the previous step was in the relative
+         system and a change to the absolute system was requested */
+      
+      if((*nmethod==4)&&(alpha[1]>1.)){
+	  NNEW(itreated,ITG,*nk);
+	  FORTRAN(velinireltoabs,(ibody,xbody,cbody,nbody,set,
+			      istartset,iendset,ialset,nset,veold,mi,
+			      ipkon,kon,lakon,co,itreated));
+	  SFREE(itreated);
+      }
+			     
       ifreebody=*ne+1;
-      NNEW(ipobody,ITG,2*ifreebody**nbody);
+      NNEW(ipobody,ITG,2*(*ne+ifreebody));
       for(k=1;k<=*nbody;k++){
 	  FORTRAN(bodyforce,(cbody,ibody,ipobody,nbody,set,istartset,
 			     iendset,ialset,&inewton,nset,&ifreebody,&k));
@@ -525,7 +622,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       NNEW(x,double,n);NNEW(y,double,n);NNEW(z,double,n);	   
       NNEW(nx,ITG,n);NNEW(ny,ITG,n);NNEW(nz,ITG,n);
 
-      FORTRAN(precfd,(ne,ipkon,konf,lakon,ipnei,neifa,neiel,ipoface,
+      FORTRAN(topocfd,(ne,ipkon,konf,lakon,ipnei,neifa,neiel,ipoface,
        nodface,ielfa,&nflnei,&nface,ifaext,&nfaext,
        isolidsurf,&nsolidsurf,set,nset,istartset,iendset,ialset,
        vel,vold,mi,neij,nef,nactdoh,ipkonf,lakonf,ielmatf,ielmat,
@@ -549,6 +646,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   }else{
       SFREE(nactdoh);SFREE(nactdohinv);
   }
+  
   if(*ithermal>1){NNEW(qfx,double,3*mi[0]**ne);}
   
   /* contact conditions */
@@ -607,8 +705,49 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 	  FORTRAN(checktruecontact,(ntie,tieset,tietol,elcon,&itruecontact,
 				    ncmat_,ntmat_));
+      }else if(*mortar>1){
+       inimortar(&ener,mi,ne,nslavs,nk,nener,
+		  &ipkon,&lakon,&kon,nkon,
+		  &maxprevcontel,&xstate,nstate_,
+		  &islavactdoftie,&bp,&islavact,
+		  &gap,&slavnor,&slavtan,&cdisp,
+		  &cstress,&cfs,&cfm,&cfsini,&cfsinitil,&cfstil,
+		  &bpini,&islavactini,&cstressini,
+		  &niwan,ntie,tieset,
+		  nslavnode,islavnode,
+		  &islavnodeinv,&islavelinv,&pslavdual,&pslavdualpg,
+		  &autloc,&irowtloc,&jqtloc,	
+		  &autlocinv,&irowtlocinv,&jqtlocinv,
+		  &Bd,&irowb,&jqb,
+		  &Bdhelp,&irowbhelp,&jqbhelp,
+		  &Dd,&irowd,&jqd, 
+		  &Ddtil,&irowdtil,&jqdtil,
+		  &Bdtil,&irowbtil,&jqbtil,
+		  &Bpgd,&irowbpg,&jqbpg,
+		  &Dpgd,&irowdpg,&jqdpg, 
+		  &Dpgdtil,&irowdpgtil,&jqdpgtil,
+		  &Bpgdtil,&irowbpgtil,&jqbpgtil,
+		  &iflagdualquad,itiefac,islavsurf,
+		  nboun,ndirboun,nodeboun,xbounact,
+		  nmpc,ipompc,nodempc,coefmpc,labmpc,
+		  ikboun,ilboun,ikmpc,ilmpc,
+		  &nboun2,&ndirboun2,&nodeboun2,&xboun2,
+		  &nmpc2,&ipompc2,&nodempc2,&coefmpc2,&labmpc2,
+		  &ikboun2,&ilboun2,&ikmpc2,&ilmpc2,
+		  &nslavspc,&islavspc,&nslavmpc,&islavmpc,
+		  &nslavspc2,&islavspc2,&nslavmpc2,&islavmpc2,
+		  &nmastspc,&imastspc,&nmastmpc,&imastmpc,
+		  &nmastmpc2,&imastmpc2,&nmmpc2,
+		  &nsspc,&nsspc2,&nsmpc,&nsmpc2,
+		  imastnode,nmastnode,&nmspc,&nmmpc,
+		  iponoels,inoels,
+		  tietol,elcon,ncmat_,ntmat_,&nasym,
+		  &iflag_fric,&lambdaiwan,&lambdaiwanini,
+		  &nk2,vold,nset,set,mortar,&memmpc_,
+		  &ielmat,&ielorien,norien,nmethod,
+		  nodeforc,ndirforc,xforc,nforc,
+		  &nodeforc2,&ndirforc2,&xforc2,&nforc2);
       }
-
       NNEW(xmastnor,double,3*nmastnode[*ntie]);
   }
   
@@ -713,16 +852,17 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   
   /*********************************************************************/
   
-  if((*nmethod==4)&&(*ithermal!=2)&&(icfd!=1)){
-      bet=(1.-*alpha)*(1.-*alpha)/4.;
-      gam=0.5-*alpha;
+  if((*nmethod==4)&&(*ithermal!=2)&&(icfd==0)){
+      bet=(1.-alpha[0])*(1.-alpha[0])/4.;
+      gam=0.5-alpha[0];
 
       /* initialization of the energy */
 
       if(ithermal[0]<=1){
-	  for(k=0;k<mi[0]*ne0;++k){enerini[k]=ener[k];}
+	  isiz=mi[0]*ne0;cpypardou(enerini,ener,&isiz,&num_cpus);
+//	  for(k=0;k<mi[0]*ne0;++k){enerini[k]=ener[k];}
       }
-      energyini[3]=energy[3];
+      //      energyini[3]=energy[3];
       
       /* calculating the stiffness and mass matrix */
       
@@ -770,14 +910,16 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  for(k=0;k<memmpc_;k++){coefmpcref[k]=coefmpc[k];}
       }
       
-      if(icascade>0) remastruct(ipompc,&coefmpc,&nodempc,nmpc,
+      if(icascade>0){
+	  remastruct(ipompc,&coefmpc,&nodempc,nmpc,
 	      &mpcfree,nodeboun,ndirboun,nboun,ikmpc,ilmpc,ikboun,ilboun,
 	      labmpc,nk,&memmpc_,&icascade,&maxlenmpc,
 	      kon,ipkon,lakon,ne,nactdof,icol,jq,&irow,isolver,
 	      neq,nzs,nmethod,&f,&fext,&b,&aux2,&fini,&fextini,
 	      &adb,&aub,ithermal,iperturb,mass,mi,iexpl,mortar,
 	      typeboun,&cv,&cvini,&iit,network);
-      
+      }
+
       /* invert nactdof */
 
       SFREE(nactdofinv);
@@ -786,10 +928,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       iout=-1;
       ielas=1;
       
-      NNEW(fn,double,mt**nk);
+      MNEW(fn,double,mt**nk);
       NNEW(stx,double,6*mi[0]**ne);
       
-      NNEW(inum,ITG,*nk);
+      if(ne1d2d==1)NNEW(inum,ITG,*nk);
       results(co,nk,kon,ipkon,lakon,ne,vold,stn,inum,stx,
 	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 	      ielorien,norien,orab,ntmat_,t0,t1old,ithermal,
@@ -807,18 +949,57 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 	      islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
+              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod);
       
-      SFREE(fn);SFREE(stx);SFREE(inum);
+      SFREE(fn);SFREE(stx);if(ne1d2d==1)SFREE(inum);
       
-      iout=0;
-      ielas=0;
-      
-      reltime=0.;
-      time=0.;
-      dtime=0.;
+      if(*mortar<2){
+	  iout=0;
+	  ielas=0;
+	  
+	  reltime=0.;
+	  time=0.;
+	  dtime=0.;
+      }
       
       if(*iexpl<=1){intscheme=1;}
+      
+      if(*iexpl>1){
+
+	  mscalmethod=0;
+	  
+	  /* Explicit: Calculation of stable time increment according to
+	     Courant's Law  CARLO MT and Selctive Mass Scaling CC*/
+
+	  /*Mass Scaling
+	  mscalmethod < 0: no explicit dynamics
+	  mscalmethod = 0: no mass scaling
+	  mscalmethod = 1: selective mass scaling for nonlinearity after Olovsson et. al 2005*/
+
+	  dtset=*tmin*(*tper);
+	  NNEW(smscale,double,*ne);
+	  
+	  FORTRAN(calcstabletimeincvol,(&ne0,elcon,nelcon,
+      		  rhcon,nrhcon,alcon,nalcon,orab,ntmat_,ithermal,alzero,
+      		  plicon,nplicon,plkcon,nplkcon,npmat_,mi,&dtime,
+      		  xstiff,ncmat_,vold,ielmat,t0,t1,
+      		  matname,lakon,wavespeed,nmat,ipkon,co,kon,&dtvol,alpha,
+		  smscale,&dtset,&mscalmethod));
+
+	  printf(" ++CMT DEBUG: Courant criterion for stability time inc=%e\n\n",dtvol);
+
+	  if(dtvol>(*tmax*(*tper))){
+	      *tinc=*tmax*(*tper);}
+	  else if(dtvol<dtset){
+	      *tinc=dtset;}
+	  else {
+	      *tinc=dtvol;
+	  }
+	  
+	  dtheta=(*tinc)/(*tper);
+	  dthetaref=dtheta;
+      }
       
       /* in mafillsm the stiffness and mass matrix are computed;
 	 The primary aim is to calculate the mass matrix (not 
@@ -851,7 +1032,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   xstateini,xstate,thicke,integerglob,doubleglob,
 		  tieset,istartset,iendset,ialset,ntie,&nasym,pslavsurf,
 		  pmastsurf,mortar,clearini,ielprop,prop,&ne0,fnext,&kscale,
-		  iponoel,inoel,network,ntrans,inotr,trab);
+		  iponoel,inoel,network,ntrans,inotr,trab,smscale,&mscalmethod);
       
       if(*nmethod==0){
 	  
@@ -860,7 +1041,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  ++*kode;
 	  if(strcmp1(&filab[1044],"ZZS")==0){
 	      NNEW(neigh,ITG,40**ne);
-	      NNEW(ipneigh,ITG,*nk);
+	      MNEW(ipneigh,ITG,*nk);
 	  }
 	  
 	  ptime=*ttime+time;
@@ -895,7 +1076,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	     case of discontinuous load changes at the start of the step */
 	  
 	  dtime=*tinc/10.;
-	  scal1=bet*dtime*dtime*(1.+*alpha);
+	  scal1=bet*dtime*dtime*(1.+alpha[0]);
 	  for(k=0;k<neq[0];++k){
 	      ad[k]=adb[k]+scal1*ad[k];
 	  }
@@ -943,8 +1124,56 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       }
       
       else{
-	  for(k=0;k<neq[0];++k){
-	      b[k]=(fext[k]-f[k])/adb[k];
+	
+	  if((mscalmethod==0)||(mscalmethod==2)){
+	      for(k=0;k<neq[0];++k){
+		  b[k]=(fext[k]-f[k])/adb[k];
+	      }
+	  }
+	  
+	  else{
+
+	    inputformat=0;
+	    if(*isolver==0){
+#ifdef SPOOLES
+	      spooles_factor(adb,aub,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+                   &symmetryflag,&inputformat,&nzs[2]);
+	      spooles_solve(b,&neq[0]);
+#else
+	      printf("*ERROR in arpack: the SPOOLES library is not linked\n\n");
+	      FORTRAN(stop,());
+#endif
+	    }
+	    else if(*isolver==4){
+#ifdef SGI
+	      token=1;
+	      sgi_factor(adb,aub,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],token);
+	      sgi_solve(b,token);
+#else
+	      printf("*ERROR in arpack: the SGI library is not linked\n\n");
+	      FORTRAN(stop,());
+#endif
+	    }
+	    else if(*isolver==5){
+#ifdef TAUCS
+	      tau_factor(adb,&aub,adb,aub,&sigma,icol,&irow,&neq[0],&nzs[0]);
+	      tau_solve(b,&neq[0]);
+#else
+	      printf("*ERROR in arpack: the TAUCS library is not linked\n\n");
+	      FORTRAN(stop,());
+#endif
+	    }
+	    else if(*isolver==7){
+#ifdef PARDISO
+	      pardiso_factor(adb,aub,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+			    &symmetryflag,&inputformat,jq,&nzs[0]);
+
+	      pardiso_solve(b,&neq[0],&symmetryflag,&nrhs);
+#else
+	      printf("*ERROR in arpack: the PARDISO library is not linked\n\n");
+	      FORTRAN(stop,());
+#endif
+	    }
 	  }
       }
       
@@ -957,16 +1186,17 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* calculating the displacements, stresses and forces */
       
       NNEW(v,double,mt**nk);
-      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+      isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
       
       NNEW(stx,double,6*mi[0]**ne);
-      NNEW(fn,double,mt**nk);
+      MNEW(fn,double,mt**nk);
       
       /* setting a "special" time consisting of the first primes;
          used to recognize the initial acceleration procedure
          in file resultsini.f */
 
-      NNEW(inum,ITG,*nk);
+      if(ne1d2d==1)NNEW(inum,ITG,*nk);
       dtime=1.235711130e-20;
       results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
@@ -985,15 +1215,19 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
               islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-      SFREE(inum);
+              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod);
+      if(ne1d2d==1)SFREE(inum);
       dtime=0.;
 
-      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+      isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
       if(*ithermal!=2){
-	  for(k=0;k<6*mi[0]*ne0;++k){
+	  isiz=6*mi[0]*ne0;	    
+	  cpypardou(sti,stx,&isiz,&num_cpus);
+/*	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stx[k];
-	  }
+	      }*/
       }
 
       SFREE(v);SFREE(stx);SFREE(fn);
@@ -1006,32 +1240,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       mass[0]=0;intscheme=0;
       energyref=energy[0]+energy[1]+energy[2]+energy[3];
 
-      /* carlo start */
-
-      if(*iexpl>1){
+      if(*iexpl<=1){
 	  
-	  /* CMT: Calculation of stable time increment according to
-	     Courant's Law  CARLO MT*/
-	  
-	  FORTRAN(calcmatwavspeed,(ne,elcon,nelcon,
-		  rhcon,nrhcon,alcon,nalcon,orab,ntmat_,ithermal,alzero,
-		  plicon,nplicon,plkcon,nplkcon,npmat_,mi,&dtime,
-		  xstiff,ncmat_,vold,ielmat,t0,t1,
-		  matname,lakon,wavespeed,nmat,ipkon));
-	  
-	  FORTRAN(calcstabletimeincvol,(&ne0,lakon,co,kon,ipkon,mi,
-			      ielmat,&dtvol,alpha,wavespeed));
-      
-	  printf(" ++CMT DEBUG: courant criterion for stability time inc=%e\n",dtvol);
-	  *tinc=dtvol;
-	  dtheta=(*tinc)/(*tper);
-	  dthetaref=dtheta;
-	  
-      } else {
-              // # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-              // MPADD start
-	  /* lumping of the mass matrix for implict calculations to 
-	     midify the increment time when contact is involved
+          // # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+          // MPADD start
+	  /* lumping of the mass matrix for implicit calculations to 
+	     modify the increment time when contact is involved
 	  */
 	  
 	  NNEW(tmp,double,neq[1]);
@@ -1049,9 +1263,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  // MPADD end
 	  // # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
       }
-
-      /* carlo end */
-      
   }
   
   if(*iexpl>1) icmd=3;
@@ -1081,23 +1292,28 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       if(*nam>0) NNEW(iamloadref,ITG,2**nload);
       NNEW(sideloadref,char,20**nload);
       
-      memcpy(&nelemloadref[0],&nelemload[0],sizeof(ITG)*2**nload);
-      if(*nam>0) memcpy(&iamloadref[0],&iamload[0],sizeof(ITG)*2**nload);
+      isiz=2**nload;cpyparitg(nelemloadref,nelemload,&isiz,&num_cpus);
+//      memcpy(&nelemloadref[0],&nelemload[0],sizeof(ITG)*2**nload);
+      if(*nam>0){
+	  isiz=2**nload;cpyparitg(iamloadref,iamload,&isiz,&num_cpus);
+//	  memcpy(&iamloadref[0],&iamload[0],sizeof(ITG)*2**nload);
+      }
       memcpy(&sideloadref[0],&sideload[0],sizeof(char)*20**nload);
   }
-
-  /* Adapter: Create the interfaces and initialize the coupling */
-  printf("About to enter preCICE setup in Calculix with names %s and %s \n", preciceParticipantName, configFilename);
-  Precice_Setup( configFilename, preciceParticipantName, &simulationData );
   
+  //while((1.-theta>1.e-6)||(negpres==1)){
+
+      /* Adapter: Create the interfaces and initialize the coupling */
+  Precice_Setup( configFilename, preciceParticipantName, &simulationData );
+
   /* Adapter: Give preCICE the control of the time stepping */
   while( Precice_IsCouplingOngoing() ){
-      
-      /* Adapter: Adjust solver time step */
+
+	  /* Adapter: Adjust solver time step */
       Precice_AdjustSolverTimestep( &simulationData );
       /* Adapter read coupling data if available */
       Precice_ReadCouplingData( &simulationData );
-      
+
       if(icutb==0){
 	  
 	  /* previous increment converged: update the initial values */
@@ -1112,31 +1328,50 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
 	  /* vold is copied into vini */
 	  
-	  memcpy(&vini[0],&vold[0],sizeof(double)*mt**nk);
+	  isiz=mt**nk;cpypardou(vini,vold,&isiz,&num_cpus);
+//	  memcpy(&vini[0],&vold[0],sizeof(double)*mt**nk);
 
 	  if( Precice_IsWriteCheckpointRequired() )
-      	  {
-          	Precice_WriteIterationCheckpoint( &simulationData, vini );
-          	Precice_FulfilledWriteCheckpoint();
-          }
+      {
+        Precice_WriteIterationCheckpoint( &simulationData, vini );
+        Precice_FulfilledWriteCheckpoint();
+      }
 	  
-	  for(k=0;k<*nboun;++k){xbounini[k]=xbounact[k];}
+	  isiz=*nboun;cpypardou(xbounini,xbounact,&isiz,&num_cpus);
+//	  for(k=0;k<*nboun;++k){xbounini[k]=xbounact[k];}
 	  if((*ithermal==1)||(*ithermal>=3)){
-	      for(k=0;k<*nk;++k){t1ini[k]=t1act[k];}
+	      isiz=*nk;cpypardou(t1ini,t1act,&isiz,&num_cpus);
+//	      for(k=0;k<*nk;++k){t1ini[k]=t1act[k];}
 	  }
-	  for(k=0;k<neq[1];++k){
+	  isiz=neq[1];cpypardou(fini,f,&isiz,&num_cpus);
+/*	  for(k=0;k<neq[1];++k){
 	      fini[k]=f[k];
-	  }
+	      }*/
 	  if(*nmethod==4){
-	      for(k=0;k<mt**nk;++k){
-		  veini[k]=veold[k];
-		  accini[k]=accold[k];
-		  fnextini[k]=fnext[k];
+	      if(*iexpl<=1){
+		  isiz=mt**nk;
+		  cpypardou(veini,veold,&isiz,&num_cpus);
+		  cpypardou(accini,accold,&isiz,&num_cpus);
 	      }
-	      for(k=0;k<neq[1];++k){
+	      isiz=mt**nk;cpypardou(fnextini,fnext,&isiz,&num_cpus);
+	  
+/*	      for(k=0;k<mt**nk;++k){
+		  if(*iexpl<=1){
+		      veini[k]=veold[k];
+		      accini[k]=accold[k];
+		  }
+		  fnextini[k]=fnext[k];
+		  }*/
+
+	      isiz=neq[1];
+	      cpypardou(fextini,fext,&isiz,&num_cpus);
+	      cpypardou(cvini,cv,&isiz,&num_cpus);
+	     
+/*	      for(k=0;k<neq[1];++k){
 		  fextini[k]=fext[k];
 		  cvini[k]=cv[k];
-	      }
+		  }*/
+	      
 	      if(*ithermal<2){
 		  allwkini=allwk;
 		  // MPADD start
@@ -1148,21 +1383,42 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      }
 	  }
 	  if(*ithermal!=2){
-	      for(k=0;k<6*mi[0]*ne0;++k){
-		  stiini[k]=sti[k];
-		  emeini[k]=eme[k];
-	      }
+	      isiz=6*mi[0]*ne0;	    
+	      cpypardou(stiini,sti,&isiz,&num_cpus);
+	      cpypardou(emeini,eme,&isiz,&num_cpus);
 	  }
-	  if(*nener==1)
-	      for(k=0;k<mi[0]*ne0;++k){enerini[k]=ener[k];}
+	  if(*nener==1){
+	      isiz=mi[0]*ne0;
+	      cpypardou(enerini,ener,&isiz,&num_cpus);
+	  }
+	      
 
 	  if(*mortar!=1){
 	      if(*nstate_!=0){
-		  for(k=0;k<*nstate_*mi[0]*(ne0+*nslavs);++k){
+		/*		  for(k=0;k<*nstate_*mi[0]*(ne0+*nslavs);++k){
 		      xstateini[k]=xstate[k];
+		      }*/
+		  isiz=*nstate_*mi[0]*(ne0+*nslavs);
+		  cpypardou(xstateini,xstate,&isiz,&num_cpus);
+	      }
+	  }
+	
+	  if(*mortar>1){
+	      for (i=0;i<*ntie;i++){
+		  for(j=nslavnode[i];j<nslavnode[i+1];j++){
+		      islavactini[j]=islavact[j];
+		      bpini[j]=bp[j];
+		      for(k=0;k<mt;k++){
+			  cstressini[mt*j+k]=cstress[mt*j+k];
+		      }		      
+		  }    
+	      }
+	      if(iflag_fric==1){
+		  for(i=0;i<3*niwan*nslavnode[*ntie];i++){
+		      lambdaiwanini[i]=lambdaiwan[i];
 		  }
 	      }
-	  }	
+	  }
       }
       
       /* check for max. # of increments */
@@ -1171,13 +1427,16 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  printf(" *ERROR: max. # of increments reached\n\n");
 	  FORTRAN(stop,());
       }
-      printf(" increment %" ITGFORMAT " attempt %" ITGFORMAT " \n",iinc,icutb+1);
-      printf(" increment size= %e\n",dtheta**tper);
-      printf(" sum of previous increments=%e\n",theta**tper);
-      printf(" actual step time=%e\n",(theta+dtheta)**tper);
-      printf(" actual total time=%e\n\n",*ttime+(theta+dtheta)**tper);
+
+      if(*iexpl<=1){
+	  printf(" increment %" ITGFORMAT " attempt %" ITGFORMAT " \n",iinc,icutb+1);
+	  printf(" increment size= %e\n",dtheta**tper);
+	  printf(" sum of previous increments=%e\n",theta**tper);
+	  printf(" actual step time=%e\n",(theta+dtheta)**tper);
+	  printf(" actual total time=%e\n\n",*ttime+(theta+dtheta)**tper);
       
-      printf(" iteration 1\n\n");
+	  printf(" iteration 1\n\n");
+      }
       
       qamold[0]=qam[0];
       qamold[1]=qam[1];
@@ -1189,9 +1448,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       if((*ithermal==3)&&(ncont!=0)&&(*mortar==1)&&(*ncmat_>=11)){
 	  *nload=nloadref;
-	  memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
+	  isiz=2**nload;cpyparitg(nelemload,nelemloadref,&isiz,&num_cpus);
+//	  memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
 	  if(*nam>0){
-	      memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
+	      isiz=2**nload;cpyparitg(iamload,iamloadref,&isiz,&num_cpus);
+//	      memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
 	  }
 	  memcpy(&sideload[0],&sideloadref[0],sizeof(char)*20**nload);
       }
@@ -1296,9 +1557,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       if(icascade==2){
 	  memmpc_=memmpcref_;mpcfree=mpcfreeref;maxlenmpc=maxlenmpcref;
 	  RENEW(nodempc,ITG,3*memmpcref_);
-	  for(k=0;k<3*memmpcref_;k++){nodempc[k]=nodempcref[k];}
+	  isiz=3*memmpcref_;cpyparitg(nodempc,nodempcref,&isiz,&num_cpus);
+//	  for(k=0;k<3*memmpcref_;k++){nodempc[k]=nodempcref[k];}
 	  RENEW(coefmpc,double,memmpcref_);
-	  for(k=0;k<memmpcref_;k++){coefmpc[k]=coefmpcref[k];}
+	  isiz=memmpcref_;cpypardou(coefmpc,coefmpcref,&isiz,&num_cpus);
+//	  for(k=0;k<memmpcref_;k++){coefmpc[k]=coefmpcref[k];}
       }
 
       /* generating contact elements */
@@ -1325,10 +1588,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 			  if(iit!=-1){
 			      NNEW(islavsurfold,ITG,2**ifacecount+2);
 			      NNEW(pslavsurfold,double,3**nintpoint);
-			      memcpy(&islavsurfold[0],&islavsurf[0],
-				     sizeof(ITG)*(2**ifacecount+2));
-			      memcpy(&pslavsurfold[0],&pslavsurf[0],
-				     sizeof(double)*(3**nintpoint));
+			      isiz=2**ifacecount+2;
+			      cpyparitg(islavsurfold,islavsurf,&isiz,&num_cpus);
+//			      memcpy(&islavsurfold[0],&islavsurf[0],
+//				     sizeof(ITG)*(2**ifacecount+2));
+			      isiz=3**nintpoint;
+			      cpypardou(pslavsurfold,pslavsurf,&isiz,&num_cpus);
+//			      memcpy(&pslavsurfold[0],&pslavsurf[0],
+//				     sizeof(double)*(3**nintpoint));
 			  }
 		      }
 		  }
@@ -1357,7 +1624,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 		      /* setting the entries for the friction contact energy to zero */
 
-		      for(k=mi[0]*(2**ne+*nintpoint);k<mi[0]*(*ne+*nintpoint)*2;k++){ener[k]=0.;}
+//		      isiz=mi[0]**nintpoint;
+		      DOUMEMSET(ener,mi[0]*(2**ne+*nintpoint),mi[0]*(*ne+*nintpoint)*2,0.);
+//		      setpardou(&ener[mi[0]*(2**ne+*nintpoint)],&xnull,&isiz,&num_cpus);
+//		      for(k=mi[0]*(2**ne+*nintpoint);k<mi[0]*(*ne+*nintpoint)*2;k++){ener[k]=0.;}
 
 		  }
 		  RENEW(ipkon,ITG,*ne+*nintpoint);
@@ -1365,10 +1635,16 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  
 		  if(*norien>0){
 		      RENEW(ielorien,ITG,mi[2]*(*ne+*nintpoint));
-		      for(k=mi[2]**ne;k<mi[2]*(*ne+*nintpoint);k++) ielorien[k]=0;
+//		      isiz=mi[2]**nintpoint;
+		      ITGMEMSET(ielorien,mi[2]**ne,mi[2]*(*ne+*nintpoint),0);
+//		      setparitg(&ielorien[mi[2]**ne],&inull,&isiz,&num_cpus);
+//		      for(k=mi[2]**ne;k<mi[2]*(*ne+*nintpoint);k++) ielorien[k]=0;
 		  }
 		  RENEW(ielmat,ITG,mi[2]*(*ne+*nintpoint));
-		  for(k=mi[2]**ne;k<mi[2]*(*ne+*nintpoint);k++) ielmat[k]=1;
+		  isiz=mi[2]**nintpoint;
+		  ITGMEMSET(ielmat,mi[2]**ne,mi[2]*(*ne+*nintpoint),1);
+//		  setparitg(&ielmat[mi[2]**ne],&ione,&isiz,&num_cpus);
+//		  for(k=mi[2]**ne;k<mi[2]*(*ne+*nintpoint);k++) ielmat[k]=1;
 
                   /* interpolating the state variables */
 
@@ -1376,19 +1652,23 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		      if(maxprevcontel!=0){
 			  RENEW(xstateini,double,
                                 *nstate_*mi[0]*(ne0+maxprevcontel));
-			  for(k=*nstate_*mi[0]*ne0;
+			  isiz=*nstate_*mi[0]*maxprevcontel;
+			  cpypardou(&xstateini[*nstate_*mi[0]*ne0],&xstate[*nstate_*mi[0]*ne0],&isiz,&num_cpus);
+/*			  for(k=*nstate_*mi[0]*ne0;
                                 k<*nstate_*mi[0]*(ne0+maxprevcontel);++k){
 			      xstateini[k]=xstate[k];
-			  }
+			      }*/
 		      }
 		      
 		      RENEW(xstate,double,*nstate_*mi[0]*(ne0+*nintpoint));
-		      for(k=*nstate_*mi[0]*ne0;k<*nstate_*mi[0]*(ne0+*nintpoint);k++){
+		      isiz=*nstate_*mi[0]**nintpoint;
+		      DOUMEMSET(xstate,*nstate_*mi[0]*ne0,*nstate_*mi[0]*(ne0+*nintpoint),0.);
+//		      setpardou(&xstate[*nstate_*mi[0]*ne0],&xnull,&isiz,&num_cpus);
+/*		      for(k=*nstate_*mi[0]*ne0;k<*nstate_*mi[0]*(ne0+*nintpoint);k++){
 			  xstate[k]=0.;
-		      }
+			  }*/
 		      
 		      if((*nintpoint>0)&&(maxprevcontel>0)){
-			  iex=2;
 			  
 			  /* interpolation of xstate */
 			  
@@ -1406,9 +1686,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		      maxprevcontel=*nintpoint;
 
 		      RENEW(xstateini,double,*nstate_*mi[0]*(ne0+*nintpoint));
-		      for(k=0;k<*nstate_*mi[0]*(ne0+*nintpoint);++k){
+		      isiz=*nstate_*mi[0]*(ne0+*nintpoint);
+		      cpypardou(xstateini,xstate,&isiz,&num_cpus);
+/*		      for(k=0;k<*nstate_*mi[0]*(ne0+*nintpoint);++k){
 			  xstateini[k]=xstate[k];
-		      }
+			  }*/
 		  }
 
 	      }
@@ -1426,7 +1708,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	          xstateini,xstate,nstate_,&icutb,&ialeatoric,jobnamef,
                   &alea);
    
-	  /* check whether, for a dynamic calculation, damping is involved */
+	  /* check whether, for a dynamic calculation, contact damping is involved */
 
 	  if(*nmethod==4){
 	      if(*iexpl<=1){
@@ -1448,7 +1730,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      }
 	  }
 	  
-	  printf(" Number of contact spring elements=%" ITGFORMAT "\n\n",*ne-ne0);
+	  if(*iexpl<=1) printf(" Number of contact spring elements=%" ITGFORMAT "\n\n",*ne-ne0);
             
 	  /* carlo start */
 
@@ -1458,13 +1740,22 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  ncontacts=*ne-ne0;
 		  inccontact=0;
 	      }  
-	      else if((*ne-ne0)>ncontacts)  {			
+	      else if((*ne-ne0)>ncontacts)  {
+		  
+		  RENEW(smscale,double,*ne);
 		  
 		  FORTRAN(calcstabletimeinccont,(ne,lakon,kon,ipkon,mi,
 			  ielmat,elcon,mortar,adb,alpha,nactdof,springarea,
-			  &ne0,ntmat_,ncmat_,&dtcont));
+			  &ne0,ntmat_,ncmat_,&dtcont,smscale,&dtset,
+			  &mscalmethod));
 
-		  if(dtcont<*tinc)*tinc=dtcont;
+		  if(dtcont>(*tmax*(*tper))){
+		      *tinc=*tmax*(*tper);}
+		  else if(dtcont<dtset){
+		      *tinc=dtset;}
+		  else {
+		      *tinc=dtcont;
+		  }
 		  dtheta=(*tinc)/(*tper);
 		  dthetaref=dtheta;
 
@@ -1494,8 +1785,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 			 &iit,&idiscon,&ncont,trab,ntrans,ithermal,mi));
       
       if(icascade==2){
-	  for(k=0;k<3*memmpc_;k++){nodempcref[k]=nodempc[k];}
-	  for(k=0;k<memmpc_;k++){coefmpcref[k]=coefmpc[k];}
+	  isiz=3*memmpc_;cpyparitg(nodempcref,nodempc,&isiz,&num_cpus);
+//	  for(k=0;k<3*memmpc_;k++){nodempcref[k]=nodempc[k];}
+	  isiz=memmpc_;cpypardou(coefmpcref,coefmpc,&isiz,&num_cpus);
+//	  for(k=0;k<memmpc_;k++){coefmpcref[k]=coefmpc[k];}
       }
       
       if((icascade>0)||(ncont!=0)) remastruct(ipompc,&coefmpc,&nodempc,nmpc,
@@ -1505,12 +1798,19 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  neq,nzs,nmethod,&f,&fext,&b,&aux2,&fini,&fextini,
 	  &adb,&aub,ithermal,iperturb,mass,mi,iexpl,mortar,
 	  typeboun,&cv,&cvini,&iit,network);
-      
+
+      /* mortar contact */
+
+      if((icascade>0)&&(*mortar>1)){
+	  RENEW(ftil,double,neq[1]);
+	  RENEW(fexttil,double,neq[1]);
+      }      
+
       /* invert nactdof */
       
       SFREE(nactdofinv);
       NNEW(nactdofinv,ITG,mt**nk);
-      NNEW(nodorig,ITG,*nk);
+      MNEW(nodorig,ITG,*nk);
       FORTRAN(gennactdofinv,(nactdof,nactdofinv,nk,mi,nodorig,
 			     ipkon,lakon,kon,ne));
       SFREE(nodorig);
@@ -1527,7 +1827,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	 for iinc>1 a reasonable displacement field is predicted by using the
 	 initial velocity field at the end of the last increment */
       
-      if((iinc==1)&&(*ithermal<2)){
+      if((iinc==1)&&(*ithermal<2)&&(*nmethod!=4)){
 	  dev=0.;
 	  for(k=0;k<*nboun;++k){
 	      err=fabs(xbounact[k]-xbounini[k]);
@@ -1541,9 +1841,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       NNEW(v,double,mt**nk);
       
       prediction(uam,nmethod,&bet,&gam,&dtime,ithermal,nk,veold,accold,v,
-		 &iinc,&idiscon,vold,nactdof,mi);
+		 &iinc,&idiscon,vold,nactdof,mi,&num_cpus);
       
-      NNEW(fn,double,mt**nk);
+      MNEW(fn,double,mt**nk);
       NNEW(stx,double,6*mi[0]**ne);
       
       /* determining the internal forces at the start of the increment
@@ -1587,8 +1887,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  iperturb[0]=-1;
 	  iperturb[1]=0;
 	  
-	  for(k=0;k<neq[1];++k){b[k]=f[k];}
-	  NNEW(inum,ITG,*nk);
+	  isiz=neq[1];cpypardou(b,f,&isiz,&num_cpus);
+//	  for(k=0;k<neq[1];++k){b[k]=f[k];}
+	  if(ne1d2d==1)NNEW(inum,ITG,*nk);
 	  results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 		  elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 		  ielorien,norien,orab,ntmat_,t1ini,t1act,ithermal,
@@ -1606,8 +1907,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 		  mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
                   islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-                  inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-	  iperturb[0]=0;SFREE(inum);
+                  inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	          itiefac,tieset,smscale,&mscalmethod);
+	  iperturb[0]=0;if(ne1d2d==1)SFREE(inum);
 	  
 	  /* check whether any displacements or temperatures are changed
 	     in the new increment */
@@ -1617,7 +1919,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       }
       else{
 	  
-	  NNEW(inum,ITG,*nk);
+	  if(ne1d2d==1)NNEW(inum,ITG,*nk);
 	  results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 		  elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 		  ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
@@ -1635,15 +1937,19 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 		  mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
                   islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-                  inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-	  SFREE(inum);
+                  inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	          itiefac,tieset,smscale,&mscalmethod);
+	  if(ne1d2d==1)SFREE(inum);
 	  
-	  memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+	  isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//	  memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 	  
 	  if(*ithermal!=2){
-	      for(k=0;k<6*mi[0]*ne0;++k){
+	      isiz=6*mi[0]*ne0;	    
+	      cpypardou(sti,stx,&isiz,&num_cpus);
+/*	      for(k=0;k<6*mi[0]*ne0;++k){
 		  sti[k]=stx[k];
-	      }
+		  }*/
 	  }
 	  
       }
@@ -1658,8 +1964,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* iteration counter and start of the loop over the iterations */
       /***************************************************************/
 
+      if(*mortar>1){	  
+	  NNEW(bhat,double,neq[1]);
+	  NNEW(islavactdof,ITG,neq[1]);
+	  iflagact_old=1;
+      } 
+      
     iit=1;
-//    icntrl=0;
 
     /* change due to previous checkdivergence routine */
 
@@ -1691,9 +2002,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
 	  if((*ithermal==3)&&(ncont!=0)&&(*mortar==1)&&(*ncmat_>=11)){
 	      *nload=nloadref;
-	      memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
+	      isiz=2**nload;cpyparitg(nelemload,nelemloadref,&isiz,&num_cpus);
+//	      memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
 	      if(*nam>0){
-		  memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
+		  isiz=2**nload;cpyparitg(iamload,iamloadref,&isiz,&num_cpus);
+//		  memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
 	      }
 	      memcpy(&sideload[0],&sideloadref[0],sizeof(char)*20**nload);
 	  }
@@ -1752,9 +2065,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  if(icascade==2){
 	      memmpc_=memmpcref_;mpcfree=mpcfreeref;maxlenmpc=maxlenmpcref;
 	      RENEW(nodempc,ITG,3*memmpcref_);
-	      for(k=0;k<3*memmpcref_;k++){nodempc[k]=nodempcref[k];}
+	      isiz=3*memmpcref_;cpyparitg(nodempc,nodempcref,&isiz,&num_cpus);
+//	      for(k=0;k<3*memmpcref_;k++){nodempc[k]=nodempcref[k];}
 	      RENEW(coefmpc,double,memmpcref_);
-	      for(k=0;k<memmpcref_;k++){coefmpc[k]=coefmpcref[k];}
+	      isiz=memmpcref_;cpypardou(coefmpc,coefmpcref,&isiz,&num_cpus);
+//	      for(k=0;k<memmpcref_;k++){coefmpc[k]=coefmpcref[k];}
 	  }
 
 	  if((ncont!=0)&&(*mortar<=1)&&(ismallsliding==0)&&
@@ -1779,7 +2094,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                       clearini,&theta,xstateini,xstate,nstate_,&icutb,
                       &ialeatoric,jobnamef,&alea);
 
-	      /* check whether, for a dynamic calculation, damping is involved */
+	      /* check whether, for a dynamic calculation, contact damping is involved */
 	      
 	      if(*nmethod==4){
 		  if(*iexpl<=1){
@@ -1804,8 +2119,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      if(*mortar==0){
 	         if(*ne!=neold){iflagact=1;}
 	      }else if(*mortar==1){
-/*	         if(((*ne-ne0)<(neold-ne0)*0.999)||
-		 ((*ne-ne0)>(neold-ne0)*1.001)){iflagact=1;}*/
 		  if(((*ne-ne0)<(neold-ne0)*(1.-delcon))||
 		     ((*ne-ne0)>(neold-ne0)*(1.+delcon))){iflagact=1;}
               }
@@ -1825,8 +2138,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		&idiscon,&ncont,trab,ntrans,ithermal,mi));
 
 	  if(icascade==2){
-	      for(k=0;k<3*memmpc_;k++){nodempcref[k]=nodempc[k];}
-	      for(k=0;k<memmpc_;k++){coefmpcref[k]=coefmpc[k];}
+	      isiz=3*memmpc_;cpyparitg(nodempcref,nodempc,&isiz,&num_cpus);
+//	      for(k=0;k<3*memmpc_;k++){nodempcref[k]=nodempc[k];}
+	      isiz=memmpc_;cpypardou(coefmpcref,coefmpc,&isiz,&num_cpus);
+//	      for(k=0;k<memmpc_;k++){coefmpcref[k]=coefmpc[k];}
 	  }
 
 	  if((icascade>0)||(ncont!=0)){
@@ -1838,23 +2153,32 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		&adb,&aub,ithermal,iperturb,mass,mi,iexpl,mortar,
 		typeboun,&cv,&cvini,&iit,network);
 
+	      /* mortar contact */
+
+	      if((icascade>0)&&(*mortar>1)){
+		  RENEW(ftil,double,neq[1]);
+		  RENEW(fexttil,double,neq[1]);
+	      }
+
 	      /* invert nactdof */
 	      
 	      SFREE(nactdofinv);
 	      NNEW(nactdofinv,ITG,mt**nk);
-	      NNEW(nodorig,ITG,*nk);
+	      MNEW(nodorig,ITG,*nk);
 	      FORTRAN(gennactdofinv,(nactdof,nactdofinv,nk,mi,nodorig,
 				     ipkon,lakon,kon,ne));
 	      SFREE(nodorig);
 	      
-	      NNEW(v,double,mt**nk);
+	      MNEW(v,double,mt**nk);
+//	      NNEW(v,double,mt**nk);
 	      NNEW(stx,double,6*mi[0]**ne);
-	      NNEW(fn,double,mt**nk);
+	      MNEW(fn,double,mt**nk);
       
-	      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+	      isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//	      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
 	      iout=-1;
 	      
-	      NNEW(inum,ITG,*nk);
+	      if(ne1d2d==1)NNEW(inum,ITG,*nk);
 	      results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 	        elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 		ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
@@ -1872,19 +2196,23 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                 sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 		mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 		islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-		inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
+		inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	        itiefac,tieset,smscale,&mscalmethod);
 	  
-	      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+	      isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//	      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 	      
 	      if(*ithermal!=2){
-		  for(k=0;k<6*mi[0]*ne0;++k){
+		  isiz=6*mi[0]*ne0;	    
+		  cpypardou(sti,stx,&isiz,&num_cpus);
+/*		  for(k=0;k<6*mi[0]*ne0;++k){
 		      sti[k]=stx[k];
-		  }
+		      }*/
 	      }
 
 	      /*for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}*/
 	      
-	      SFREE(v);SFREE(fn);SFREE(inum);
+	      SFREE(v);SFREE(fn);if(ne1d2d==1)SFREE(inum);
 	      if((*ithermal!=3)||(ncont==0)||(*mortar!=1)||(*ncmat_<11)) SFREE(stx);
 	      iout=0;
 	      
@@ -1900,18 +2228,26 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  nload_=*nload+2*(*ne-ne0);
 
 	  RENEW(nelemload,ITG,2*nload_);
-	  DMEMSET(nelemload,2**nload,2*nload_,0);
+	  ITGMEMSET(nelemload,2**nload,2*nload_,0);
+//	  isiz=2*(nload_-*nload);setparitg(&nelemload[2**nload],&inull,&isiz,&num_cpus);
+//	  DMEMSET(nelemload,2**nload,2*nload_,0);
 	  if(*nam>0){
 	      RENEW(iamload,ITG,2*nload_);
-	      DMEMSET(iamload,2**nload,2*nload_,0);
+	      ITGMEMSET(iamload,2**nload,2*nload_,0);
+//	      isiz=2*(nload_-*nload);setparitg(&iamload[2**nload],&inull,&isiz,&num_cpus);
+//	      DMEMSET(iamload,2**nload,2*nload_,0);
 	  }
 	  RENEW(xloadact,double,2*nload_);
-	  DMEMSET(xloadact,2**nload,2*nload_,0.);
+	  DOUMEMSET(xloadact,2**nload,2*nload_,0.);
+//	  isiz=2*(nload_-*nload);setpardou(&xloadact[2**nload],&xnull,&isiz,&num_cpus);
+//	  DMEMSET(xloadact,2**nload,2*nload_,0.);
 	  RENEW(sideload,char,20*nload_);
 	  DMEMSET(sideload,20**nload,20*nload_,'\0');
 
-	  NNEW(idefload,ITG,nload_);
-	  DMEMSET(idefload,0,nload_,1);
+	  MNEW(idefload,ITG,nload_);
+	  ITGMEMSET(idefload,0,nload_,1);
+//	  isiz=nload_;setparitg(idefload,&ione,&isiz,&num_cpus);
+//	  DMEMSET(idefload,0,nload_,1);
 	  FORTRAN(frictionheating,(&ne0,ne,ipkon,lakon,ielmat,mi,elcon,
 		  ncmat_,ntmat_,kon,islavsurf,pmastsurf,springarea,co,vold,
                   veold,pslavsurf,xloadact,nload,&nload_,nelemload,iamload,
@@ -1925,8 +2261,17 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 	NNEW(ad,double,neq[1]);
 	NNEW(au,double,nzs[1]);
+//	NNEW(au,double,nzs[1]);
+//	MNEW(au,double,nzs[1]);
+//	DMEMSET(au,0,nzs[1],0.);
+//	setpardou(au,0.,nzs[1],num_cpus);
 
-	if(*nmethod==4) DMEMSET(fnext,0,mt**nk,0.);
+	if(*nmethod==4){
+	    DOUMEMSET(fnext,0,mt**nk,0.);
+//	    isiz=mt**nk;setpardou(fnext,&xnull,&isiz,&num_cpus);
+	}
+	    
+//	if(*nmethod==4) DMEMSET(fnext,0,mt**nk,0.);
 
 	mafillsmmain(co,nk,kon,ipkon,lakon,ne,nodeboun,ndirboun,xbounact,nboun,
 		  ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
@@ -1944,7 +2289,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   xstateini,xstate,thicke,integerglob,doubleglob,
 		  tieset,istartset,iendset,ialset,ntie,&nasym,pslavsurf,
 		  pmastsurf,mortar,clearini,ielprop,prop,&ne0,fnext,&kscale,
-		  iponoel,inoel,network,ntrans,inotr,trab);
+		  iponoel,inoel,network,ntrans,inotr,trab,smscale,&mscalmethod);
 
 	if(nasym==1){
 	    RENEW(au,double,2*nzs[1]);
@@ -1985,23 +2330,24 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
            the body forces and surface loading). This effect is
            neglected, since the increment size in dynamic explicit
            calculations is usually small */
+	   
+	rhsmain(co,nk,kon,ipkon,lakon,ne,
+	  	ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
+	  	nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
+	  	nbody,cgr,fext,nactdof,&neq[1],
+	  	nmethod,ikmpc,ilmpc,
+	  	elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,
+	  	ielmat,ielorien,norien,orab,ntmat_,
+	  	t0,t1act,ithermal,iprestr,vold,iperturb,
+	  	iexpl,plicon,nplicon,plkcon,nplkcon,
+	  	npmat_,ttime,&time,istep,&iinc,&dtime,physcon,ibody,
+	  	xbodyold,&reltime,veold,matname,mi,ikactmech,
+	  	&nactmech,ielprop,prop,sti,xstateini,xstate,nstate_,
+	        ntrans,inotr,trab);
 
-	  FORTRAN(rhs,(co,nk,kon,ipkon,lakon,ne,
-		  ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
-		  nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
-		  nbody,cgr,fext,nactdof,&neq[1],
-		  nmethod,ikmpc,ilmpc,
-		  elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,
-		  ielmat,ielorien,norien,orab,ntmat_,
-		  t0,t1act,ithermal,iprestr,vold,iperturb,
-		  iexpl,plicon,nplicon,plkcon,nplkcon,
-		  npmat_,ttime,&time,istep,&iinc,&dtime,physcon,ibody,
-		  xbodyold,&reltime,veold,matname,mi,ikactmech,
-		  &nactmech,ielprop,prop,sti,xstateini,xstate,nstate_,
-                  ntrans,inotr,trab));
       }
       
-/*      for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}
+      /*      for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}
       for(k=0;k<neq[1];++k){printf("fext=%" ITGFORMAT ",%f\n",k,fext[k]);}
       for(k=0;k<neq[1];++k){printf("ad=%" ITGFORMAT ",%f\n",k,ad[k]);}
       for(k=0;k<nzs[1];++k){printf("au=%" ITGFORMAT ",%f\n",k,au[k]);}*/
@@ -2009,17 +2355,17 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* calculating the damping matrix for implicit dynamic
          calculations */
 
-      if(idamping==1){
+      if((idamping==1)&&(*iexpl<=1)){
 
           /* Rayleigh damping */
 
-	  NNEW(adc,double,neq[1]);
+	  MNEW(adc,double,neq[1]);DOUMEMSET(adc,neq[0],neq[1],0.);
 	  for(k=0;k<neq[0];k++){adc[k]=alpham*adb[k]+betam*ad[k];}
 	  if(nasym==0){
-	      NNEW(auc,double,nzs[1]);
+	      MNEW(auc,double,nzs[1]);DOUMEMSET(auc,nzs[0],nzs[1],0.);
 	      for(k=0;k<nzs[0];k++){auc[k]=alpham*aub[k]+betam*au[k];}
 	  }else{
-	      NNEW(auc,double,2*nzs[1]);
+	      NNEW(auc,double,2*nzs[1]);DOUMEMSET(auc,2*nzs[0],2*nzs[1],0.);
 	      for(k=0;k<2*nzs[0];k++){auc[k]=alpham*aub[k]+betam*au[k];}
 	  }
  
@@ -2046,11 +2392,152 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       calcresidual(nmethod,neq,b,fext,f,iexpl,nactdof,aux2,vold,
 	 vini,&dtime,accold,nk,adb,aub,jq,irow,nzl,alpha,fextini,fini,
 	 islavnode,nslavnode,mortar,ntie,f_cm,f_cs,mi,
-	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv);
+	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv,&alpham,&num_cpus);
+
+      /* mortar contact */
+
+      if(*mortar>1){
+	  /* trafo u -> util */
+	  precontact_mortar(&iflagact,&ismallsliding,nzs,&nzsc2,
+		       &auc2,&adc2,&irowc2,&icolc2,&jqc2,
+		       &aubd,&irowbd,&jqbd,
+		       &aubdtil,&irowbdtil,&jqbdtil,
+		       &aubdtil2,&irowbdtil2,&jqbdtil2,
+		       &audd,&irowdd,&jqdd,
+		       &auddtil,&irowddtil,&jqddtil,
+		       &auddtil2,&irowddtil2,&jqddtil2,
+		       &auddinv,&irowddinv,&jqddinv,
+		       &jqtemp,&irowtemp,&icoltemp,nzstemp,
+		       &iit,slavnor,slavtan,
+		       icol,irow,jq,
+		       ikboun,ilboun,ikmpc,ilmpc,
+		       &nboun2,&ndirboun2,&nodeboun2,&xboun2,
+		       &nmpc2,&ipompc2,&nodempc2,&coefmpc2,&labmpc2,
+		       &ikboun2,&ilboun2,&ikmpc2,&ilmpc2,
+		       &nslavspc,&islavspc,&nslavmpc,&islavmpc,
+		       &nslavspc2,&islavspc2,&nslavmpc2,&islavmpc2,
+		       &nmastspc,&imastspc,&nmastmpc,&imastmpc,
+		       &nmastmpc2,&imastmpc2,&nmmpc2,
+		       &nsspc,&nsspc2,&nsmpc,&nsmpc2,
+		       imastnode,nmastnode,&nmspc,&nmmpc,		       
+		       co,nk,kon,ipkon,lakon,
+	               ne,stn, 
+	               elcon,nelcon,rhcon,nrhcon,
+	               alcon,nalcon,alzero,ielmat,
+	               ielorien,norien,orab,ntmat_,
+	               t0,t1,ithermal,prestr, 
+                       iprestr,filab,eme,emn,
+                       een,iperturb,f,nactdof,
+                       &iout,qa,
+	               vold,b,nodeboun,ndirboun,
+	               xbounact,xboun,nboun,ipompc,nodempc,
+	               coefmpc,labmpc,nmpc,nmethod, 
+                       neq,veold,accold,
+	               &dtime,&time,
+                       ttime,plicon,
+                       nplicon,plkcon,nplkcon,
+                       xstateini,xstiff,xstate,npmat_,
+	               matname,mi,&ielas,
+	               &icmd,ncmat_,nstate_,stiini,
+	               vini,ener,
+	               enern,emeini,xstaten,eei,
+                       enerini,cocon,ncocon,set, 
+                       nset,istartset,
+                       iendset,ialset,nprint,prlab,
+                       prset,qfx,qfn,trab,
+                       inotr,ntrans,nelemload,
+	               nload,istep,&iinc,
+	               springarea,&reltime,&ne0,xforc,
+                       nforc,thicke,
+                       shcon,nshcon,sideload,xload,
+                       xloadold,&icfd,inomat,
+	               islavelinv,islavsurf,
+		       iponoels,inoels,                       
+                       fexttil,ftil,fextinitil,finitil,
+		       mortar,nslavnode,islavnode,nslavs,ntie,
+		       autloc,irowtloc,jqtloc,
+		       autlocinv,irowtlocinv,jqtlocinv,
+		       &nk2,&iflagdualquad,
+		       tieset,itiefac,&rhsi,
+		       au,ad,&f_cm,&f_cs,
+		       t1act,cam,&bet,&gam,epn,
+		       xloadact,nodeforc,ndirforc,xforcact,
+		       xbodyact,ipobody,nbody,cgr,
+		       nzl,sti,iexpl,mass,&buckling,&stiffness,
+		       &intscheme,physcon,&coriolis,ibody,
+		       integerglob,doubleglob,&nasym,
+		       &alpham,&betam,auxtil2,
+		       pslavsurf,pmastsurf,
+		       clearini,ielprop,prop,
+		       islavact,cdn,&memmpc_,
+		       cvtilini,cvtil,&idamping,
+		       &ilin,iperturb_sav,
+		       adbtil,aubtil,adb,aub,
+		       &nodeforc2,&ndirforc2,&xforc2,&nforc2,
+		       itietri,cg,straight,koncont,
+		       energyini,
+       		       energy,&kscale,iponoel,inoel,nener,
+       		       orname,network,
+		       typeboun,&num_cpus);
+
+	    /* calculating coupling matrices and embedding weak contact conditions */ 
+      
+	  contactmortar(&ncont,ntie,tieset,nset,set,istartset,iendset,
+	       ialset,itietri,lakon,
+	       ipkon,kon,koncont,ne,cg,straight,co,vold,ielmat,
+	       elcon,istep,&iinc,&iit,ncmat_,ntmat_,&ne0,vini,nmethod,neq,
+	       nzs,nactdof,itiefac,islavsurf,islavnode,imastnode,nslavnode,
+               nmastnode,ad,
+	       &au,b,&irow,icol,jq,imastop,iponoels,inoels,&nzsc2,&auc2,
+	       adc2,&irowc2,jqc2,islavact,gap,
+	       slavnor,slavtan,
+	       bhat,
+	       &irowbd,jqbd,&aubd,
+	       &irowbdtil,jqbdtil,&aubdtil,
+	       &irowbdtil2,jqbdtil2, &aubdtil2,
+	       &irowdd, jqdd, &audd, 
+	       &irowddtil, jqddtil, &auddtil,
+	       &irowddtil2, jqddtil2, &auddtil2, 
+	       &irowddinv, jqddinv, &auddinv, 
+	       irowtloc, jqtloc, autloc, 
+	       irowtlocinv, jqtlocinv, autlocinv, 
+	       mi,ipe,
+	       ime,tietol,&iflagact,cstress,cstressini,bp,&iflag_fric,nk,nboun,
+	       ndirboun,nodeboun,xbounact,nmpc,ipompc,nodempc,coefmpc,
+               ikboun,ilboun,ikmpc,ilmpc,
+	       &nboun2,ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
+               ikboun2,ilboun2,ikmpc2,ilmpc2,
+	       nslavspc,islavspc,&nsspc,nslavmpc,islavmpc,&nsmpc,
+	       nslavspc2,islavspc2,&nsspc2,nslavmpc2,islavmpc2,&nsmpc2,
+               nmastspc,imastspc,&nmspc,
+	       nmastmpc,imastmpc,&nmmpc,
+	       nmastmpc2,imastmpc2,&nmmpc2,  
+	       pslavdual,pslavdualpg,
+	       islavactdof,islavactdoftie,plicon,nplicon,npmat_,nelcon,&dtime,
+	       islavnodeinv,
+               &Bd,&irowb,jqb,
+	       &Bdhelp,&irowbhelp,jqbhelp,
+	       &Dd,&irowd,jqd,
+	       &Ddtil,&irowdtil,jqdtil,
+	       &Bdtil,&irowbtil,jqbtil,
+               &Bpgd,&irowbpg,jqbpg,
+	       &Dpgd,&irowdpg,jqdpg,
+	       &Dpgdtil,&irowdpgtil,jqdpgtil,
+	       &Bpgdtil,&irowbpgtil,jqbpgtil,
+	       lambdaiwan,lambdaiwanini,&bet,&iflagdualquad,labmpc2,cfsini,
+	       &reltime,ithermal,plkcon,nplkcon);
+	  
+	  nzs[0]=nzs[1];
+	  symmetryflag=2;
+	  inputformat=3; 
+      }
 
       /* storing the residuum in resold (for line search) */
 
-      if((*mortar==1)&&(iit!=1)&&(*ne-ne0>0)&(*nmethod!=4)){memcpy(&resold[0],&b[0],sizeof(double)*neq[1]);}
+      if((*mortar==1)&&(iit!=1)&&(*ne-ne0>0)&(*nmethod!=4)){
+	  isiz=neq[1];cpypardou(resold,b,&isiz,&num_cpus);
+//	  memcpy(&resold[0],&b[0],sizeof(double)*neq[1]);
+      }
 	  
       newstep=0;
       
@@ -2060,10 +2547,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  
 	  *nmethod=0;
 	  ++*kode;
-	  NNEW(inum,ITG,*nk);for(k=0;k<*nk;k++) inum[k]=1;
+	  NNEW(inum,ITG,*nk);ITGMEMSET(inum,0,*nk,1);
+	  //for(k=0;k<*nk;k++) inum[k]=1;
 	  if(strcmp1(&filab[1044],"ZZS")==0){
 	      NNEW(neigh,ITG,40**ne);
-	      NNEW(ipneigh,ITG,*nk);
+	      MNEW(ipneigh,ITG,*nk);
 	  }
 	  
 	  ptime=*ttime+time;
@@ -2092,7 +2580,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      /* mechanical part */
 	      
 	      if(*ithermal!=2){
-		  scal1=bet*dtime*dtime*(1.+*alpha);
+		  scal1=bet*dtime*dtime*(1.+alpha[0]);
 		  for(k=0;k<neq[0];++k){
 		      ad[k]=adb[k]+scal1*ad[k];
 		  }
@@ -2111,7 +2599,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   /* damping */
 		  
 		  if(idamping==1){
-		      scal1=gam*dtime*(1.+*alpha);
+		      scal1=gam*dtime*(1.+alpha[0]);
 		      for(k=0;k<neq[0];++k){
 			  ad[k]+=scal1*adc[k];
 		      }
@@ -2149,7 +2637,15 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  }
 	      }
 	  }
-	  
+      
+	  /*for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}
+      for(k=0;k<neq[1];++k){printf("fext=%" ITGFORMAT ",%f\n",k,fext[k]);}
+      for(k=0;k<neq[1];++k){printf("ad=%" ITGFORMAT ",%f\n",k,ad[k]);}
+      for(k=0;k<nzs[1];++k){printf("au=%" ITGFORMAT ",%f\n",k,au[k]);}*/
+      
+	  //for(j=0;j<452;j++){printf("nonlingeo.c %d au=%f, irow=%d\n",j,au[j],irow[j]);}
+
+      
 	  if(*isolver==0){
 #ifdef SPOOLES
 	      if(*ithermal<2){
@@ -2173,14 +2669,15 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 #endif
 	  }
 	  else if((*isolver==2)||(*isolver==3)){
-	      if(nasym>0){
+	      if(symmetryflag==2){
 		  if(*isolver==3){
 		      printf(" *WARNING in nonlingeo: the iterative Cholesky solver cannot be used for asymmetric matrices.\nThe iterative scaling solver will be used instead\n\n");
 		  }
 		  NNEW(rwork,double,neq[1]);
 		  NNEW(sol,double,neq[1]);
 		  RENEW(au,double,2*nzs[1]+neq[1]);
-		  memcpy(&au[2*nzs[1]],ad,sizeof(double)*neq[1]);
+		  isiz=neq[1];cpypardou(&au[2*nzs[1]],ad,&isiz,&num_cpus);
+//		  memcpy(&au[2*nzs[1]],ad,sizeof(double)*neq[1]);
 		  nelt=2*nzs[1]+neq[1];
 		  lrgw=131+16*neq[1];
 		  isym=0;
@@ -2191,7 +2688,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 				     &isym,&itol,&tol,&itmax,&iter,
 				     &err,&ierr,&iunit,sb,sx,rgwk,&lrgw,igwk,
 				     &ligw,rwork,iwork));
-		  memcpy(b,sol,sizeof(double)*neq[1]);
+		  isiz=neq[1];cpypardou(b,sol,&isiz,&num_cpus);
+//		  memcpy(b,sol,sizeof(double)*neq[1]);
 		  SFREE(rgwk);SFREE(igwk);SFREE(rwork);SFREE(sol);
 	      }else{
 		  preiter(ad,&au,b,&icol,&irow,&neq[1],&nzs[1],isolver,iperturb);
@@ -2199,7 +2697,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  }
 	  else if(*isolver==4){
 #ifdef SGI
-	      if(nasym>0){
+	      if(symmetryflag==2){
 		  printf(" *ERROR in nonlingeo: the SGI solver cannot be used for asymmetric matrices\n\n");
 		  FORTRAN(stop,());
 	      }
@@ -2222,7 +2720,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  }
 	  else if(*isolver==5){
 #ifdef TAUCS
-	      if(nasym>0){
+	      if(symmetryflag==2){
 		  printf(" *ERROR in nonlingeo: the TAUCS solver cannot be used for asymmetric matrices\n\n");
 		  FORTRAN(stop,());
 	      }
@@ -2269,10 +2767,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		      printf("*ERROR in nonlingeo: a sensitivity analysis \n is not allowed in combination with frictional contact \n\n");
 		      FORTRAN(stop,());
 		      }*/
-		  SFREE(adcpy);NNEW(adcpy,double,neq[1]);
-		  SFREE(aucpy);NNEW(aucpy,double,(nasym+1)*nzs[1]);
-		  memcpy(&adcpy[0],&ad[0],sizeof(double)*neq[1]);
-		  memcpy(&aucpy[0],&au[0],sizeof(double)*(nasym+1)*nzs[1]);
+		  SFREE(adcpy);MNEW(adcpy,double,neq[1]);
+		  SFREE(aucpy);MNEW(aucpy,double,(nasym+1)*nzs[1]);
+		  isiz=neq[1];cpypardou(adcpy,ad,&isiz,&num_cpus);
+//		  memcpy(&adcpy[0],&ad[0],sizeof(double)*neq[1]);
+		  isiz=(nasym+1)*nzs[1];cpypardou(aucpy,au,&isiz,&num_cpus);
+//		  memcpy(&aucpy[0],&au[0],sizeof(double)*(nasym+1)*nzs[1]);
 	      }
 	      SFREE(ad);SFREE(au);
 	  } 
@@ -2281,27 +2781,122 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* explicit dynamic step */
       
       else{
-	  if(*ithermal!=2){
-	      for(k=0;k<neq[0];++k){
-		  b[k]=b[k]/adb[k];
+	  if((mscalmethod==0)||(mscalmethod==2)){
+	      if(*ithermal!=2){
+		  isiz=neq[0];divparll(b,adb,&isiz,&num_cpus);
+/*		  for(k=0;k<neq[0];++k){
+		      b[k]=b[k]/adb[k];
+		      }*/
+	      }
+	      if(*ithermal>1){
+		  for(k=neq[0];k<neq[1];++k){
+		      b[k]=b[k]*dtime/adb[k];
+		  }
 	      }
 	  }
-	  if(*ithermal>1){
-	      for(k=neq[0];k<neq[1];++k){
-		  b[k]=b[k]*dtime/adb[k];
+	  else{
+	    if(*ithermal!=2){
+	      if(*isolver==0){
+#ifdef SPOOLES
+	        spooles_solve(b,&neq[0]);
+#endif
 	      }
+	      else if(*isolver==4){
+#ifdef SGI
+	        sgi_solve(b,token);
+#endif
+	      }
+	      else if(*isolver==5){
+#ifdef TAUCS
+	        tau_solve(b,&neq[0]);
+#endif
+	      }
+	      else if(*isolver==7){
+#ifdef PARDISO
+	        pardiso_solve(b,&neq[0],&symmetryflag,&nrhs);
+#endif
+	      }
+	    }
+	    if(*ithermal>1){
+	      for(k=neq[0];k<neq[1];++k){
+		b[k]=b[k]*dtime/adb[k];
+	      }
+	    }
 	  }
       }
+      //       for(k=0;k<neq[1];++k){printf("b=%" ITGFORMAT ",%f\n",k,b[k]);}
+
+      /* mortar */
+
+      if(*mortar>1){	    
+  
+	  /* restoring the structure of the original stiffness
+	     matrix */
+
+	  for(i=0;i<3;i++){nzs[i]=nzstemp[i];}
+	  for (i=0;i<neq[1];i++){jq[i]=jqtemp[i];icol[i]=icoltemp[i];}
+	  jq[neq[1]]=jqtemp[neq[1]];
+	  for (i=0;i<nzs[1];i++){irow[i]=irowtemp[i];}
+	  SFREE(jqtemp);SFREE(irowtemp);SFREE(icoltemp);
+	  iflagact=iflagact_old;
+
+	  /* trafo util->u , calculate cstress and update active set  */
+
+	  contactstress2(bhat,adc2,auc2,jqc2,irowc2,neq,gap,b,islavact,
+		  irowddinv,jqddinv,auddinv,
+		  irowtloc,jqtloc,autloc, 
+		  irowtlocinv,jqtlocinv,autlocinv,
+		  ntie,nslavnode,
+		  islavnode,nmastnode,imastnode,slavnor,slavtan,
+                  nactdof,&iflagact,cstress,cstressini,mi,cdisp,f_cs,f_cm,&iit,&iinc,
+                  vold,vini,bp,nk,
+		  &nboun2,ndirboun2,nodeboun2,xboun2,
+                  &nmpc2,ipompc2,nodempc2,coefmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,
+		  nmpc,ipompc,nodempc,coefmpc,ikboun,ilboun,ikmpc,ilmpc,
+                  nslavspc2,islavspc2,&nsspc2,nslavmpc2,islavmpc2,&nsmpc2,
+                  nmastspc,imastspc,&nmspc,nmastmpc,imastmpc,&nmmpc,
+                  tieset,
+		  elcon,tietol,ncmat_,ntmat_,plicon,nplicon,npmat_,nelcon,
+	          &dtime,
+		  cfs,cfm,islavnodeinv,
+		  Bd,irowb,jqb,
+	          Dd,irowd,jqd,
+		  Ddtil,irowdtil,jqdtil,
+	          Bdtil,irowbtil,jqbtil,
+		  Bpgd,irowbpg,jqbpg,
+	          Dpgd,irowdpg,jqdpg,
+		  lambdaiwan,lambdaiwanini, nmethod, &bet,
+		  &iflagdualquad,ithermal,iperturb,
+		  labmpc,labmpc2,cam,veold,accold,&gam,&nk2,cfsini,cfstil,
+		  plkcon,nplkcon,filab,f,fn,qa,nprint,prlab,xforc,nforc);
+	  iflagact_old=iflagact;
+	  
+	  SFREE(auc2);SFREE(adc2);SFREE(irowc2);SFREE(icolc2);SFREE(jqc2);
+	  SFREE(au);SFREE(ad);	  
+	  if(ismallsliding==0){
+	      SFREE(aubd);SFREE(jqbd);SFREE(irowbd);
+	      SFREE(aubdtil);SFREE(jqbdtil);SFREE(irowbdtil);
+	      SFREE(aubdtil2);SFREE(jqbdtil2);SFREE(irowbdtil2);
+	      SFREE(audd);SFREE(jqdd);SFREE(irowdd);
+	      SFREE(auddinv);SFREE(jqddinv);SFREE(irowddinv);
+	      SFREE(auddtil);SFREE(jqddtil);SFREE(irowddtil);
+	      SFREE(auddtil2);SFREE(jqddtil2);SFREE(irowddtil2);
+	  }
+      }
+      //	        for(k=0;k<neq[1];++k){printf("b=%" ITGFORMAT ",%f\n",k,b[k]);}
+      //      FORTRAN(stop,());
 
       /* calculating the displacements, stresses and forces */
       
-      NNEW(v,double,mt**nk);
-      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+      MNEW(v,double,mt**nk);
+//      NNEW(v,double,mt**nk);
+      isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
       
       NNEW(stx,double,6*mi[0]**ne);
-      NNEW(fn,double,mt**nk);
+      MNEW(fn,double,mt**nk);
       
-      NNEW(inum,ITG,*nk);
+      if(ne1d2d==1)NNEW(inum,ITG,*nk);
       results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 	      ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
@@ -2319,8 +2914,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
               islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-      SFREE(inum);
+              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod);
+      if(ne1d2d==1)SFREE(inum);
 
       /* implicit dynamics (Matteo Pacher) */
 
@@ -2334,27 +2930,33 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       if((*nmethod==4)&&(*ithermal<2)){
 	  allwk=allwkini;
-	  for(i=0;i<*nk;i++){
+	  worparll(&allwk,fnext,&mt,fnextini,v,vini,nk,&num_cpus);
+/*	  for(i=0;i<*nk;i++){
 	      for(k=1;k<4;k++){
 		  allwk+=(fnext[i*mt+k]+fnextini[i*mt+k])*
 		      (v[i*mt+k]-vini[i*mt+k])/2.;
 	      }
-	  }
+	      }*/
 
         /* Work due to damping forces (cv and cvini) --> MPADD */
 
 	  if(idamping==1){
 	      dampwk=dampwkini;
-	      for(k=0;k<*nk;++k){
+	      dam1parll(&mt,nactdof,aux2,v,vini,nk,&num_cpus);
+	      
+/*	      for(k=0;k<*nk;++k){
 		  for(j=1;j<mt;++j){
 		      if(nactdof[mt*k+j]>0){
 			  aux2[nactdof[mt*k+j]-1]=v[mt*k+j]-vini[mt*k+j];
 		      }
 		  }
-	      }
-	      for(k=0;k<neq[0];k++){
+		  }*/
+
+	      dam2parll(&dampwk,cv,cvini,aux2,&neq[0],&num_cpus);
+	      
+/*	      for(k=0;k<neq[0];k++){
 		  dampwk+=-(cv[k]+cvini[k])*aux2[k]/2.;
-	      }
+		  }*/
 	  }
         /* Damping forces --> MPADD */
       }
@@ -2372,7 +2974,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  calcresidual(nmethod,neq,res,fext,f,iexpl,nactdof,aux2,vold,
 	     vini,&dtime,accold,nk,adb,aub,jq,irow,nzl,alpha,fextini,fini,
 	     islavnode,nslavnode,mortar,ntie,f_cm,f_cs,mi,
-	     nzs,&nasym,&idamping,veold,adc,auc,cvini,cv);
+	     nzs,&nasym,&idamping,veold,adc,auc,cvini,cv,&alpham,&num_cpus);
 
           /* calculating the line search factor */
 
@@ -2399,13 +3001,15 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 	  for(i=0;i<neq[1];i++){b[i]*=flinesearch;}
       
-	  NNEW(v,double,mt**nk);
-	  memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+	  MNEW(v,double,mt**nk);
+//	  NNEW(v,double,mt**nk);
+	  isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//	  memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
 	  
 	  NNEW(stx,double,6*mi[0]**ne);
-	  NNEW(fn,double,mt**nk);
+	  MNEW(fn,double,mt**nk);
 	  
-	  NNEW(inum,ITG,*nk);
+	  if(ne1d2d==1)NNEW(inum,ITG,*nk);
 	  results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
 	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
 	      ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
@@ -2423,8 +3027,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
 	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 	      islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-	      inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-	  SFREE(inum);
+	      inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod);
+	  if(ne1d2d==1)SFREE(inum);
       }
       
       /* calculating the residual */
@@ -2432,9 +3037,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       calcresidual(nmethod,neq,b,fext,f,iexpl,nactdof,aux2,vold,
 	 vini,&dtime,accold,nk,adb,aub,jq,irow,nzl,alpha,fextini,fini,
 	 islavnode,nslavnode,mortar,ntie,f_cm,f_cs,mi,
-	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv);
+	 nzs,&nasym,&idamping,veold,adc,auc,cvini,cv,&alpham,&num_cpus);
 
-      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+      /* fix residuals for mortar contact, add contact forces */	 
+      if(*mortar>1){for(k=0;k<neq[1];k++){b[k]=b[k]-f_cs[k]-f_cm[k];}}	 
+
+      isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
       if(*ithermal!=2){
 	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stx[k];
@@ -2451,7 +3060,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       SFREE(v);SFREE(stx);SFREE(fn);
 
-      if(idamping==1){SFREE(adc);SFREE(auc);}
+      if((idamping==1)&&(*iexpl<=1)){SFREE(adc);SFREE(auc);}
 
       if(*iexpl<=1){
 	  
@@ -2500,16 +3109,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 		  ram1[k]=ram[k];
 	      } 
 	      ram[4]=ram[0]+ram1[0];
-/*	      if((iflagact==0)&&(iit>1)){
-		  ram[5]=1.5;
-		  }else{ram[5]=0.5;}*/
 	      ram[5]=(*ne-ne0)-(neold-ne0)+0.5;
-/*	      if(iit>3){
-		  if((fabs(ram[6])>=fabs(ram1[6]))&&(fabs(ram[6])>=fabs(ram2[6]))){
-		      ram[7]=1.5;
-		  }else{ram[7]=0.5;}
-		  }*/
-	      
 	  }
 	  
 	  /* next line is inserted to cope with stress-less
@@ -2580,6 +3180,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
              energy,&allwk,&energyref,&emax,&r_abs,&enetoll,energyini,
 	     &allwkini,&temax,&sizemaxinc,&ne0,&neini,&dampwk,
 	     &dampwkini,energystartstep);
+
+	  if(*mortar>1){
+	      SFREE(f_cs);SFREE(f_cm);
+	  } 
 	  
       }else{
 
@@ -2589,16 +3193,21 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	  icutb=0;   
 
           /* recalculation of the time increment every 500 icrements
-             (may have changed due to deformation) */
+             (may have changed due to deformation) 
 
 	  if((iinc/500)*500==iinc){
-	      FORTRAN(calcstabletimeincvol,(&ne0,lakon,co,kon,ipkon,mi,
-			      ielmat,&dtvol,alpha,wavespeed));
+	    
+	      FORTRAN(calcstabletimeincvol,(&ne0,elcon,nelcon,
+      		  rhcon,nrhcon,alcon,nalcon,orab,ntmat_,ithermal,alzero,
+      		  plicon,nplicon,plkcon,nplkcon,npmat_,mi,&dtime,
+      		  xstiff,ncmat_,vold,ielmat,t0,t1,
+      		  matname,lakon,wavespeed,nmat,ipkon,co,kon,&dtvol,alpha,
+		  smscale, &dtset, &mscalmethod));	      
 
 	      if(dtvol<*tinc)*tinc=dtvol;
 	      dtheta=(*tinc)/(*tper);
 	      dthetaref=dtheta;
-	  }
+	  }*/
 
 	  theta=theta+dtheta;  
 	  if(dtheta>=1.-theta){
@@ -2624,65 +3233,44 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
        icutb!=0 indicates that the increment has to be reiterated with
                 another increment size (dtheta) */
 
-    /* Adapter: Perform coupling related actions, only if solver iterations converged (icutb == 0) */
-    if( icutb == 0 )
+    if(*mortar>1){
+      if(ismallsliding==1){      
+	SFREE(aubd);SFREE(jqbd);SFREE(irowbd);
+	SFREE(aubdtil);SFREE(jqbdtil);SFREE(irowbdtil);
+	SFREE(aubdtil2);SFREE(jqbdtil2);SFREE(irowbdtil2);
+	SFREE(audd);SFREE(jqdd);SFREE(irowdd);
+	SFREE(auddinv);SFREE(jqddinv);SFREE(irowddinv);
+	SFREE(auddtil);SFREE(jqddtil);SFREE(irowddtil);
+	SFREE(auddtil2);SFREE(jqddtil2);SFREE(irowddtil2);
+      }
+      SFREE(bhat);	  
+      SFREE(islavactdof);
+   }
+
+   	simulationData.fn = fn;
+    memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+
+    Precice_WriteCouplingData( &simulationData );
+    /* Adapter: Advance the coupling */
+    Precice_Advance( &simulationData );
+    /* Adapter: If the coupling does not converge, read the checkpoint */
+    if( Precice_IsReadCheckpointRequired() )
     {
-        /* Adapter: Write coupling data */
-
-    	NNEW(v,double,mt**nk);
-    	NNEW(fn,double,mt**nk);
-    	NNEW(stn,double,6**nk);
-	    NNEW(stx,double,6*mi[0]**ne);
-    	NNEW(inum,ITG,*nk);
-  
-    	memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
-    	
-		// iout=-1 means that the displacements and temperatures are assumed to be known 			and used to calculate strains, stresses...., with no result output
-		iout=-1;
-    	icmd=3;// calculate only stress (not stiffness)
-
-      results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-	      ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-	      prestr,iprestr,filab,eme,emn,een,iperturb,
-	      f,fn,nactdof,&iout,qa,vold,b,nodeboun,
-	      ndirboun,xbounact,nboun,ipompc,
-	      nodempc,coefmpc,labmpc,nmpc,nmethod,cam,&neq[1],veold,accold,
-	      &bet,&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-	      xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,
-	      &icmd,ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,
-	      emeini,xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,
-	      iendset,ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,
-	      fmpc,nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,
-	      &reltime,&ne0,thicke,shcon,nshcon,
-	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-              islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
-
-	simulationData.fn = fn;
-        memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
-
-        Precice_WriteCouplingData( &simulationData );
-        /* Adapter: Advance the coupling */
-        Precice_Advance( &simulationData );
-        /* Adapter: If the coupling does not converge, read the checkpoint */
-        if( Precice_IsReadCheckpointRequired() )
+        if( *nmethod == 4 )
         {
-            if( *nmethod == 4 )
-            {
-                Precice_ReadIterationCheckpoint( &simulationData, vold );
-                icutb++;
-            }
-            Precice_FulfilledReadCheckpoint();
+            Precice_ReadIterationCheckpoint( &simulationData, vold );
+            icutb++;
         }
-
-		SFREE(v);SFREE(stn);SFREE(stx);SFREE(fn);SFREE(inum);
-    }
-   
+        Precice_FulfilledReadCheckpoint();
+    }   
     /* printing the energies (only for dynamic calculations) */
 
-    if((icutb==0)&&(*nmethod==4)&&(*ithermal<2)){
+    if((icutb==0)&&(*nmethod==4)&&(*ithermal<2)&&(jout[0]==jprint)){
+
+	if(*iexpl>1){
+	    printf(" actual total time=%e\n\n",*ttime+theta**tper);
+	}
+	
 	printf(" initial energy (at start of step) = %e\n\n",energyref);
 
 	printf(" since start of the step: \n");
@@ -2707,13 +3295,34 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	if(denergymax<energy[1]) denergymax=energy[1];
 	if(denergymax<fabs(allwk)) denergymax=fabs(allwk);
 
-	if(denergymax>1.e-30){
+	if(denergymax>ea*energym){energym=(energymold*jnz+denergymax)/(jnz+1);}
+	else {energym=energymold;}
+	energymold=energym;   
+
+	if(energym>1.e-30){
 	    printf(" energy balance (relative) = %f %% \n\n",
             fabs((energy[0]+energy[1]+energy[2]+energy[3]-energyref-allwk-dampwk)/
-            denergymax*100.));
+            energym*100.));
 	}else{
 	    printf(" energy balance (relative) =0 %% \n\n");
 	}
+	
+	/*Energy balance to evaluate mass scaling*/
+	if((mscalmethod==1)||(mscalmethod==3)){
+	    printf(" artificial energy due to selective mass scaling = %e\n",energy[4]);
+
+	    //	    if(denergymax>ea*energym){energym=(energymold*jnz+denergymax)/(jnz+1);}
+	    //	    else {energym=energymold;}
+	    
+	    printf(" energy balance with mass scaling(relative) = %f %% \n\n",
+            fabs((energy[0]+energy[1]+energy[2]+energy[3]+energy[4]-energyref-allwk-dampwk)/
+            energym*100.));
+	    
+	    //if(energy[4]>energy[1]) energy[4]=energy[1];
+	    
+	    //	    energymold=energym;   
+	}
+	
 // # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 //    MPADD start
 //	printf(" work done by the damping forces = %e\n", dampwk);
@@ -2732,41 +3341,79 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     iit=0;
 
     if(icutb!=0){
-      memcpy(&vold[0],&vini[0],sizeof(double)*mt**nk);
+      isiz=mt**nk;cpypardou(vold,vini,&isiz,&num_cpus);
+//      memcpy(&vold[0],&vini[0],sizeof(double)*mt**nk);
 
-      for(k=0;k<*nboun;++k){xbounact[k]=xbounini[k];}
+      isiz=*nboun;cpypardou(xbounact,xbounini,&isiz,&num_cpus);
+//      for(k=0;k<*nboun;++k){xbounact[k]=xbounini[k];}
       if((*ithermal==1)||(*ithermal>=3)){
-	for(k=0;k<*nk;++k){t1act[k]=t1ini[k];}
+	  isiz=*nk;cpypardou(t1act,t1ini,&isiz,&num_cpus);
+//	for(k=0;k<*nk;++k){t1act[k]=t1ini[k];}
       }
-      for(k=0;k<neq[1];++k){
+      isiz=neq[1];cpypardou(f,fini,&isiz,&num_cpus);
+/*      for(k=0;k<neq[1];++k){
 	  f[k]=fini[k];
-      }
+	  }*/
       if(*nmethod==4){
-	for(k=0;k<mt**nk;++k){
+	  isiz=mt**nk;
+	  cpypardou(veold,veini,&isiz,&num_cpus);
+	  cpypardou(accold,accini,&isiz,&num_cpus);
+/*	for(k=0;k<mt**nk;++k){
 	  veold[k]=veini[k];
 	  accold[k]=accini[k];
-	}
-	for(k=0;k<neq[1];++k){
-//	  f[k]=fini[k];
+	  }*/
+	  isiz=neq[1];
+	  cpypardou(fext,fextini,&isiz,&num_cpus);
+	  cpypardou(cv,cvini,&isiz,&num_cpus);
+/*	for(k=0;k<neq[1];++k){
 	  fext[k]=fextini[k];
 	  cv[k]=cvini[k];
+	  }*/
+	if(*ithermal<2){
+	  allwk=allwkini;
+	  if(idamping==1)dampwk=dampwkini;
+	  for(k=0;k<4;k++){
+	    energy[k]=energyini[k];
+	  }
 	}
       }
       if(*ithermal!=2){
-	  for(k=0;k<6*mi[0]*ne0;++k){
+	  isiz=6*mi[0]*ne0;
+	  cpypardou(sti,stiini,&isiz,&num_cpus);
+	  cpypardou(eme,emeini,&isiz,&num_cpus);
+/*	  for(k=0;k<6*mi[0]*ne0;++k){
 	      sti[k]=stiini[k];
 	      eme[k]=emeini[k];
-	  }
+	      }*/
       }
-      if(*nener==1)
-	  for(k=0;k<mi[0]*ne0;++k){ener[k]=enerini[k];}
+      if(*nener==1){
+	  isiz=mi[0]*ne0;cpypardou(ener,enerini,&isiz,&num_cpus);}
+//	  for(k=0;k<mi[0]*ne0;++k){ener[k]=enerini[k];}
 
-      for(k=0;k<*nstate_*mi[0]*(ne0+maxprevcontel);++k){
+      isiz=*nstate_*mi[0]*(ne0+maxprevcontel);cpypardou(xstate,xstateini,&isiz,&num_cpus);
+/*      for(k=0;k<*nstate_*mi[0]*(ne0+maxprevcontel);++k){
 	  xstate[k]=xstateini[k];
-      }	  
+	  }	  */
 
       qam[0]=qamold[0];
       qam[1]=qamold[1];
+
+      if(*mortar>1){
+	  for (i=0;i<*ntie;i++){
+	      for(j=nslavnode[i];j<nslavnode[i+1];j++){
+		  islavact[j]=islavactini[j];
+		  bp[j]=bpini[j];
+		  for(k=0;k<mt;k++){
+		      cstress[mt*j+k]=cstressini[mt*j+k];
+		  }
+	      }    
+	  } 
+	  if(iflag_fric==1){
+	      for(i=0;i<3*niwan*nslavnode[*ntie];i++){
+		  lambdaiwan[i]=lambdaiwanini[i];      
+	      }
+	  }
+      }
     }
     
     /* face-to-face penalty */
@@ -2778,15 +3425,15 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	    if(itietri[2*i+1]-itietri[2*i]+1>ntrimax)		
 		ntrimax=itietri[2*i+1]-itietri[2*i]+1;  	
 	}
-	NNEW(xo,double,ntrimax);	    
-	NNEW(yo,double,ntrimax);	    
-	NNEW(zo,double,ntrimax);	    
-	NNEW(x,double,ntrimax);	    
-	NNEW(y,double,ntrimax);	    
-	NNEW(z,double,ntrimax);	   
-	NNEW(nx,ITG,ntrimax);	   
-	NNEW(ny,ITG,ntrimax);	    
-	NNEW(nz,ITG,ntrimax);
+	MNEW(xo,double,ntrimax);	    
+	MNEW(yo,double,ntrimax);	    
+	MNEW(zo,double,ntrimax);	    
+	MNEW(x,double,ntrimax);	    
+	MNEW(y,double,ntrimax);	    
+	MNEW(z,double,ntrimax);	   
+	MNEW(nx,ITG,ntrimax);	   
+	MNEW(ny,ITG,ntrimax);	    
+	MNEW(nz,ITG,ntrimax);
       
 	/*  Determination of active nodes (islavact) */
       
@@ -2818,8 +3465,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* calculating the displacements and the stresses and storing */
       /* the results in frd format  */
 	
-      NNEW(v,double,mt**nk);
-      NNEW(fn,double,mt**nk);
+      MNEW(v,double,mt**nk);
+//      NNEW(v,double,mt**nk);
+      MNEW(fn,double,mt**nk);
       NNEW(stn,double,6**nk);
       if(*ithermal>1) NNEW(qfn,double,3**nk);
       NNEW(inum,ITG,*nk);
@@ -2832,7 +3480,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       if(strcmp1(&filab[2175],"CONT")==0) NNEW(cdn,double,6**nk);
       if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
 
-      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+      isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//      memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
 
       iout=2;
       icmd=3;
@@ -2857,35 +3506,48 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
               mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 	      islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
+              inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod);
       
-      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+      isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 
       iout=0;
       if(*iexpl<=1) icmd=0;
-//      FORTRAN(networkinum,(ipkon,inum,kon,lakon,ne,itg,&ntg));
-//      for(k=0;k<ntg;k++)if(inum[itg[k]-1]>0){inum[itg[k]-1]*=-1;}
       
       ++*kode;
       if(*mcs!=0){
 	ptime=*ttime+time;
-	frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,
+
+	if(*mortar>1){
+	    mortar_prefrd(ne,nslavs,mi,nk,nkon,&stx,cdisp,fn,cfs,cfm);       
+	}
+	
+	 frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,
 	       t1act,fn,&ptime,epn,ielmat,matname,cs,mcs,nkon,enern,xstaten,
                nstate_,istep,&iinc,iperturb,ener,mi,output,ithermal,qfn,
                ialset,istartset,iendset,trab,inotr,ntrans,orab,ielorien,
 	       norien,stx,veold,&noddiam,set,nset,emn,thicke,jobnamec,&ne0,
                cdn,mortar,nmat,qfx,ielprop,prop);
+
+	 if(*mortar>1){
+	     mortar_postfrd(ne,nslavs,mi,nk,nkon,fn,cfs,cfm);      
+	 }
 #ifdef COMPANY
-	FORTRAN(uout,(v,mi,ithermal,filab,kode));
+	 FORTRAN(uout,(v,mi,ithermal,filab,kode));
 #endif
       }
       else{
 	  if(strcmp1(&filab[1044],"ZZS")==0){
 	      NNEW(neigh,ITG,40**ne);
-	      NNEW(ipneigh,ITG,*nk);
+	      MNEW(ipneigh,ITG,*nk);
 	  }
 
 	  ptime=*ttime+time;
+
+	  if(*mortar>1){
+	      mortar_prefrd(ne,nslavs,mi,nk,nkon, &stx,cdisp,fn,cfs,cfm);       
+	  }
 	  frd(co,nk,kon,ipkon,lakon,&ne0,v,stn,inum,nmethod,
 	    kode,filab,een,t1act,fn,&ptime,epn,ielmat,matname,enern,xstaten,
 	    nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
@@ -2893,6 +3555,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	    mi,stx,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
 	    cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
 	    thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,prop);
+	  if(*mortar>1){
+	      mortar_postfrd(ne,nslavs,mi,nk,nkon,fn,cfs,cfm);      
+	  }
 
 	  if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
 #ifdef COMPANY
@@ -2922,8 +3587,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* calculating the displacements and the stresses and storing  
      the results in frd format */
   
-    NNEW(v,double,mt**nk);
-    NNEW(fn,double,mt**nk);
+    MNEW(v,double,mt**nk);
+//    NNEW(v,double,mt**nk);
+    MNEW(fn,double,mt**nk);
     NNEW(stn,double,6**nk);
     if(*ithermal>1) NNEW(qfn,double,3**nk);
     NNEW(inum,ITG,*nk);
@@ -2936,7 +3602,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     if(strcmp1(&filab[2175],"CONT")==0) NNEW(cdn,double,6**nk);
     if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
     
-    memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
+    isiz=mt**nk;cpypardou(v,vold,&isiz,&num_cpus);
+//    memcpy(&v[0],&vold[0],sizeof(double)*mt**nk);
     iout=2;
     icmd=3;
 
@@ -2960,9 +3627,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
             mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
 	    islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-            inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun);
+            inoel,nener,orname,network,ipobody,xbodyact,ibody,typeboun,
+	    itiefac,tieset,smscale,&mscalmethod);
     
-    memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+    isiz=mt**nk;cpypardou(vold,v,&isiz,&num_cpus);
+//    memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 
     iout=0;
     if(*iexpl<=1) icmd=0;
@@ -2972,24 +3641,32 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     ++*kode;
     if(*mcs>0){
 	ptime=*ttime+time;
-      frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,
+	if(*mortar>1){
+	    mortar_prefrd(ne,nslavs,mi,nk,nkon, &stx,cdisp,fn,cfs,cfm);       
+	}
+	frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,
 	     t1act,fn,&ptime,epn,ielmat,matname,cs,mcs,nkon,enern,xstaten,
              nstate_,istep,&iinc,iperturb,ener,mi,output,ithermal,qfn,
              ialset,istartset,iendset,trab,inotr,ntrans,orab,ielorien,
 	     norien,stx,veold,&noddiam,set,nset,emn,thicke,jobnamec,&ne0,
              cdn,mortar,nmat,qfx,ielprop,prop);
+	if(*mortar>1){
+	    mortar_postfrd(ne,nslavs,mi,nk,nkon,fn,cfs,cfm);      
+	}
 #ifdef COMPANY
       FORTRAN(uout,(v,mi,ithermal,filab,kode));
 #endif
 
-    }
-    else{
+    }else{
 	if(strcmp1(&filab[1044],"ZZS")==0){
 	    NNEW(neigh,ITG,40**ne);
-	    NNEW(ipneigh,ITG,*nk);
+	    MNEW(ipneigh,ITG,*nk);
 	}
 
 	ptime=*ttime+time;
+	if(*mortar>1){
+	    mortar_prefrd(ne,nslavs,mi,nk,nkon, &stx,cdisp,fn,cfs,cfm);       
+	}
 	frd(co,nk,kon,ipkon,lakon,&ne0,v,stn,inum,nmethod,
 	    kode,filab,een,t1act,fn,&ptime,epn,ielmat,matname,enern,xstaten,
 	    nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
@@ -2997,6 +3674,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 	    mi,stx,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
 	    cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
 	    thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,prop);
+	if(*mortar>1){
+	    mortar_postfrd(ne,nslavs,mi,nk,nkon,fn,cfs,cfm);      
+	}
 
 	if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
 #ifdef COMPANY
@@ -3073,10 +3753,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
   if((*ithermal==3)&&(ncont!=0)&&(*mortar==1)&&(*ncmat_>=11)){
       *nload=nloadref;
-      RENEW(nelemload,ITG,2**nload);memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
+      RENEW(nelemload,ITG,2**nload);
+      isiz=2**nload;cpyparitg(nelemload,nelemloadref,&isiz,&num_cpus);
+//      RENEW(nelemload,ITG,2**nload);memcpy(&nelemload[0],&nelemloadref[0],sizeof(ITG)*2**nload);
       if(*nam>0){
 	  RENEW(iamload,ITG,2**nload);
-	  memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
+	  isiz=2**nload;cpyparitg(iamload,iamloadref,&isiz,&num_cpus);
+//	  memcpy(&iamload[0],&iamloadref[0],sizeof(ITG)*2**nload);
       }
       RENEW(sideload,char,20**nload);memcpy(&sideload[0],&sideloadref[0],sizeof(char)*20**nload);
       
@@ -3120,23 +3803,56 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       }
       xbounold[k]=xbounact[k];
   }
-  for(k=0;k<*nforc;++k){xforcold[k]=xforcact[k];}
-  for(k=0;k<2**nload;++k){xloadold[k]=xloadact[k];}
-  for(k=0;k<7**nbody;k=k+7){xbodyold[k]=xbodyact[k];}
+  isiz=*nforc;cpypardou(xforcold,xforcact,&isiz,&num_cpus);
+//  for(k=0;k<*nforc;++k){xforcold[k]=xforcact[k];}
+  isiz=2**nload;cpypardou(xloadold,xloadact,&isiz,&num_cpus);
+//  for(k=0;k<2**nload;++k){xloadold[k]=xloadact[k];}
+  isiz=7**nbody;cpypardou(xbodyold,xbodyact,&isiz,&num_cpus);
+//  for(k=0;k<7**nbody;k=k+7){xbodyold[k]=xbodyact[k];}
   if(*ithermal==1){
-    for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
-    for(k=0;k<*nk;++k){vold[mt*k]=t1act[k];}
+      cpypardou(t1old,t1act,nk,&num_cpus);
+//    for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
+      for(k=0;k<*nk;++k){vold[mt*k]=t1act[k];}
   }
   else if(*ithermal>1){
-    for(k=0;k<*nk;++k){t1[k]=vold[mt*k];}
-    if(*ithermal>=3){
-	for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
-    }
+      for(k=0;k<*nk;++k){t1[k]=vold[mt*k];}
+      if(*ithermal>=3){
+	  cpypardou(t1old,t1act,nk,&num_cpus);
+//	for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
+      }
   }
 
   qaold[0]=qa[0];
   qaold[1]=qa[1];
 
+  /*CC: DEBUG close energy.txt*/
+  if(*iexpl>1){
+    SFREE(smscale);
+
+    if((mscalmethod==1)||(mscalmethod==3)){
+      if(*isolver==0){
+#ifdef SPOOLES
+	spooles_cleanup();
+#endif
+      }
+      else if(*isolver==4){
+#ifdef SGI
+	sgi_cleanup(token);
+#endif
+      }
+      else if(*isolver==5){
+#ifdef TAUCS
+	tau_cleanup();
+#endif
+      }
+      else if(*isolver==7){
+#ifdef PARDISO
+	pardiso_cleanup(&neq[0],&symmetryflag);
+#endif
+      }
+    }
+  }
+  
   SFREE(f);SFREE(b);
   SFREE(xbounact);SFREE(xforcact);SFREE(xloadact);SFREE(xbodyact);
   if(*nbody>0) SFREE(ipobody);if(inewton==1){SFREE(cgr);}
@@ -3152,6 +3868,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       SFREE(aurad);SFREE(irowrad);SFREE(jqrad);SFREE(icolrad);
       if((*mcs>0)&&(ntr>0)){SFREE(inocs);}
       if((*network>0)||(ntg>0)){SFREE(iponoel);SFREE(inoel);}
+      if(ntr>0){
+/*#if defined(PARDISO)
+	  ITG symmetryflag_rad=2;
+	  pardiso_cleanup_as(&ntr,&symmetryflag_rad);
+#elif defined(SPOOLES)
+	  spooles_cleanup_rad();
+	  #endif*/
+      }
   }
 
   if(icfd==1){
@@ -3160,8 +3884,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       SFREE(ipkonf);SFREE(lakonf);SFREE(ielmatf);free(ifatie);
       SFREE(ipnei);SFREE(isolidsurf);
       if(*norien>0) SFREE(ielorienf);
-/*      if(nblk!=0){SFREE(istartblk);SFREE(iendblk);
-	SFREE(nblket);SFREE(nblkze);SFREE(ielblk);}*/
   }
 
   SFREE(fini);
@@ -3170,6 +3892,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     SFREE(adb);SFREE(aub);SFREE(cvini);SFREE(cv);SFREE(fnext);
     SFREE(fnextini);
   }
+  if(*mortar>1){SFREE(ftil);SFREE(fexttil);}
   SFREE(eei);SFREE(stiini);SFREE(emeini);
   if(*nener==1)SFREE(enerini);
   if(*nstate_!=0){SFREE(xstateini);}
@@ -3198,6 +3921,28 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       }
       RENEW(ielmat,ITG,mi[2]**ne);
 
+      if(*mortar>1){   
+	/// needed for next step coloumb friction
+	  for (i=0;i<*ntie;i++){
+	      if(tieset[i*(81*3)+80]=='C'){
+		  if(*nstate_*mi[0]>0){
+		      for(j=nslavnode[i];j<nslavnode[i+1];j++){	  	     
+			  for(k=0;k<3;k++){	    	       
+			      xstate[*nstate_*mi[0]*(*ne+j)+k]=cstress[mt*j+k]; 
+			  } 	    	       
+			  xstate[*nstate_*mi[0]*(*ne+j)+3]=islavact[j]+0.5;
+			  if(iflag_fric==1){
+			      for(k=0;k<3*niwan;k++){
+				  xstate[*nstate_*mi[0]*(*ne+j)+4+k]=lambdaiwan[3*niwan*j+k];
+			      }
+			  }
+		      }
+		      
+		  }
+	      }
+	  }
+      }
+      
       SFREE(cg);SFREE(straight);
       SFREE(imastop);SFREE(itiefac);SFREE(islavnode);
       SFREE(nslavnode);SFREE(iponoels);SFREE(inoels);SFREE(imastnode);
@@ -3209,6 +3954,36 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       }else if(*mortar==1){
 	  SFREE(pmastsurf);SFREE(ipe);SFREE(ime);
           SFREE(islavact);
+      }else if(*mortar>1){
+	  SFREE(islavact);SFREE(gap);SFREE(slavnor);SFREE(slavtan);
+	  SFREE(cstress);SFREE(ipe);SFREE(ime);SFREE(cfs);SFREE(cfm);
+	  SFREE(cdisp);SFREE(bp);SFREE(islavactdoftie);
+	  SFREE(nslavspc);SFREE(islavspc);SFREE(nslavmpc);SFREE(islavmpc);
+	  SFREE(nslavspc2);SFREE(islavspc2);SFREE(nslavmpc2);SFREE(islavmpc2);
+	  SFREE(nmastspc);SFREE(imastspc);SFREE(nmastmpc);SFREE(imastmpc);
+	  SFREE(nmastmpc2);SFREE(imastmpc2);
+	  SFREE(xboun2);SFREE(ndirboun2);SFREE(nodeboun2);
+	  SFREE(coefmpc2);SFREE(nodempc2);SFREE(ipompc2);
+	  SFREE(ikmpc2);SFREE(ilmpc2);SFREE(ikboun2);SFREE(ilboun2);
+	  SFREE(labmpc2);
+	  SFREE(pslavdual);SFREE(pslavdualpg);
+	  SFREE(cstressini);SFREE(bpini);SFREE(islavactini);
+	  SFREE(autloc);SFREE(irowtloc);SFREE(jqtloc);
+	  SFREE(autlocinv);SFREE(irowtlocinv);SFREE(jqtlocinv);
+	  SFREE(Bd);SFREE(irowb);SFREE(jqb);
+	  SFREE(Bdhelp);SFREE(irowbhelp);SFREE(jqbhelp);
+	  SFREE(Dd);SFREE(irowd);SFREE(jqd);
+	  SFREE(Ddtil);SFREE(irowdtil);SFREE(jqdtil);
+	  SFREE(Bdtil);SFREE(irowbtil);SFREE(jqbtil);
+	  SFREE(Bpgd);SFREE(irowbpg);SFREE(jqbpg);
+	  SFREE(Dpgd);SFREE(irowdpg);SFREE(jqdpg);
+	  SFREE(Dpgdtil);SFREE(irowdpgtil);SFREE(jqdpgtil);
+	  SFREE(Bpgdtil);SFREE(irowbpgtil);SFREE(jqbpgtil);
+	  SFREE(islavnodeinv);SFREE(islavelinv);
+	  SFREE(nodeforc2);SFREE(ndirforc2);SFREE(xforc2);
+	  if(iflag_fric==1){
+	      SFREE(lambdaiwanini);SFREE(lambdaiwan); 
+	  }
       }
   }
 
@@ -3237,13 +4012,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
   SFREE(nactdofinv);
   // MPADD start
-  if((*nmethod==4)&&(*ithermal!=2)&&(*iexpl<=1)&&(icfd!=1)){ SFREE(adblump);}
+  if((*nmethod==4)&&(*ithermal!=2)&&(*iexpl<=1)&&(icfd==0)){ SFREE(adblump);}
   // MPADD end
   
   (*ttime)+=(*tper);
-  
+
   /* Adapter: Free the memory */
   Precice_FreeData( &simulationData );
-
+  
   return;
 }

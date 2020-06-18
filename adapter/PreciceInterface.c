@@ -210,7 +210,7 @@ void Precice_ReadCouplingData( SimulationData * sim )
                 case FORCES:
 					// Read and set forces as concentrated loads (Neumann BC)
 					precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-					setNodeForces( interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
+					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
 					printf( "Reading FORCES coupling data with ID '%d'. \n",interfaces[i]->forcesDataID );
 					break;
 				case DISPLACEMENTS:
@@ -447,7 +447,7 @@ void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, Si
 
 	interface->faceCenterCoordinates = malloc( interface->numElements * 3 * sizeof( double ) );
 	interface->preciceFaceCenterIDs = malloc( interface->numElements * 3 * sizeof( int ) );
-	getTetraFaceCenters( interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs );
+	getTetraFaceCenters( interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates );
 	
 
 	interface->faceCentersMeshID = precicec_getMeshID( interface->faceCentersMeshName );

@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                 */
-/*              Copyright (C) 1998-2018 Guido Dhondt                          */
+/*              Copyright (C) 1998-2019 Guido Dhondt                          */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -40,14 +40,14 @@ FILE *f1;
     
 char *sideload=NULL, *set=NULL, *matname=NULL, *orname=NULL, *amname=NULL,
      *filab=NULL, *lakon=NULL, *labmpc=NULL, *prlab=NULL, *prset=NULL, 
-     jobnamec[660]="",jobnamef[132]="",output[4]="asc", *typeboun=NULL,
+     jobnamec[792]="",jobnamef[132]="",output[5]="asc ", *typeboun=NULL,
      *inpc=NULL,*tieset=NULL,*cbody=NULL,fneig[132]="",*sideloadtemp=NULL,
      kind1[2]="T",kind2[2]="T",*heading=NULL,*objectset=NULL;
   
 ITG *kon=NULL, *nodeboun=NULL, *ndirboun=NULL, *ipompc=NULL,
     *nodempc=NULL, *nodeforc=NULL, *ndirforc=NULL,
     *nelemload=NULL,im,*inodesd=NULL,nload1,*idefforc=NULL,
-    *nactdof=NULL, *icol=NULL,*ics=NULL,
+    *nactdof=NULL, *icol=NULL,*ics=NULL,itempuser[3]={0,0,-2},
     *jq=NULL, *mast1=NULL, *irow=NULL, *rig=NULL,*idefbody=NULL,
     *ikmpc=NULL, *ilmpc=NULL, *ikboun=NULL, *ilboun=NULL,
     *nreorder=NULL,*ipointer=NULL,*idefload=NULL,
@@ -58,7 +58,7 @@ ITG *kon=NULL, *nodeboun=NULL, *ndirboun=NULL, *ipompc=NULL,
     *nplicon=NULL, *nplkcon=NULL, *inotr=NULL, *iponor=NULL, *knor=NULL,
     *ikforc=NULL, *ilforc=NULL, *iponoel=NULL, *inoel=NULL, *nshcon=NULL,
     *ncocon=NULL,*ibody=NULL,*ielprop=NULL,*islavsurf=NULL,
-    *ipoinpc=NULL,mt,nxstate,nload0,iload,*iuel=NULL;
+    *ipoinpc=NULL,mt,nxstate,nload0,iload,*iuel=NULL,*ne2boun=NULL;
      
 ITG nk,ne,nboun,nmpc,nforc,nload,nprint=0,nset,nalset,nentries=17,
   nmethod,neq[3]={0,0,0},i,mpcfree=1,mei[4],j,nzl,nam,nbounold=0,
@@ -91,12 +91,12 @@ double *co=NULL, *xboun=NULL, *coefmpc=NULL, *xforc=NULL,*clearini=NULL,
 	*xstate=NULL, *trab=NULL, *ener=NULL, *shcon=NULL, *cocon=NULL,
         *cs=NULL,*tietol=NULL,*fmpc=NULL,*prop=NULL,*t0g=NULL,*t1g=NULL,
         *xbody=NULL,*xbodyold=NULL,*coefmpcref=NULL,*dacon=NULL,*vel=NULL,
-        *velo=NULL,*veloo=NULL;
+        *velo=NULL,*veloo=NULL,energy[5]={0.,0.,0.,0.,0.};
     
-double ctrl[56]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,5.e-7,-1.,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.5,0.5,20.5,1.5,1.5,0.001,0.1,100.5,60.5};
+ double ctrl[57]={4.5,8.5,9.5,16.5,10.5,4.5,0.,5.5,0.,0.,0.25,0.5,0.75,0.85,0.,0.,1.5,0.,0.005,0.01,0.,0.,0.02,1.e-5,1.e-3,1.e-8,1.e30,1.5,0.25,1.01,1.,1.,5.e-7,5.e-7,1.e-4,5.e-7,5.e-7,5.e-7,5.e-7,-1.,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.e20,1.5,0.5,20.5,0.5,1.5,1.5,0.001,0.1,100.5,60.5};
 
 double fei[3],*xmodal=NULL,timepar[5],
-    alpha,ttime=0.,qaold[2]={0.,0.},physcon[13]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  alpha[2]={0.,0.5},ttime=0.,qaold[2]={0.,0.},physcon[14]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
 /*
  * Additional variables for the coupling with preCICE
@@ -117,7 +117,7 @@ else{
     if(strcmp1(argv[i],"-i")==0) {
     strcpy(jobnamec,argv[i+1]);strcpy1(jobnamef,argv[i+1],132);jin++;break;}
     if(strcmp1(argv[i],"-v")==0) {
-	printf("\nThis is Version 2.15\n\n");
+	printf("\nThis is Version 2.16\n\n");
 	FORTRAN(stop,());
     }
   }
@@ -150,12 +150,12 @@ FORTRAN(uexternaldb,(&lop,&lrestart,time,&dtime,&kstep,&kinc));
 FORTRAN(openfile,(jobnamef,output));
 
 printf("\n************************************************************\n\n");
-printf("CalculiX Version 2.15, Copyright(C) 1998-2018 Guido Dhondt\n");
+printf("CalculiX Version 2.16, Copyright(C) 1998-2019 Guido Dhondt\n");
 printf("CalculiX comes with ABSOLUTELY NO WARRANTY. This is free\n");
 printf("software, and you are welcome to redistribute it under\n");
 printf("certain conditions, see gpl.htm\n\n");
 printf("************************************************************\n\n");
-printf("You are using an executable made on Sa 15. Dez 15:34:34 CET 2018\n");
+printf("You are using an executable made on Mo 25. Nov 18:56:47 CET 2019\n");
 fflush(stdout);
 
 istep=0;
@@ -194,7 +194,7 @@ FORTRAN(allocation,(&nload_,&nforc_,&nboun_,&nk_,&ne_,&nmpc_,&nset_,&nalset_,
    &ne2d,&nflow,jobnamec,irstrt,ithermal,&nener,&nstate_,&istep,
    inpc,ipoinp,inp,&ntie_,&nbody_,&nprop_,ipoinpc,&nevdamp_,&npt_,&nslavs,
    &nkon_,&mcs,&mortar,&ifacecount,&nintpoint,infree,&nheading_,&nobject_,
-   iuel,&iprestr,&nstam,&ndamp,&nef));
+   iuel,&iprestr,&nstam,&ndamp,&nef,&nbounold,&nforcold,&nloadold,&nbodyold));
 
 SFREE(set);SFREE(meminset);SFREE(rmeminset);mt=mi[1]+1;
 NNEW(heading,char,66*nheading_);
@@ -263,6 +263,7 @@ while(istat>=0) {
 	NNEW(iponoel,ITG,nk_);
 	NNEW(inoel,ITG,9*ne1d+24*ne2d);
 	NNEW(rig,ITG,nk_);
+	NNEW(ne2boun,ITG,2*nk_);
 	if(infree[2]==0)infree[2]=1;
     }
 
@@ -603,7 +604,7 @@ while(istat>=0) {
 	    ithermal,iperturb,&istat,&istep,&nmat,&ntmat_,&norien,prestr,
 	    &iprestr,&isolver,fei,veold,timepar,
 	    xmodal,filab,jout,&nlabel,&idrct,
-	    jmax,&iexpl,&alpha,iamboun,plicon,nplicon,
+	    jmax,&iexpl,alpha,iamboun,plicon,nplicon,
 	    plkcon,nplkcon,&iplas,&npmat_,mi,&nk_,trab,inotr,&ntrans,
 	    ikboun,ilboun,ikmpc,ilmpc,ics,dcs,&ncs_,&namtot_,cs,&nstate_,
 	    &ncmat_,&iumat,&mcs,labmpc,iponor,xnor,knor,thickn,thicke,
@@ -620,7 +621,7 @@ while(istat>=0) {
 	    heading,&iaxial,&nobject,objectset,&nprint_,iuel,&nuel_,
 	    nodempcref,coefmpcref,ikmpcref,&memmpcref_,&mpcfreeref,
 	    &maxlenmpcref,&memmpc_,&isens,&namtot,&nstam,dacon,vel,&nef,
-	    velo,veloo));
+	    velo,veloo,ne2boun,itempuser));
 
 #ifdef CALCULIX_EXTERNAL_BEHAVIOURS_SUPPORT
   for(i=0;i!=nmat;++i){
@@ -744,6 +745,7 @@ while(istat>=0) {
 	RENEW(inoel,ITG,3*(infree[2]-1));
 	RENEW(iponoel,ITG,infree[3]);
 	RENEW(rig,ITG,infree[3]);
+	RENEW(ne2boun,ITG,2*infree[3]);
     }
 
     /* set definitions */ 
@@ -865,7 +867,7 @@ while(istat>=0) {
     }
     FORTRAN(spcmatch,(xboun,nodeboun,ndirboun,&nboun,xbounold,nodebounold,
 		      ndirbounold,&nbounold,ikboun,ilboun,vold,reorder,nreorder,
-                      mi));
+                      mi,typeboun));
     RENEW(xbounold,double,nboun);
     RENEW(nodebounold,ITG,nboun);
     RENEW(ndirbounold,ITG,nboun);
@@ -1065,12 +1067,12 @@ while(istat>=0) {
       NNEW(ipointer,ITG,mt*nk);
       
       if((icascade==0)&&((nmethod<8)||(nmethod>10))){
-	  if(nmethod==11){nmethodl=2;}else{nmethodl=nmethod;}
+	if((nmethod==11)||(nmethod==13)){nmethodl=2;}else{nmethodl=nmethod;}
 	  mastruct(&nk,kon,ipkon,lakon,&ne,nodeboun,ndirboun,&nboun,ipompc,
 		   nodempc,&nmpc,nactdof,icol,jq,&mast1,&irow,&isolver,neq,
 		   ikmpc,ilmpc,ipointer,nzs,&nmethodl,ithermal,
                    ikboun,ilboun,iperturb,mi,&mortar,typeboun,labmpc,
-		   &iit,&icascade,&network);
+		   &iit,&icascade,&network,&iexpl);
       }
       else{neq[0]=1;neq[1]=1;neq[2]=1;}
   }
@@ -1080,9 +1082,10 @@ while(istat>=0) {
       NNEW(jq,ITG,8*nk+1);
       NNEW(ipointer,ITG,8*nk);
       
+      if(nmethod==13){nmethodl=2;}else{nmethodl=nmethod;}
       mastructcs(&nk,kon,ipkon,lakon,&ne,nodeboun,ndirboun,&nboun,
 		 ipompc,nodempc,&nmpc,nactdof,icol,jq,&mast1,&irow,&isolver,
-		 neq,ikmpc,ilmpc,ipointer,nzs,&nmethod,
+		 neq,ikmpc,ilmpc,ipointer,nzs,&nmethodl,
 		 ics,cs,labmpc,&mcs,mi,&mortar);
   }
   
@@ -1099,8 +1102,9 @@ while(istat>=0) {
   /* nmethod=8:  magnetostatics */
   /* nmethod=9:  magnetodynamics */
   /* nmethod=10: electromagnetic eigenvalue problems */
-  /* nmethod=11: superelement creation or Green function calculation */
+  /* nmethod=11: superelement creation */
   /* nmethod=12: sensitivity analysis  */
+  /* nmethod=13: Green function calculation */
      
 if(preciceUsed) {
         int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
@@ -1124,7 +1128,7 @@ if(preciceUsed) {
 	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
 	     jout,timepar,eme,xbounold,xforcold,xloadold,
 	     veold,accold,amname,amta,namta,
-	     &nam,iamforc,&iamload,iamt1,&alpha,
+	     &nam,iamforc,&iamload,iamt1,alpha,
              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
 	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
@@ -1137,7 +1141,7 @@ if(preciceUsed) {
 	     ics,&nintpoint,&mortar,
 	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
-	     velo,veloo,preciceParticipantName,configFilename);
+	     velo,veloo,energy,itempuser,preciceParticipantName,configFilename);
             
             memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
             maxlenmpc=mpcinfo[3];
@@ -1162,7 +1166,7 @@ if(preciceUsed) {
 	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
 	     jout,timepar,eme,xbounold,xforcold,xloadold,
 	     veold,accold,amname,amta,namta,
-	     &nam,iamforc,&iamload,iamt1,&alpha,
+	     &nam,iamforc,&iamload,iamt1,alpha,
              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
 	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
@@ -1175,7 +1179,7 @@ if(preciceUsed) {
 	     ics,&nintpoint,&mortar,
 	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
-	     velo,veloo,preciceParticipantName,configFilename);
+	     velo,veloo,energy,itempuser,preciceParticipantName,configFilename);
                 
                 memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
                 maxlenmpc=mpcinfo[3];
@@ -1196,7 +1200,7 @@ if(preciceUsed) {
 	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
 	     jout,timepar,eme,xbounold,xforcold,xloadold,
 	     veold,accold,amname,amta,namta,
-	     &nam,iamforc,&iamload,iamt1,&alpha,
+	     &nam,iamforc,&iamload,iamt1,alpha,
              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
 	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
@@ -1209,7 +1213,7 @@ if(preciceUsed) {
 	     ics,&nintpoint,&mortar,
 	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
-	     velo,veloo,preciceParticipantName,configFilename);
+	     velo,veloo,energy,itempuser,preciceParticipantName,configFilename);
                 
                 memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
                 maxlenmpc=mpcinfo[3];
@@ -1225,7 +1229,6 @@ if(preciceUsed) {
             exit(0);
         }
     }
-
   else if((nmethod<=1)||(nmethod==11)||((iperturb[0]>1)&&(nmethod<8)))
     {
 	if(iperturb[0]<2){
@@ -1257,7 +1260,7 @@ if(preciceUsed) {
              prset,&nener,trab,inotr,&ntrans,fmpc,cbody,ibody,xbody,&nbody,
 	     xbodyold,timepar,thicke,jobnamec,tieset,&ntie,&istep,&nmat,
 	     ielprop,prop,typeboun,&mortar,mpcinfo,tietol,ics,&icontact,
-	     orname);
+	     orname,itempuser);
 
 	for(i=0;i<3;i++){nzsprevstep[i]=nzs[i];}
 
@@ -1281,7 +1284,7 @@ if(preciceUsed) {
 	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
 	     jout,timepar,eme,xbounold,xforcold,xloadold,
 	     veold,accold,amname,amta,namta,
-	     &nam,iamforc,&iamload,iamt1,&alpha,
+	     &nam,iamforc,&iamload,iamt1,alpha,
              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
 	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
@@ -1294,7 +1297,7 @@ if(preciceUsed) {
 	     ics,&nintpoint,&mortar,
 	     &ifacecount,typeboun,&islavsurf,&pslavsurf,&clearini,&nmat,
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
-	     velo,veloo);
+	     velo,veloo,energy,itempuser);
 
 	memmpc_=mpcinfo[0];mpcfree=mpcinfo[1];icascade=mpcinfo[2];
         maxlenmpc=mpcinfo[3];
@@ -1302,7 +1305,7 @@ if(preciceUsed) {
 	for(i=0;i<3;i++){nzsprevstep[i]=nzs[i];}
 
       }
-    }else if(nmethod==2){
+    }else if((nmethod==2)||(nmethod==13)){
       
       /* FREQUENCY ANALYSIS */
       
@@ -1500,7 +1503,7 @@ if(preciceUsed) {
 	     &vold,iperturb,sti,nzs,&kode,filab,&idrct,jmax,
 	     jout,timepar,eme,xbounold,xforcold,xloadold,
 	     veold,accold,amname,amta,namta,
-	     &nam,iamforc,&iamload,iamt1,&alpha,
+	     &nam,iamforc,&iamload,iamt1,alpha,
              &iexpl,iamboun,plicon,nplicon,plkcon,nplkcon,
 	     &xstate,&npmat_,&istep,&ttime,matname,qaold,mi,
 	     &isolver,&ncmat_,&nstate_,&iumat,cs,&mcs,&nkon,&ener,
@@ -1536,13 +1539,14 @@ if(preciceUsed) {
 	     xbodyold,timepar,thicke,jobnamec,tieset,&ntie,&istep,&nmat,
 	     ielprop,prop,typeboun,&mortar,mpcinfo,tietol,ics,&icontact,
 	     &nobject,&objectset,&istat,orname,nzsprevstep,&nlabel,physcon,
-             jobnamef);
+	     jobnamef,iponor,knor,&ne2d,iponoel,inoel,&mpcend);
   }
 
-  SFREE(nactdof);
-  SFREE(icol);
-  SFREE(jq);
-  SFREE(irow);
+  SFREE(nactdof);SFREE(icol);SFREE(jq);SFREE(irow);
+
+  /* reset tempuserflag */
+  
+  itempuser[0]=0;
 
   /* deleting the perturbation loads and temperatures */
 
@@ -1660,7 +1664,7 @@ if(preciceUsed) {
 	ibody,xbody,&nbody,xbodyold,&ttime,qaold,cs,&mcs,output,
 	physcon,ctrl,typeboun,fmpc,tieset,&ntie,tietol,&nslavs,t0g,t1g,
 	&nprop,ielprop,prop,&mortar,&nintpoint,&ifacecount,islavsurf,
-	pslavsurf,clearini,irstrt,vel,&nef,velo,veloo));
+	pslavsurf,clearini,irstrt,vel,&nef,velo,veloo,ne2boun));
     }
   } 
 	  
@@ -1734,7 +1738,7 @@ SFREE(vold);SFREE(veold);SFREE(vel);SFREE(velo);SFREE(veloo);
 
 if((ne1d!=0)||(ne2d!=0)){
     SFREE(iponor);SFREE(xnor);SFREE(knor);SFREE(thicke);SFREE(offset);
-    SFREE(iponoel);SFREE(inoel);SFREE(rig);
+    SFREE(iponoel);SFREE(inoel);SFREE(rig);SFREE(ne2boun);
 }
 
 SFREE(islavsurf);
