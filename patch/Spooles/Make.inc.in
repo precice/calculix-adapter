@@ -1,0 +1,89 @@
+.POSIX:
+#----------------------------------------
+#
+  CC = @CMAKE_C_COMPILER@
+#
+#----------------------------------------
+#
+#  set the compiler flags
+# 
+  CFLAGS = @CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_RELEASE@
+#
+#----------------------------------------
+#
+#  set any load flags
+#
+   LDFLAGS = @CMAKE_EXE_LINKER_FLAGS@ @CMAKE_EXE_LINKER_FLAGS_RELEASE@
+#
+#---------------------------------------------------------------------
+#
+#  set any thread libraries
+#
+  THREAD_LIBS = @CMAKE_THREADS_LIBS_INIT@
+#
+#---------------------------------------------------------------------
+#
+#  set the purify environment (a memory monitoring tool)
+#
+  PURIFY = 
+#
+#  purify wouldn't work with the newest version of the gcc library,
+#  so we had to force loading the old version
+#
+  PURIFY_GCC_VERSION = 
+#
+#---------------------------------------------------------------------
+#
+#  set the archive flags
+#
+  AR = @CMAKE_AR@
+  ARFLAGS = rv
+#
+#---------------------------------------------------------------------
+#
+#  set the ranlib environment
+#  (if ranlib is not needed, we echo the library name)
+#
+  RANLIB = echo
+#
+#---------------------------------------------------------------------
+#
+#  set suffix rule *.c --> *.o
+#
+.c.o : 
+	$(PURIFY) $(CC) -c $(CFLAGS) $<
+#
+#---------------------------------------------------------------------
+#
+#  set suffix rule *.c --> *.a
+#
+.c.a : 
+	$(PURIFY) $(CC) -c $(CFLAGS) $<
+	$(AR) $(ARFLAGS) $@ $*.o
+	rm -f $*.o
+#
+#---------------------------------------------------------------------
+#
+#  MPI install library
+#
+  MPI_INSTALL_DIR =
+#
+#---------------------------------------------------------------------
+#
+#  MPI library path
+#
+  MPI_LIB_PATH = 
+#
+#---------------------------------------------------------------------
+#
+#  MPI libraries 
+#
+  MPI_LIBS = @MPI_C_LIBRARIES@ @MPI_C_LINK_FLAGS@
+#
+#---------------------------------------------------------------------
+#
+#  MPI include path
+#
+  MPI_INCLUDE_DIR = @MPI_C_INCLUDE_DIRS@
+#
+#---------------------------------------------------------------------
