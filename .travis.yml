@@ -5,6 +5,8 @@ python:
  - "3.5"
 jobs:
  include:
-   - script:
-       - curl -LO --retry 3 https://raw.githubusercontent.com/precice/systemtests/develop/trigger_systemtests.py
-       - travis_wait 60 python trigger_systemtests.py --adapter calculix --wait --st-branch EderK-ccx216
+     # trigger systemtests build only when pushing to master/develop branch
+    - if: fork = false AND ( branch = master OR branch = develop )
+      script:
+        - curl -LO --retry 3 https://raw.githubusercontent.com/precice/systemtests/master/trigger_systemtests.py
+        - travis_wait 60 python trigger_systemtests.py --adapter calculix --wait --st-branch master
