@@ -114,7 +114,7 @@ if(NOT IS_DIRECTORY ${CCX_ROOT}/CalculiX)
     WORKING_DIRECTORY ${CCX_ROOT}
   )
   file(RENAME ${CCX_SOURCE_DIR}/ccx_${CCX_VERSION}.c ${CCX_SOURCE_DIR}/ccx_${CCX_VERSION}.c.orig)
-  file(RENAME ${CCX_SOURCE_DIR}/CalculiX.h ${CCX_SOURCE_DIR}/CalculiX.h.orig)
+  # file(RENAME ${CCX_SOURCE_DIR}/CalculiX.h ${CCX_SOURCE_DIR}/CalculiX.h.orig)
 endif()
 
 message(STATUS "Detecting CalculiX files")

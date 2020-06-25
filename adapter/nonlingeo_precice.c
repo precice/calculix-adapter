@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "CalculiX.h"
+#include <nonlingeo_precice.h>
 #include "mortar.h"
 #ifdef SPOOLES
    #include "spooles.h"

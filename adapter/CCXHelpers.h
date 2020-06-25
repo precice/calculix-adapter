@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../CalculiX.h"
+#include <CalculiX.h>
 
 /*
  * These are some helper functions for handling CalculiX data structures.
