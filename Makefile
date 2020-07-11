@@ -2,13 +2,23 @@
 # https://github.com/precice/calculix-adapter/wiki/Installation-instructions-for-CalculiX
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.16/src )
-CCX             = $(HOME)/PathTo/CalculiX/ccx_2.16/src
-# Path to SPOOLES main directory (e.g. $(HOME)/SPOOLES.2.2 )
-SPOOLES         = $(HOME)/PathTo/SPOOLES
-# Path to ARPACK main directory (e.g. $(HOME)/ARPACK )
-ARPACK          = $(HOME)/PathTo/ARPACK
-# Path to yaml-cpp prefix (e.g. $(HOME)/yaml-cpp, should contain "include" and "build")
-YAML            = $(HOME)/PathTo/yaml-cpp
+CCX             = $(HOME)/CalculiX/ccx_2.16/src
+
+### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
+# SPOOLES include directory (e.g. $(HOME)/SPOOLES.2.2 )
+SPOOLES_INCLUDE   = /usr/include/spooles/
+# SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
+SPOOLES_LIBS      = -L/usr/lib/x86_64-linux-gnu/ -lspooles
+#
+# ARPACK include directory (e.g. $(HOME)/ARPACK)
+# ARPACK_INCLUDE  =
+# ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
+ARPACK_LIBS       = -L/usr/lib/ -larpack -llapack -lblas
+#
+# yaml-cpp include path (e.g. $(HOME)/yaml-cpp/include)
+YAML_INCLUDE      = /usr/include/
+# yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
+YAML_LIBS         = -L/usr/lib/x86_64-linux-gnu/ -lyaml-cpp
 
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
@@ -24,25 +34,18 @@ INCLUDES = \
 	-I./ \
 	-I./adapter \
 	-I$(CCX) \
-	-I$(SPOOLES) \
+	-I$(SPOOLES_INCLUDE) \
 	$(PKGCONF_CFLAGS) \
-	-I$(ARPACK) \
-	-I$(YAML)/include
+	-I$(ARPACK_INCLUDE) \
+	-I$(YAML_INCLUDE)
 
 LIBS = \
-	$(SPOOLES)/spooles.a \
+	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
 	-lstdc++ \
-	-L$(YAML)/build -lyaml-cpp \
-
-# OS-specific options
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-	LIBS += $(ARPACK)/libarpack_MAC.a
-else
-	LIBS += $(ARPACK)/libarpack_INTEL.a
-	LIBS += -lpthread -lm -lc
-endif
+	$(YAML_LIBS) \
+	$(ARPACK_LIBS) \
+	-lpthread -lm -lc
 
 # Compilers and flags
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
@@ -51,6 +54,7 @@ endif
 CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 
 # OS-specific options
+UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CC = /usr/local/bin/gcc
 else
