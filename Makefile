@@ -5,20 +5,20 @@
 CCX             = $(HOME)/CalculiX/ccx_2.16/src
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
-# SPOOLES include directory (e.g. $(HOME)/SPOOLES.2.2 )
-SPOOLES_INCLUDE   = /usr/include/spooles/
+# SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
+SPOOLES_INCLUDE   = -I/usr/include/spooles/
 # SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
-SPOOLES_LIBS      = -L/usr/lib/x86_64-linux-gnu/ -lspooles
+SPOOLES_LIBS      = -lspooles
 #
-# ARPACK include directory (e.g. $(HOME)/ARPACK)
-# ARPACK_INCLUDE  =
+# ARPACK include flags (e.g. -I$(HOME)/ARPACK)
+ARPACK_INCLUDE    =
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
-ARPACK_LIBS       = -L/usr/lib/ -larpack -llapack -lblas
+ARPACK_LIBS       = -larpack -llapack -lblas
 #
-# yaml-cpp include path (e.g. $(HOME)/yaml-cpp/include)
-YAML_INCLUDE      = /usr/include/
+# yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
+YAML_INCLUDE      = -I/usr/include/
 # yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
-YAML_LIBS         = -L/usr/lib/x86_64-linux-gnu/ -lyaml-cpp
+YAML_LIBS         = -lyaml-cpp
 
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
@@ -34,10 +34,10 @@ INCLUDES = \
 	-I./ \
 	-I./adapter \
 	-I$(CCX) \
-	-I$(SPOOLES_INCLUDE) \
+	$(SPOOLES_INCLUDE) \
 	$(PKGCONF_CFLAGS) \
-	-I$(ARPACK_INCLUDE) \
-	-I$(YAML_INCLUDE)
+	$(ARPACK_INCLUDE) \
+	$(YAML_INCLUDE)
 
 LIBS = \
 	$(SPOOLES_LIBS) \
