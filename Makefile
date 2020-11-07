@@ -61,7 +61,7 @@ else
 	CC = mpicc
 endif
 
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
+FFLAGS = -Wall -O3 -fopenmp -fallow-argument-mismatch $(INCLUDES)
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
