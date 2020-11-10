@@ -139,16 +139,9 @@ int main(int argc,char *argv[])
 	strcpy(output,argv[i+1]);break;}
 	}*/
 
-    // Get preCICE participantName
-    if(strcmp1(argv[i],"-precice-participant")==0) {
-        strcpy(preciceParticipantName,argv[i+1]);
-        preciceUsed = 1;
-    }
-    // Overwrite YAML config file name in case a specific file name is given on the command line
-    if(strcmp1(argv[i],"-precice-config")==0) {
-        strcpy(configFilename,argv[i+1]);
-    }
+    
   }
+  
 
   putenv("CCX_JOBNAME_GETJOBNAME=jobnamec");
 
@@ -159,6 +152,20 @@ int main(int argc,char *argv[])
 #endif
 
   FORTRAN(openfile,(jobnamef));
+  for(i=1;i<argc;i++){
+    if(strcmp1(argv[i],"-o")==0) {
+	  strcpy(output,argv[i+1]);break;}
+    // Get preCICE participantName
+    if(strcmp1(argv[i],"-precice-participant")==0) {
+        strcpy(preciceParticipantName,argv[i+1]);
+        preciceUsed = 1;
+        printf("Using preCICE\n");
+    }
+    // Overwrite YAML config file name in case a specific file name is given on the command line
+    if(strcmp1(argv[i],"-precice-config")==0) {
+        strcpy(configFilename,argv[i+1]);
+    }
+  }
 
   printf("\n************************************************************\n\n");
   printf("CalculiX Version 2.17, Copyright(C) 1998-2020 Guido Dhondt\n");
