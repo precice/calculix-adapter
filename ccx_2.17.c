@@ -138,11 +138,8 @@ int main(int argc,char *argv[])
       if(strcmp1(argv[i],"-o")==0) {
 	strcpy(output,argv[i+1]);break;}
 	}*/
-
-    
   }
   
-
   putenv("CCX_JOBNAME_GETJOBNAME=jobnamec");
 
 #ifdef BAM
@@ -152,6 +149,7 @@ int main(int argc,char *argv[])
 #endif
 
   FORTRAN(openfile,(jobnamef));
+
   for(i=1;i<argc;i++){
     if(strcmp1(argv[i],"-o")==0) {
 	  strcpy(output,argv[i+1]);break;}
@@ -159,7 +157,6 @@ int main(int argc,char *argv[])
     if(strcmp1(argv[i],"-precice-participant")==0) {
         strcpy(preciceParticipantName,argv[i+1]);
         preciceUsed = 1;
-        printf("Using preCICE\n");
     }
     // Overwrite YAML config file name in case a specific file name is given on the command line
     if(strcmp1(argv[i],"-precice-config")==0) {
