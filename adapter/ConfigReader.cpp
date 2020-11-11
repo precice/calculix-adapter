@@ -23,6 +23,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 	YAML::Node config = YAML::LoadFile( configFilename );
 
   adapterConfig->preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
+	adapterConfig->dimensions = config["dimensions"]
 
 	int numInterfaces = config["participants"][participantName]["interfaces"].size();
   	adapterConfig->numInterfaces = numInterfaces;
@@ -40,7 +41,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
 			interface.map = 0;
 		}
-		else if ( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"] ) 
+		else if ( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"] )
 		{
 			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].as<std::string>().c_str() );
 			interface.map = 1;
@@ -58,7 +59,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 		{
 			interface.facesMeshName = NULL;
 		}
-		
+
 		if( config["participants"][participantName]["interfaces"][i]["mesh"] )
 		{
 			interface.facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
@@ -110,7 +111,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 				{
 					interface.readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
 				}
-			}	
+			}
 		}
 	}
 }

@@ -46,6 +46,7 @@ typedef struct PreciceInterface {
 	// Arrays to store the coupling data
 	double * nodeScalarData;
 	double * nodeVectorData; //Forces, displacements, velocities, positions and displacementDeltas are vector quantities
+	double * node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
 	double * faceCenterData;
 
 	// preCICE Data IDs
@@ -69,6 +70,8 @@ typedef struct PreciceInterface {
 	// Mapping type if nearest-projection mapping
 	int mapNPType;
 
+	// Indicates if pseudo 2D-3D coupling is implemented
+	int quasi2D3D;
 
 	int numReadData;
 	int numWriteData;
