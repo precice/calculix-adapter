@@ -23,8 +23,7 @@ void ConfigReader_Read(char const * configFilename, char const * participantName
 	YAML::Node config = YAML::LoadFile( configFilename );
 
   adapterConfig->preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
-	adapterConfig->dimensions = config["dimensions"].as<int>();
-
+	
 	int numInterfaces = config["participants"][participantName]["interfaces"].size();
   	adapterConfig->numInterfaces = numInterfaces;
   	adapterConfig->interfaces = (InterfaceConfig*) calloc( numInterfaces, sizeof( InterfaceConfig ) );

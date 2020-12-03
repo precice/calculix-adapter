@@ -22,7 +22,6 @@ typedef struct InterfaceConfig {
 } InterfaceConfig;
 
 typedef struct AdapterConfig {
-	int dimensions;
   int numInterfaces;
   InterfaceConfig * interfaces;
   char * preciceConfigFilename;
