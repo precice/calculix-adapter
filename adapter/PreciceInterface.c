@@ -171,7 +171,7 @@ void Precice_ReadCouplingData( SimulationData * sim )
 
 	PreciceInterface ** interfaces = sim->preciceInterfaces;
 	int numInterfaces = sim->numPreciceInterfaces;
-	int i, j, n, d;
+	int i, j, n, id, d, k;
 
 	if( precicec_isReadDataAvailable() )
 	{
@@ -220,12 +220,20 @@ void Precice_ReadCouplingData( SimulationData * sim )
             d = 0;
             for (n = 0; n < interfaces[i]->num2DNodes; n++)
             {
-              id = interfaces[i]->nodeIDs2D[n];
+              id = interfaces[i]->quasiMapping[n];
               // Forces in X and Y direction are distributed equally
-              interfaces[i]->nodeVectorData[d*id + 0] = interfaces[i]->node2DVectorData[d*n + 0] / 2;
-              interfaces[i]->nodeVectorData[d*id + 1] = interfaces[i]->node2DVectorData[d*n + 1] / 2;
+              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n];
+              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1];
               // Z - direction data is zero
-              interfaces[i]->nodeVectorData[2*id + 2] = 0;
+              interfaces[i]->nodeVectorData[id + 2] = 0;
+
+              id = interfaces[i]->quasiMapping[n + 1];
+              // Forces in X and Y direction are distributed equally
+              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n];
+              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1];
+              // Z - direction data is zero
+              interfaces[i]->nodeVectorData[id + 2] = 0;
+              d += 2;
             }
           }
 					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
@@ -266,7 +274,7 @@ void Precice_WriteCouplingData( SimulationData * sim )
 
 	PreciceInterface ** interfaces = sim->preciceInterfaces;
 	int numInterfaces = sim->numPreciceInterfaces;
-	int i, j, n, d, k;
+	int i, j, n, id, k;
 	int iset;
 
 	if( precicec_isWriteDataRequired( sim->solver_dt ) || precicec_isActionRequired( "write-initial-data" ) )
@@ -351,20 +359,17 @@ void Precice_WriteCouplingData( SimulationData * sim )
           }
           else if ( interfaces[i]->quasi2D3D == 1 )
           {
-            d = 0;
             k = 0;
-            id = 0;
             // Restructure 3D data to 2D format before writing to preCICE
             for (n = 0; n < interfaces[i]->num2DNodes; n++)
             {
-              id = interface[i]->nodeIDs2D[n]
+              id = interfaces[i]->quasiMapping[n];
               // Attach X and Y direction data
               // X-direction
-              interfaces[i]->node2DVectorData[k*n] = interfaces[i]->nodeVectorData[d*id];
+              interfaces[i]->node2DVectorData[k*n] = (interfaces[i]->nodeVectorData[id] + interfaces[i]->nodeVectorData[id + 1]) / 2;
               // Y-direction
-              interfaces[i]->node2DVectorData[k*n + 1] = interfaces[i]->nodeVectorData[d*id + 1];
+              interfaces[i]->node2DVectorData[k*n + 1] = (interfaces[i]->nodeVectorData[id] + interfaces[i]->nodeVectorData[id + 1]) / 2;
               // Z-direction is ignored
-              d += 3;
               k += 2;
             }
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
@@ -508,7 +513,6 @@ void PreciceInterface_ConfigureFaceCentersMesh( PreciceInterface * interface, Si
 
 void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, SimulationData * sim )
 {
-
 	//printf("Entering configureNodesMesh \n");
 	char * nodeSetName = toNodeSetName( interface->name );
 	interface->nodeSetID = getSetID( nodeSetName, sim->set, sim->nset );
@@ -519,30 +523,46 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	interface->nodeCoordinates = malloc( interface->numNodes * 3 * sizeof( double ) );
 	getNodeCoordinates( interface->nodeIDs, interface->numNodes, interface->dim, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
-  int n;
+  int n, nn, kk;
+  double xx, yy;
   int d = 0;
   int k = 0;
   int count = 0;
+  int nodecount = 0;
   // Extract 2D coordinates from 3D coordinates for quasi 2D-3D coupling
   if( interface->quasi2D3D == 1 )
   {
     interface->num2DNodes = interface->numNodes / 2;
     interface->node2DCoordinates = malloc( interface->num2DNodes * 2 * sizeof( double ) );
-    interface->nodeIDs2D = malloc( interface->num2DNodes * sizeof( int ) );
+    interface->quasiMapping = malloc( interface->numNodes * sizeof( int ) );
     for (int n = 0; n < interface->numNodes; n++)
     {
       // Filter out nodes which are in the XY plane
       if (interface->nodeCoordinates[k*n + 2] == 0.0)
       {
-        interface->nodeIDs2D[count] = n
+        interface->quasiMapping[nodecount] = n;
         interface->node2DCoordinates[d*count] = interface->nodeCoordinates[k*n];
         interface->node2DCoordinates[d*count + 1] = interface->nodeCoordinates[k*n + 1];
         count += 1;
+        kk = 0;
+        for (int nn = 0; nn < interface->numNodes; nn++)
+        {
+          xx = interface->nodeCoordinates[kk*nn];
+          yy = interface->nodeCoordinates[kk*nn + 1];
+          if (xx == interface->nodeCoordinates[k*n] && yy == interface->nodeCoordinates[k*n + 1] && interface->nodeCoordinates[k*n + 2] != 0)
+          {
+            interface->quasiMapping[nodecount+1] = nn;
+            break;
+          }
+          kk += 3;
+        }
         d += 2;
+        nodecount += 2;
       }
       k += 3;
     }
   }
+  printf( "Setting nodes for quasi 2D-3D configuration DONE\n" );
 
 	if( interface->nodesMeshName != NULL )
 	{
