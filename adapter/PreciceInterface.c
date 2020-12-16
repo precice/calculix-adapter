@@ -220,18 +220,15 @@ void Precice_ReadCouplingData( SimulationData * sim )
             d = 0;
             for (n = 0; n < interfaces[i]->num2DNodes; n++)
             {
-              id = interfaces[i]->quasiMapping[n];
-              // Forces in X and Y direction are distributed equally
-              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n];
-              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1];
-              // Z - direction data is zero
+              id = interfaces[i]->quasiMapping[n]; // Get mapping ID of front face
+              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n] / 2;
+              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1] / 2;
               interfaces[i]->nodeVectorData[id + 2] = 0;
 
-              id = interfaces[i]->quasiMapping[n + 1];
+              id = interfaces[i]->quasiMapping[n + 1]; // Get mapping ID of back face
               // Forces in X and Y direction are distributed equally
-              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n];
-              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1];
-              // Z - direction data is zero
+              interfaces[i]->nodeVectorData[id] = interfaces[i]->node2DVectorData[d*n] / 2;
+              interfaces[i]->nodeVectorData[id + 1] = interfaces[i]->node2DVectorData[d*n + 1] / 2;
               interfaces[i]->nodeVectorData[id + 2] = 0;
               d += 2;
             }
@@ -544,21 +541,24 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
         interface->node2DCoordinates[d*count] = interface->nodeCoordinates[k*n];
         interface->node2DCoordinates[d*count + 1] = interface->nodeCoordinates[k*n + 1];
         count += 1;
-        kk = 0;
-        for (int nn = 0; nn < interface->numNodes; nn++)
-        {
-          xx = interface->nodeCoordinates[kk*nn];
-          yy = interface->nodeCoordinates[kk*nn + 1];
-          if (xx == interface->nodeCoordinates[k*n] && yy == interface->nodeCoordinates[k*n + 1] && interface->nodeCoordinates[k*n + 2] != 0)
-          {
-            interface->quasiMapping[nodecount+1] = nn;
-            break;
-          }
-          kk += 3;
-        }
-        d += 2;
-        nodecount += 2;
       }
+
+      kk = 0;
+      for (int nn = 0; nn < interface->numNodes; nn++)
+      {
+        xx = interface->nodeCoordinates[kk*nn];
+        yy = interface->nodeCoordinates[kk*nn + 1];
+        if (isDoubleEqual(xx, interface->nodeCoordinates[k*n])
+            && isDoubleEqual(yy, interface->nodeCoordinates[k*n + 1])
+            && interface->nodeCoordinates[k*n + 2] != 0)
+        {
+          interface->quasiMapping[nodecount+1] = nn;
+          break;
+        }
+        kk += 3;
+      }
+      d += 2;
+      nodecount += 2;
       k += 3;
     }
   }

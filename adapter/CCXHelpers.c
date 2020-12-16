@@ -107,7 +107,7 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
 		for( j = 0 ; j < dim ; j++ )
@@ -219,7 +219,7 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 
 	}
 
-	
+
 }
 
 /*
@@ -241,7 +241,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 	ITG i, j, k;
 
-	
+
 
 	for( i = 0 ; i < numElements ; i++ )
 	{
@@ -263,7 +263,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 					tetraFaceNodes[i*3 + j] = k;
 				}
 			}
-			
+
 		}
 	}
 }
@@ -477,7 +477,7 @@ void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, 
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
 		for( j = 0 ; j < dim ; j++ )
     {
@@ -492,7 +492,7 @@ void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * 
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
-		for( j = 0 ; j < dim ; j++ ) 
+		for( j = 0 ; j < dim ; j++ )
     {
       xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
     }
@@ -528,6 +528,12 @@ bool startsWith(const char * string, const char * prefix)
 bool isEqual(const char * lhs, const char * rhs)
 {
   return strcmp(lhs, rhs) == 0;
+}
+
+bool isDoubleEqual(double a, double b)
+{
+	double EPS_LIMIT = 0.0000001;
+	return (a - b) <= EPS_LIMIT;
 }
 
 /* Errors messages */
@@ -581,4 +587,3 @@ void unreachableError()
 	printf( "ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n" );
 	exit( EXIT_FAILURE );
 }
-
