@@ -301,6 +301,13 @@ bool startsWith(const char * string, const char * prefix);
  */
 bool isEqual(const char * lhs, const char * rhs);
 
+/**
+ * @brief Checks wheather two doubles are identical
+ * @param a is one double in the comparison
+ * @param b is the other double in the comparison
+ */
+bool isDoubleEqual(double a, double b);
+
 /* Error messages */
 
 /**
@@ -338,11 +345,11 @@ void missingDfluxBCError();
 /**
  * @brief Terminate program if a FILM BC is not defined when using Robin BC for coupling (e.g. missing interface.flm file)
  */
-void missingFilmBCError(); 
+void missingFilmBCError();
 
 /**
  * @brief Terminate program if the adapter reaches an unreachable state. This should never occur.
  */
-void unreachableError(); 
+void unreachableError();
 
 #endif // CCXHELPERS_H

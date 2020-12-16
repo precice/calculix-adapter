@@ -32,8 +32,12 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
   sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 
+  printf("participantName = %s\n", participantName);
+  printf("adapterConfig.preciceConfigFilename = %s\n", adapterConfig.preciceConfigFilename);
+  printf("Before precicec_createSolverInterface\n");
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, adapterConfig.preciceConfigFilename, 0, 1 );
+  printf("After precicec_createSolverInterface\n");
 
 	// Create interfaces as specified in the config file
 	sim->preciceInterfaces = (struct PreciceInterface**) calloc( adapterConfig.numInterfaces, sizeof( PreciceInterface* ) );
@@ -41,10 +45,12 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	int i;
 	for( i = 0 ; i < adapterConfig.numInterfaces; i++ )
 	{
+    printf("Creating interfaces\n");
     InterfaceConfig * config = adapterConfig.interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
 	}
+  printf("After creating all interfaces\n");
 
   // At this point we are done with the configuration
   AdapterConfig_Free(&adapterConfig);
@@ -470,6 +476,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     interface->nodesMeshName = strdup( config->nodesMeshName );
     PreciceInterface_ConfigureNodesMesh( interface, sim );
   }
+  printf("After configuring mesh by nodes\n");
 
 	// Face centers mesh
 	interface->faceCentersMeshID = -1;
@@ -532,6 +539,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
     interface->num2DNodes = interface->numNodes / 2;
     interface->node2DCoordinates = malloc( interface->num2DNodes * 2 * sizeof( double ) );
     interface->quasiMapping = malloc( interface->numNodes * sizeof( int ) );
+    printf("Completing malloc for node2DCoordinates and qausiMapping\n");
     for (int n = 0; n < interface->numNodes; n++)
     {
       // Filter out nodes which are in the XY plane
