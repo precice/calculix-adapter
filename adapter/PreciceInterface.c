@@ -32,12 +32,8 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 
   sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 
-  printf("participantName = %s\n", participantName);
-  printf("adapterConfig.preciceConfigFilename = %s\n", adapterConfig.preciceConfigFilename);
-  printf("Before precicec_createSolverInterface\n");
 	// Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
 	precicec_createSolverInterface( participantName, adapterConfig.preciceConfigFilename, 0, 1 );
-  printf("After precicec_createSolverInterface\n");
 
 	// Create interfaces as specified in the config file
 	sim->preciceInterfaces = (struct PreciceInterface**) calloc( adapterConfig.numInterfaces, sizeof( PreciceInterface* ) );
@@ -45,7 +41,6 @@ void Precice_Setup( char * configFilename, char * participantName, SimulationDat
 	int i;
 	for( i = 0 ; i < adapterConfig.numInterfaces; i++ )
 	{
-    printf("Creating interfaces\n");
     InterfaceConfig * config = adapterConfig.interfaces + i;
 		sim->preciceInterfaces[i] = malloc( sizeof( PreciceInterface ) );
 		PreciceInterface_Create( sim->preciceInterfaces[i], sim, config );
@@ -527,6 +522,14 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	interface->nodeCoordinates = malloc( interface->numNodes * 3 * sizeof( double ) );
 	getNodeCoordinates( interface->nodeIDs, interface->numNodes, interface->dim, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
+  printf("nodeCoordinates:\n");
+  int dd = 0;
+  for (int i = 0; i < interface->numNodes; i++)
+  {
+    printf("[%f, %f, %f]\n", interface->nodeCoordinates[dd*i], interface->nodeCoordinates[dd*i + 1], interface->nodeCoordinates[dd*i + 2]);
+    dd += 3;
+  }
+
   int n, nn, kk;
   double xx, yy;
   int d = 0;
@@ -539,13 +542,13 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
     interface->num2DNodes = interface->numNodes / 2;
     interface->node2DCoordinates = malloc( interface->num2DNodes * 2 * sizeof( double ) );
     interface->quasiMapping = malloc( interface->numNodes * sizeof( int ) );
-    printf("Completing malloc for node2DCoordinates and qausiMapping\n");
     for (int n = 0; n < interface->numNodes; n++)
     {
       // Filter out nodes which are in the XY plane
       if (interface->nodeCoordinates[k*n + 2] == 0.0)
       {
         interface->quasiMapping[nodecount] = n;
+        printf("Setting vertex = [%f, %f]", interface->nodeCoordinates[k*n], interface->nodeCoordinates[k*n + 1]);
         interface->node2DCoordinates[d*count] = interface->nodeCoordinates[k*n];
         interface->node2DCoordinates[d*count + 1] = interface->nodeCoordinates[k*n + 1];
         count += 1;
@@ -585,6 +588,13 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
     {
       // 2D coordinates are set in preCICE when quasi 2D-3D coupling is done
       interface->preciceNodeIDs = malloc( interface->num2DNodes * sizeof( int ) );
+      d = 0;
+      printf("node2DCoordinates:\n");
+      for (int i = 0; i < interface->num2DNodes; i++)
+      {
+        printf("[%f, %f]\n", interface->node2DCoordinates[d*i], interface->node2DCoordinates[d*i + 1]);
+        d += 2;
+      }
       precicec_setMeshVertices( interface->nodesMeshID, interface->num2DNodes, interface->node2DCoordinates, interface->preciceNodeIDs );
     }
 
