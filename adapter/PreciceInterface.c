@@ -429,10 +429,12 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
 	interface->faceCenterCoordinates = NULL;
 	interface->preciceFaceCenterIDs = NULL;
 	interface->nodeCoordinates = NULL;
+  interface->node2DCoordinates = NULL;
 	interface->preciceNodeIDs = NULL;
 	interface->triangles = NULL;
 	interface->nodeScalarData = NULL;
 	interface->nodeVectorData = NULL;
+  interface->node2DVectorData = NULL;
 	interface->faceCenterData = NULL;
 	interface->xbounIndices = NULL;
 	interface->xloadIndices = NULL;
@@ -548,7 +550,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
       if (interface->nodeCoordinates[k*n + 2] == 0.0)
       {
         interface->quasiMapping[nodecount] = n;
-        printf("Setting vertex = [%f, %f]", interface->nodeCoordinates[k*n], interface->nodeCoordinates[k*n + 1]);
+        printf("Setting vertex = [%f, %f]\n", interface->nodeCoordinates[k*n], interface->nodeCoordinates[k*n + 1]);
         interface->node2DCoordinates[d*count] = interface->nodeCoordinates[k*n];
         interface->node2DCoordinates[d*count + 1] = interface->nodeCoordinates[k*n + 1];
         count += 1;
