@@ -22,6 +22,7 @@ typedef struct PreciceInterface {
 
 	char * name;
 	int dim;
+	int dimCCX;
 
 	// Interface nodes
 	int numNodes;
