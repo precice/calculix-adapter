@@ -532,8 +532,7 @@ bool isEqual(const char * lhs, const char * rhs)
 
 bool isDoubleEqual(double a, double b)
 {
-	double EPS_LIMIT = 0.0000001;
-	return (a - b) <= EPS_LIMIT;
+	return fabs(a - b) < 1.e-14;
 }
 
 /* Errors messages */
