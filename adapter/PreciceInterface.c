@@ -215,7 +215,6 @@ void Precice_ReadCouplingData( SimulationData * sim )
           }
           if ( interfaces[i]->quasi2D3D == 1 ) // Read 2D data from preCICE is quasi 2D-3D coupling is used
           {
-            printf("Before reading FORCES\n");
             precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
             // Restructure 2D data to 3D format before using in CCX
             int dimCCX = interfaces[i]->dimCCX;
@@ -223,12 +222,12 @@ void Precice_ReadCouplingData( SimulationData * sim )
             for (int n = 0; n < interfaces[i]->numNodes; n++)
             {
               id = interfaces[i]->zIndexMapping[n]; // Get ID of node corresponding to 2D mesh
-              interfaces[i]->nodeVectorData[n*dimCCX] = interfaces[i]->node2DVectorData[id*dim] / 2;
-              interfaces[i]->nodeVectorData[n*dimCCX + 1] = interfaces[i]->node2DVectorData[id*dim] / 2;
+              interfaces[i]->nodeVectorData[n*dimCCX] = interfaces[i]->node2DVectorData[id*dim];
+              interfaces[i]->nodeVectorData[n*dimCCX + 1] = interfaces[i]->node2DVectorData[id*dim + 1];
               interfaces[i]->nodeVectorData[n*dimCCX + 2] = 0;
             }
           }
-					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dim, interfaces[i]->xforcIndices, sim->xforc);
+					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
 					printf( "Reading FORCES coupling data with ID '%d'. \n",interfaces[i]->forcesDataID );
 					break;
 				case DISPLACEMENTS:
@@ -343,28 +342,26 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					printf( "Writing DISPLACEMENTS coupling data with ID '%d'. \n",interfaces[i]->displacementsDataID );
 					break;
 				case DISPLACEMENTDELTAS:
-					getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
-					precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+					getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
           if ( interfaces[i]->quasi2D3D == 0 )
           {
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
           }
           else if ( interfaces[i]->quasi2D3D == 1 )
           {
-            printf("Before writing DISPLACEMENTS Deltas\n");
             int dimCCX = interfaces[i]->dimCCX;
             int dim = interfaces[i]->dim;
             // Restructure 3D data to 2D format before writing to preCICE
+            for (int n = 0; n < interfaces[i]->num2DNodes; n++)
+            {
+              interfaces[i]->node2DVectorData[n*dim] = 0.0;
+              interfaces[i]->node2DVectorData[n*dim + 1] = 0.0;
+            }
             for (int n = 0; n < interfaces[i]->numNodes; n++)
             {
               id = interfaces[i]->zIndexMapping[n];
-              interfaces[i]->node2DVectorData[id*dim] += (interfaces[i]->nodeVectorData[n*dimCCX] + interfaces[i]->nodeVectorData[n*dimCCX + 1]) / 2;
-              interfaces[i]->node2DVectorData[id*dim + 1] += (interfaces[i]->nodeVectorData[n*dimCCX] + interfaces[i]->nodeVectorData[n*dimCCX + 1]) / 2;
-            }
-            printf("node2DVectorData: \n");
-            for (int n = 0; n < interfaces[i]->num2DNodes; n++)
-            {
-              printf("[%f, %f]\n", interfaces[i]->node2DVectorData[id*dim], interfaces[i]->node2DVectorData[id*dim + 1]);
+              interfaces[i]->node2DVectorData[id*dim] += interfaces[i]->nodeVectorData[n*dimCCX]*0.5;
+              interfaces[i]->node2DVectorData[id*dim + 1] += interfaces[i]->nodeVectorData[n*dimCCX + 1]*0.5;
             }
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
           }
@@ -529,7 +526,6 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
   if( interface->quasi2D3D == 1 )
   {
     interface->num2DNodes = interface->numNodes / 2;
-    printf("Number of nodes in 2D mesh = %d\n", interface->num2DNodes);
     interface->node2DCoordinates = malloc( interface->num2DNodes * 2 * sizeof( double ) );
     interface->zIndexMapping = malloc( interface->numNodes * sizeof( int ) );
     for (int i = 0; i < interface->numNodes; i++)
@@ -847,4 +843,8 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 	if ( preciceInterface->xforcIndices != NULL ){
 		free( preciceInterface->xforcIndices );
 	}
+
+  if ( preciceInterface->zIndexMapping != NULL){
+    free( preciceInterface->zIndexMapping);
+  }
 }
