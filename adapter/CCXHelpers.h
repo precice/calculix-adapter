@@ -306,7 +306,32 @@ bool isEqual(const char * lhs, const char * rhs);
  * @param a is one double in the comparison
  * @param b is the other double in the comparison
  */
-bool isDoubleEqual(double a, double b);
+bool isDoubleEqual(const double a, const double b);
+
+/**
+ * @brief Set all values of an array to 0
+ * @param values is the array carrying double values
+ * @param length is the number of elements in array
+ */
+void setDoubleArrayZero(double * values, const int length);
+
+/**
+ * @brief Maps data from 2D mesh nodes to 3D mesh nodes
+ * @param values2D is the array of values on 2D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values3D is the array of values on 3D mesh nodes
+ */
+void mapData2Dto3D(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D);
+
+/**
+ * @brief Maps data from 3D mesh nodes to 2D mesh nodes
+ * @param values3D is the array of values on 3D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values2D is the array of values on 2D mesh nodes
+ */
+void mapData3Dto2D(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
 
 /* Error messages */
 
