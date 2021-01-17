@@ -535,27 +535,30 @@ bool isDoubleEqual(const double a, const double b)
 	return fabs(a - b) < 1.e-14;
 }
 
-void setDoubleArrayZero(double * values, const int length)
+void setDoubleArrayZero(double * values, const int length, const int dim)
 {
 	for (int i = 0; i < length; i++)
 	{
-		values[i] = 0.0;
+		for (int j = 0; j < dim; j++)
+		{
+			values[i*dim + j] = 0.0;
+		}
 	}
 }
 
-void mapData2Dto3D(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
 {
 	int id;
 	for (int i = 0; i < numNodes3D; i++)
 	{
 		id = mapping2D3D[i];
-		values3D[i*3] = values2D[id*2];
-		values3D[i*3 + 1] = values2D[id*2 + 1];
+		values3D[i*3] = values2D[id*2]*0.5;
+		values3D[i*3 + 1] = values2D[id*2 + 1]*0.5;
 		values3D[i*3 + 2] = 0;
 	}
 }
 
-void mapData3Dto2D(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
 {
 	int id;
 	for (int i = 0; i < numNodes3D; i++)
@@ -563,6 +566,26 @@ void mapData3Dto2D(const double * values3D, const int * mapping2D3D, const int n
 		id = mapping2D3D[i];
 		values2D[id*2] += values3D[i*3]*0.5;
 		values2D[id*2 + 1] += values3D[i*3 + 1]*0.5;
+	}
+}
+
+void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+{
+	int id;
+	for (int i = 0; i < numNodes3D; i++)
+	{
+		id = mapping2D3D[i];
+		values3D[i] = values2D[id]*0.5;
+	}
+}
+
+void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+{
+	int id;
+	for (int i = 0; i < numNodes3D; i++)
+	{
+		id = mapping2D3D[i];
+		values2D[id] += values3D[i]*0.5;
 	}
 }
 
