@@ -49,6 +49,7 @@ typedef struct PreciceInterface {
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;
+	double * node2DScalarData;
 	double * nodeVectorData; //Forces, displacements, velocities, positions and displacementDeltas are vector quantities
 	double * node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
 	double * faceCenterData;
