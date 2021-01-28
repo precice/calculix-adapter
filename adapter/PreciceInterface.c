@@ -293,7 +293,7 @@ void Precice_WriteCouplingData( SimulationData * sim )
           }
           else if ( interfaces[i]->quasi2D3D )
           {
-            setDoubleArrayZero(interfaces[i]->node2DScalarData, interfaces[i]->num2DNodes, interfaces[i]->dim);
+            setDoubleArrayZero(interfaces[i]->node2DScalarData, interfaces[i]->num2DNodes, 1);
             mapData3Dto2DScalar(interfaces[i]->nodeScalarData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DScalarData);
             precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DScalarData );
           }
@@ -534,19 +534,17 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	interface->numNodes = getNumSetElements( interface->nodeSetID, sim->istartset, sim->iendset );
 	interface->nodeIDs = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
 
-  printf("dimCCX = %d\n", interface->dimCCX);
-
 	interface->nodeCoordinates = malloc( interface->numNodes * interface->dimCCX * sizeof( double ) );
 	getNodeCoordinates( interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
-  int count = 0;
-  int dim = interface->dim;
-  int dimCCX = interface->dimCCX;
   // Extract 2D coordinates from 3D coordinates for quasi 2D-3D coupling
   if( interface->quasi2D3D )
   {
+    int count = 0;
+    int dim = interface->dim;
+    int dimCCX = interface->dimCCX;
     interface->num2DNodes = interface->numNodes / 2;
-    interface->node2DCoordinates = malloc( interface->num2DNodes * 2 * sizeof( double ) );
+    interface->node2DCoordinates = malloc( interface->num2DNodes * dim * sizeof( double ) );
     interface->mapping2D3D = malloc( interface->numNodes * sizeof( int ) );
     for (int i = 0; i < interface->numNodes; i++)
     {
@@ -650,16 +648,20 @@ void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, Simulat
 void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config )
 {
 	interface->nodeScalarData = malloc( interface->numNodes * sizeof( double ) );
-  interface->node2DScalarData = malloc( interface->num2DNodes * sizeof( double ));
   interface->nodeVectorData = malloc( interface->numNodes * 3 * sizeof( double ) );
-  interface->node2DVectorData = malloc( interface->num2DNodes * 2 * sizeof( double ) );
 
-  int dim = interface->dim;
-  for (int i = 0; i < interface->num2DNodes; i++)
+  if ( interface->quasi2D3D )
   {
-    interface->node2DScalarData[i] = 0.0;
-    interface->node2DVectorData[i*dim] = 0.0;
-    interface->node2DVectorData[i*dim + 1] = 0.0;
+    interface->node2DScalarData = malloc( interface->num2DNodes * sizeof( double ));
+    interface->node2DVectorData = malloc( interface->num2DNodes * 2 * sizeof( double ) );
+
+    int dim = interface->dim;
+    for (int i = 0; i < interface->num2DNodes; i++)
+    {
+      interface->node2DScalarData[i] = 0.0;
+      interface->node2DVectorData[i*dim] = 0.0;
+      interface->node2DVectorData[i*dim + 1] = 0.0;
+    }
   }
 
 	interface->faceCenterData = malloc( interface->numElements * sizeof( double ) );
