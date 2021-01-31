@@ -537,19 +537,38 @@ bool isDoubleEqual(const double a, const double b)
 
 void setDoubleArrayZero(double * values, const int length, const int dim)
 {
-	for (int i = 0; i < length; i++)
+	ITG i, j;
+
+	for ( i = 0; i < length; i++ )
 	{
-		for (int j = 0; j < dim; j++)
+		for ( j = 0; j < dim; j++ )
 		{
 			values[i*dim + j] = 0.0;
 		}
 	}
 }
 
+void printVectorData(const double * values, const int nv, const int dim)
+{
+	ITG i, j;
+
+	for ( i = 0; i < nv; i++ )
+	{
+		printf("[");
+		for ( j = 0; j < dim; j++ )
+		{
+			printf("%f, ", values[i*dim + j]);
+		}
+		printf("]\n");
+	}
+}
+
+
 void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
 {
-	int id;
-	for (int i = 0; i < numNodes3D; i++)
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
 	{
 		id = mapping2D3D[i];
 		values3D[i*3] = values2D[id*2]*0.5;
@@ -560,8 +579,9 @@ void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const
 
 void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
 {
-	int id;
-	for (int i = 0; i < numNodes3D; i++)
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
 	{
 		id = mapping2D3D[i];
 		values2D[id*2] += values3D[i*3]*0.5;
@@ -571,8 +591,9 @@ void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const
 
 void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
 {
-	int id;
-	for (int i = 0; i < numNodes3D; i++)
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
 	{
 		id = mapping2D3D[i];
 		values3D[i] = values2D[id]*0.5;
@@ -581,8 +602,9 @@ void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const
 
 void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
 {
-	int id;
-	for (int i = 0; i < numNodes3D; i++)
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
 	{
 		id = mapping2D3D[i];
 		values2D[id] += values3D[i]*0.5;

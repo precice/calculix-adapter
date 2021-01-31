@@ -66,7 +66,6 @@ void Precice_InitializeData( SimulationData * sim )
 
 	Precice_WriteCouplingData( sim );
 	precicec_initialize_data();
-	Precice_ReadCouplingData( sim );
 }
 
 void Precice_AdjustSolverTimestep( SimulationData * sim )
@@ -171,7 +170,7 @@ void Precice_ReadCouplingData( SimulationData * sim )
 
 	PreciceInterface ** interfaces = sim->preciceInterfaces;
 	int numInterfaces = sim->numPreciceInterfaces;
-	int i, j, n, id;
+	int i, j;
 
 	if( precicec_isReadDataAvailable() )
 	{
@@ -225,6 +224,8 @@ void Precice_ReadCouplingData( SimulationData * sim )
           {
             precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
             mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
+            // printf("Force values before writing to CCX: \n");
+            // printVectorData(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX);
           }
 					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
 					printf( "Reading FORCES coupling data with ID '%d'. \n",interfaces[i]->forcesDataID );
@@ -375,7 +376,11 @@ void Precice_WriteCouplingData( SimulationData * sim )
           else if ( interfaces[i]->quasi2D3D )
           {
             setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
+            printf("Displacement Deltas values from CCX before mapping: \n");
+            printVectorData(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX);
             mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
+            printf("Displacement Deltas values after mapping: \n");
+            printVectorData(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
           }
 					printf( "Writing DISPLACEMENTDELTAS coupling data with ID '%d'. \n",interfaces[i]->displacementDeltasDataID );

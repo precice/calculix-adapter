@@ -352,6 +352,14 @@ void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const
  */
 void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
 
+/**
+ * @brief Prints contents of a multi-dimension array
+ * @param values is the array carrying double values
+ * @param length is the number of elements in array
+ * @param dim is the dimension of the array data
+ */
+void printVectorData(const double * values, const int nv, const int dim);
+
 /* Error messages */
 
 /**
