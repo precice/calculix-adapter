@@ -66,6 +66,7 @@ void Precice_InitializeData( SimulationData * sim )
 
 	Precice_WriteCouplingData( sim );
 	precicec_initialize_data();
+  Precice_ReadCouplingData( sim );
 }
 
 void Precice_AdjustSolverTimestep( SimulationData * sim )
@@ -224,8 +225,6 @@ void Precice_ReadCouplingData( SimulationData * sim )
           {
             precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
             mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
-            // printf("Force values before writing to CCX: \n");
-            // printVectorData(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX);
           }
 					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
 					printf( "Reading FORCES coupling data with ID '%d'. \n",interfaces[i]->forcesDataID );
@@ -573,7 +572,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
             isDoubleEqual(interface->nodeCoordinates[ii*dimCCX + 1], interface->nodeCoordinates[i*dimCCX + 1]) &&
             !isDoubleEqual(interface->nodeCoordinates[ii*dimCCX + 2], interface->nodeCoordinates[i*dimCCX + 2]))
         {
-          if (isDoubleEqual(interface->nodeCoordinates[i*dimCCX + 2], 0.0))
+          if ( !isDoubleEqual(interface->nodeCoordinates[i*dimCCX + 2], 0.0) )
           {
             interface->mapping2D3D[i] = count;
             interface->mapping2D3D[ii] = count;
