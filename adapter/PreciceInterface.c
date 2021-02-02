@@ -375,11 +375,7 @@ void Precice_WriteCouplingData( SimulationData * sim )
           else if ( interfaces[i]->quasi2D3D )
           {
             setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
-            printf("Displacement Deltas values from CCX before mapping: \n");
-            printVectorData(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX);
             mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
-            printf("Displacement Deltas values after mapping: \n");
-            printVectorData(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
           }
 					printf( "Writing DISPLACEMENTDELTAS coupling data with ID '%d'. \n",interfaces[i]->displacementDeltasDataID );
@@ -599,7 +595,6 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
     }
 	}
 
-  printf("After defining vertices in preCICE\n");
 	if (interface->mapNPType == 1)
 	{
     assert ( !interface->quasi2D3D && "Quasi 2D - 3D configuration does not work for nearest-projection mapping");
