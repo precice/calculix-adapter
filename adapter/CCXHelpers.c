@@ -107,7 +107,7 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
 		for( j = 0 ; j < dim ; j++ )
@@ -219,7 +219,7 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 
 	}
 
-	
+
 }
 
 /*
@@ -241,7 +241,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 	ITG i, j, k;
 
-	
+
 
 	for( i = 0 ; i < numElements ; i++ )
 	{
@@ -263,7 +263,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 					tetraFaceNodes[i*3 + j] = k;
 				}
 			}
-			
+
 		}
 	}
 }
@@ -477,7 +477,7 @@ void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, 
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
 		for( j = 0 ; j < dim ; j++ )
     {
@@ -492,7 +492,7 @@ void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * 
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
-		for( j = 0 ; j < dim ; j++ ) 
+		for( j = 0 ; j < dim ; j++ )
     {
       xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
     }
@@ -528,6 +528,87 @@ bool startsWith(const char * string, const char * prefix)
 bool isEqual(const char * lhs, const char * rhs)
 {
   return strcmp(lhs, rhs) == 0;
+}
+
+bool isDoubleEqual(const double a, const double b)
+{
+	return fabs(a - b) < 1.e-14;
+}
+
+void setDoubleArrayZero(double * values, const int length, const int dim)
+{
+	ITG i, j;
+
+	for ( i = 0; i < length; i++ )
+	{
+		for ( j = 0; j < dim; j++ )
+		{
+			values[i*dim + j] = 0.0;
+		}
+	}
+}
+
+void printVectorData(const double * values, const int nv, const int dim)
+{
+	ITG i, j;
+
+	for ( i = 0; i < nv; i++ )
+	{
+		printf("[");
+		for ( j = 0; j < dim; j++ )
+		{
+			printf("%f, ", values[i*dim + j]);
+		}
+		printf("]\n");
+	}
+}
+
+
+void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values3D[i*3] = values2D[id*2]*0.5;
+		values3D[i*3 + 1] = values2D[id*2 + 1]*0.5;
+		values3D[i*3 + 2] = 0;
+	}
+}
+
+void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values2D[id*2] += values3D[i*3]*0.5;
+		values2D[id*2 + 1] += values3D[i*3 + 1]*0.5;
+	}
+}
+
+void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values3D[i] = values2D[id]*0.5;
+	}
+}
+
+void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values2D[id] += values3D[i]*0.5;
+	}
 }
 
 /* Errors messages */
@@ -581,4 +662,3 @@ void unreachableError()
 	printf( "ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n" );
 	exit( EXIT_FAILURE );
 }
-
