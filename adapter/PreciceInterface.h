@@ -21,8 +21,8 @@
 typedef struct PreciceInterface {
 
 	char * name;
-	int dim;
-	int dimCCX;
+	int dim; // Dimension received from preCICE configuration
+	int dimCCX; // Dimension as seen by CalculiX
 
 	// Interface nodes
 	int numNodes;
@@ -49,8 +49,8 @@ typedef struct PreciceInterface {
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;
-	double * node2DScalarData;
-	double * nodeVectorData; //Forces, displacements, velocities, positions and displacementDeltas are vector quantities
+	double * node2DScalarData; // Scalar quantities in 2D in case quasi 2D-3D coupling is done
+	double * nodeVectorData; // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
 	double * node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
 	double * faceCenterData;
 
