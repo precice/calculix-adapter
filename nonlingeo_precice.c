@@ -1309,12 +1309,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* Adapter: Give preCICE the control of the time stepping */
   while( Precice_IsCouplingOngoing() ){
 
-    if( Precice_IsWriteCheckpointRequired() )
-      {
-        Precice_WriteIterationCheckpoint( &simulationData, vini );
-        Precice_FulfilledWriteCheckpoint();
-      }
-
 	  /* Adapter: Adjust solver time step */
       Precice_AdjustSolverTimestep( &simulationData );
       /* Adapter read coupling data if available */
@@ -1336,6 +1330,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 	  isiz=mt**nk;cpypardou(vini,vold,&isiz,&num_cpus);
 //	  memcpy(&vini[0],&vold[0],sizeof(double)*mt**nk);
+
+    if( Precice_IsWriteCheckpointRequired() )
+    {
+      Precice_WriteIterationCheckpoint( &simulationData, vini );
+      Precice_FulfilledWriteCheckpoint();
+    }
 
 	  isiz=*nboun;cpypardou(xbounini,xbounact,&isiz,&num_cpus);
 //	  for(k=0;k<*nboun;++k){xbounini[k]=xbounact[k];}

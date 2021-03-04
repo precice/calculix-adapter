@@ -309,6 +309,12 @@ bool isEqual(const char * lhs, const char * rhs);
 bool isDoubleEqual(const double a, const double b);
 
 /**
+ * @brief Returns whether it is a quasi 2D-3D case or a purely 3D case
+ * @param quasi2D3D is an integer toggled during initialization
+ */
+bool isQuasi2D3D(const int quasi2D3D);
+
+/**
  * @brief Set all values of an array to 0
  * @param values is the array carrying double values
  * @param length is the number of elements in array

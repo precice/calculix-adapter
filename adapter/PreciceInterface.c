@@ -185,14 +185,14 @@ void Precice_ReadCouplingData( SimulationData * sim )
 				{
 				case TEMPERATURE:
 					// Read and set temperature BC
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_readBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
-          }
-          if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             precicec_readBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DScalarData );
             mapData2Dto3DScalar(interfaces[i]->node2DScalarData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->nodeScalarData);
+          }
+          else
+          {
+            precicec_readBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
           }
 					setNodeTemperatures( interfaces[i]->nodeScalarData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun );
 					printf( "Reading TEMPERATURE coupling data with ID '%d'. \n",interfaces[i]->temperatureDataID );
@@ -217,28 +217,28 @@ void Precice_ReadCouplingData( SimulationData * sim )
 					break;
         case FORCES:
 					// Read and set forces as concentrated loads (Neumann BC)
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-          }
-          if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
             mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
+          }
+          else
+          {
+            precicec_readBlockVectorData( interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
           }
 					setNodeForces( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
 					printf( "Reading FORCES coupling data with ID '%d'. \n",interfaces[i]->forcesDataID );
 					break;
 				case DISPLACEMENTS:
 					// Read and set displacements as single point constraints (Dirichlet BC)
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-          }
-          if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
             mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
+          }
+          else
+          {
+            precicec_readBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
           }
 					setNodeDisplacements( interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xbounIndices, sim->xboun );
 					printf( "Reading DISPLACEMENTS coupling data with ID '%d'. \n",interfaces[i]->displacementsDataID );
@@ -287,15 +287,15 @@ void Precice_WriteCouplingData( SimulationData * sim )
 				{
 				case TEMPERATURE:
 					getNodeTemperatures( interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeScalarData );
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
-          }
-          else if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             setDoubleArrayZero(interfaces[i]->node2DScalarData, interfaces[i]->num2DNodes, 1);
             mapData3Dto2DScalar(interfaces[i]->nodeScalarData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DScalarData);
             precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DScalarData );
+          }
+          else
+          {
+            precicec_writeBlockScalarData( interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData );
           }
 					printf( "Writing TEMPERATURE coupling data with ID '%d'. \n",interfaces[i]->temperatureDataID );
 					break;
@@ -354,29 +354,29 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					break;
 				case DISPLACEMENTS:
 					getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-          }
-          else if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
             mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
             precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
           }
+          else
+          {
+            precicec_writeBlockVectorData( interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
+          }
 					printf( "Writing DISPLACEMENTS coupling data with ID '%d'. \n",interfaces[i]->displacementsDataID );
 					break;
 				case DISPLACEMENTDELTAS:
 					getNodeDisplacementDeltas( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData );
-          if ( !interfaces[i]->quasi2D3D )
-          {
-            precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
-          }
-          else if ( interfaces[i]->quasi2D3D )
+          if ( isQuasi2D3D(interfaces[i]->quasi2D3D) )
           {
             setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
             mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mapping2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
             precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData );
+          }
+          else
+          {
+            precicec_writeBlockVectorData( interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData );
           }
 					printf( "Writing DISPLACEMENTDELTAS coupling data with ID '%d'. \n",interfaces[i]->displacementDeltasDataID );
 					break;
@@ -469,7 +469,7 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
     printf( "Using quasi 2D-3D coupling\n" );
     interface->dimCCX = 3; // CalculiX always solves a 3D problem
   }
-  else if (interface->dim == 3)
+  else
   {
     interface->quasi2D3D = 0;
     interface->dimCCX = interface->dim;
@@ -538,7 +538,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	getNodeCoordinates( interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates );
 
   // Extract 2D coordinates from 3D coordinates for quasi 2D-3D coupling
-  if( interface->quasi2D3D )
+  if( isQuasi2D3D(interface->quasi2D3D) )
   {
     int count = 0;
     int dim = interface->dim;
@@ -583,15 +583,15 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
 	{
 		//printf("nodesMeshName is not null \n");
 		interface->nodesMeshID = precicec_getMeshID( interface->nodesMeshName );
-    if( !interface->quasi2D3D )
-    {
-      interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
-      precicec_setMeshVertices( interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs );
-    }
-    else if ( interface->quasi2D3D )
+    if ( isQuasi2D3D(interface->quasi2D3D) )
     {
       interface->preciceNodeIDs = malloc( interface->num2DNodes * sizeof( int ) );
       precicec_setMeshVertices( interface->nodesMeshID, interface->num2DNodes, interface->node2DCoordinates, interface->preciceNodeIDs );
+    }
+    else
+    {
+      interface->preciceNodeIDs = malloc( interface->numNodes * sizeof( int ) );
+      precicec_setMeshVertices( interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs );
     }
 	}
 
@@ -649,7 +649,7 @@ void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, Simul
 	interface->nodeScalarData = malloc( interface->numNodes * sizeof( double ) );
   interface->nodeVectorData = malloc( interface->numNodes * 3 * sizeof( double ) );
 
-  if ( interface->quasi2D3D )
+  if ( isQuasi2D3D(interface->quasi2D3D) )
   {
     interface->node2DScalarData = malloc( interface->num2DNodes * sizeof( double ));
     interface->node2DVectorData = malloc( interface->num2DNodes * 2 * sizeof( double ) );
