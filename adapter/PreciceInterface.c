@@ -556,7 +556,7 @@ void PreciceInterface_ConfigureNodesMesh( PreciceInterface * interface, Simulati
         count += 1;
       }
     }
-    assert (count == interface->num2DNodes);
+    assert (count == interface->num2DNodes && "Filtering of 2D nodes not done properly. Please make sure the out-of-plane axis is Z-axis");
 
     count = 0;
     for (int i = 0; i < interface->numNodes; i++)
