@@ -97,7 +97,7 @@ More input files that you may find in the CalculiX tutorial cases:
 * `<name>.inp`: The main case configuration file. Through this, several other files are included.
 * `<name>.msh`: The mesh file.
 * `<name>.flm`: Films
-* `<name>.nam`: Names
+* `<name>.nam`: Names, e.g. indices of boundary nodes
 * `<name>.sur`: Surfaces
 * `<name>.dfl`: DFlux
 
@@ -114,7 +114,7 @@ For example:
 The input file for this example would be *flap.inp*. Note that the suffix ".inp" needs to be omitted on the command line. The flag "-precice-participant" triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CCX is executed. Therefore, the new executable "ccx_preCICE" can be used both for coupled preCICE simulations and CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and the preCICE configuration file.
 
 ### Supported elements
-The preCICE CalculiX adapter supports solid and shell elements. It can been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8 and C3D20) elements. For shell elements, currently S3 and S6 tetrahedral elements are supported. There is a restriction when using nearest-projection mapping that you have to use tetrahedral elements.
+The preCICE CalculiX adapter supports solid and shell elements. It can been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8 and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. For shell elements, currently S3 and S6 tetrahedral elements are supported. There is a restriction when using nearest-projection mapping that you have to use tetrahedral elements.
 
 ### Nearest-projection mapping
 In order to use nearest-projection mapping, a few additional changes are required. The first is that the interface surface file (.sur) must be added to the Calculix input file. An example of the addition to the input file is given below
