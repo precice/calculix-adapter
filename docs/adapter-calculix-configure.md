@@ -93,6 +93,14 @@ The adapter internally uses the CalculiX data format for point forces to apply t
 
 CalculiX CCX offers both a geometrically linear as well as a geometrically non-linear solver. Both are coupled via the adapter. The keyword "NLGEOM" (as shown in the example) needs to be included in the CalculiX case input file in order to select the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword "NLGEOM" does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations via preCICE the keyword "DYNAMIC" (enabling a dynamic computation) must appear in the CalculiX input file.
 
+More input files that you may find in the CalculiX tutorial cases:
+* `<name>.inp`: The main case configuration file. Through this, several other files are included.
+* `<name>.msh`: The mesh file.
+* `<name>.flm`: Films
+* `<name>.nam`: Names
+* `<name>.sur`: Surfaces
+* `<name>.dfl`: DFlux
+
 ## Running the adapted calculiX executable
 
 Running the adapted executable is pretty similar to running the original CalculiX CCX solver. The syntax is as follows:
