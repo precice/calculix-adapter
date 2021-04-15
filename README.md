@@ -14,7 +14,7 @@ Adapters for other versions of CalculiX and preCICE are available in various bra
  
 ## Start here
 
-Our [wiki](https://github.com/precice/calculix-adapter/wiki) will help you start. 
+Go to the [adapter documentation](https://precice.org/adapter-calculix-overview.html) 
 
 ## References
 

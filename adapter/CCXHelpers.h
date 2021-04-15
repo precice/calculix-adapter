@@ -301,6 +301,71 @@ bool startsWith(const char * string, const char * prefix);
  */
 bool isEqual(const char * lhs, const char * rhs);
 
+/**
+ * @brief Checks wheather two doubles are identical
+ * @param a is one double in the comparison
+ * @param b is the other double in the comparison
+ */
+bool isDoubleEqual(const double a, const double b);
+
+/**
+ * @brief Returns whether it is a quasi 2D-3D case or a purely 3D case
+ * @param quasi2D3D is an integer toggled during initialization
+ */
+bool isQuasi2D3D(const int quasi2D3D);
+
+/**
+ * @brief Set all values of an array to 0
+ * @param values is the array carrying double values
+ * @param length is the number of elements in array
+ * @param dim is the dimension of the array data
+ */
+void setDoubleArrayZero(double * values, const int length, const int dim);
+
+/**
+ * @brief Maps vector data from 2D mesh nodes to 3D mesh nodes
+ * @param values2D is the array of vector values on 2D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values3D is the array of vector values on 3D mesh nodes
+ */
+void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D);
+
+/**
+ * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
+ * @param values3D is the array of vector values on 3D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values2D is the array of vector values on 2D mesh nodes
+ */
+void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
+
+/**
+ * @brief Maps data from 2D mesh nodes to 3D mesh nodes
+ * @param values2D is the array of values on 2D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values3D is the array of values on 3D mesh nodes
+ */
+void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D);
+
+/**
+ * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
+ * @param values3D is the array of values on 3D mesh nodes
+ * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
+ * @param numNodes3D the number of nodes on 3D mesh
+ * @param values2D is the array of values on 2D mesh nodes
+ */
+void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
+
+/**
+ * @brief Prints contents of a multi-dimension array
+ * @param values is the array carrying double values
+ * @param length is the number of elements in array
+ * @param dim is the dimension of the array data
+ */
+void printVectorData(const double * values, const int nv, const int dim);
+
 /* Error messages */
 
 /**
@@ -338,11 +403,11 @@ void missingDfluxBCError();
 /**
  * @brief Terminate program if a FILM BC is not defined when using Robin BC for coupling (e.g. missing interface.flm file)
  */
-void missingFilmBCError(); 
+void missingFilmBCError();
 
 /**
  * @brief Terminate program if the adapter reaches an unreachable state. This should never occur.
  */
-void unreachableError(); 
+void unreachableError();
 
 #endif // CCXHELPERS_H
