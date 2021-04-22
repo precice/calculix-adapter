@@ -11,8 +11,8 @@ This list is definietly not complete. If after reading this, you still have issu
 
 * Are you using the same version of CalculiX and of the CalculiX adapter? The adapter installation works by replacing files of the original CalculiX, so they should be compatible.
 * Can you manually run the `ccx_preCICE` binary?
-   * It should be in your `$PATH`
-   * If autocompletion does not work (e.g. `ccx_` + TAB key), then it is probably not in your `$PATH`.
+  * It should be in your `$PATH`
+  * If autocompletion does not work (e.g. `ccx_` + TAB key), then it is probably not in your `$PATH`.
 * Our tutorials also require CGX (pre- and post-processor of CalculiX).
-   * Is CGX installed?
-   * Is OpenGL (required by CGX) installed?
+  * Is CGX installed?
+  * Is OpenGL (required by CGX) installed?
