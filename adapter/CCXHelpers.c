@@ -9,22 +9,24 @@
 
 #include "CCXHelpers.h"
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-char* toNodeSetName( char * name )
+char* toNodeSetName( char const * name )
 {
 	char * prefix = "N";
 	char * suffix = "N";
 	return concat( prefix, name, suffix );
 }
 
-char* toFaceSetName( char * name )
+char* toFaceSetName( char const * name )
 {
 	char * prefix = "S";
 	char * suffix = "T";
 	return concat( prefix, name, suffix );
 }
 
-ITG getSetID( char * setName, char * set, ITG nset )
+ITG getSetID( char const * setName, char const * set, ITG nset )
 {
 
 	ITG i;
@@ -49,8 +51,9 @@ ITG getSetID( char * setName, char * set, ITG nset )
 	{
 		printf("Set ID NOT Found \n");
 		faceSetNotFoundError( setName );
-		return -1;
 	}
+  unreachableError();
+  return -1;
 }
 
 ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset )
@@ -80,7 +83,10 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double
 	{
 		int nodeIdx = nodes[i] - 1;
 		//The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
-		for( j = 0 ; j < dim ; j++ ) coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
+    }
 	}
 }
 
@@ -101,10 +107,13 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1;
-		for( j = 0 ; j < dim ; j++ ) forces[dim * i + j] = fn[nodeIdx * mt + j + 1];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      forces[dim * i + j] = fn[nodeIdx * mt + j + 1];
+    }
 	}
 }
 
@@ -118,7 +127,10 @@ void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, int m
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		for( j = 0 ; j < dim ; j++ ) displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
+		for( j = 0 ; j < dim ; j++ )
+  	{
+      displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
+    }
 	}
 }
 
@@ -132,7 +144,10 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		for( j = 0 ; j < dim ; j++ ) displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
+    }
 	}
 }
 
@@ -146,7 +161,10 @@ void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, int mt,
 	for( i = 0 ; i < numNodes ; i++ )
 	{
 		int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
-		for( j = 0 ; j < dim ; j++ ) velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
+    }
 	}
 }
 
@@ -164,7 +182,7 @@ void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, int mt,
    }
  */
 
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters, ITG * preciceFaceCenterIDs )
+void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters )
 {
 
 	// Assume all tetra elements -- maybe implement checking later...
@@ -201,7 +219,7 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
 
 	}
 
-	
+
 }
 
 /*
@@ -223,7 +241,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 
 	ITG i, j, k;
 
-	
+
 
 	for( i = 0 ; i < numElements ; i++ )
 	{
@@ -245,12 +263,12 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
 					tetraFaceNodes[i*3 + j] = k;
 				}
 			}
-			
+
 		}
 	}
 }
 
-void getXloadIndices( char * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char * sideload, ITG * xloadIndices )
+void getXloadIndices( char const * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char const * sideload, ITG * xloadIndices )
 {
 
 	ITG i, k;
@@ -326,6 +344,7 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 				missingTemperatureBCError();
 			}
 		}
+    break;
 	case DISPLACEMENTS:
 		for( i = 0 ; i < numNodes ; i++ )
 		{
@@ -349,6 +368,9 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
 				missingDisplacementBCError();
 			}
 		}
+    break;
+  default:
+    unreachableError();
 	}
 }
 
@@ -401,7 +423,6 @@ int getXloadIndexOffset( enum xloadVariable xloadVar )
 	 * - the first component corresponds to the flux value and the heat transfer coefficient
 	 * - the second component corresponds to the sink temperature
 	 * */
-	int indexOffset;
 	switch( xloadVar )
 	{
 	case DFLUX:
@@ -410,6 +431,9 @@ int getXloadIndexOffset( enum xloadVariable xloadVar )
 		return 0;
 	case FILM_T:
 		return 1;
+  default:
+    unreachableError();
+    return -1;
 	}
 }
 
@@ -420,7 +444,6 @@ void setXload( double * xload, int * xloadIndices, double * values, int numValue
 
 	for( i = 0 ; i < numValues ; i++ )
 	{
-		double temp = xload[xloadIndices[i] + indexOffset];
 		xload[xloadIndices[i] + indexOffset] = values[i];
 	}
 }
@@ -450,14 +473,16 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
 	}
 }
 
-void setNodeForces( ITG * nodes, double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc )
+void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc )
 {
 	ITG i, j;
 
-	for ( i = 0 ; i < numNodes ; i++ ) 
+	for ( i = 0 ; i < numNodes ; i++ )
 	{
-		int nodeIdx = nodes[i] - 1;
-		for( j = 0 ; j < dim ; j++ ) xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      xforc[xforcIndices[3 * i + j]] = forces[dim * i + j];
+    }
 	}
 }
 
@@ -467,7 +492,10 @@ void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * 
 
 	for( i = 0 ; i < numNodes ; i++ )
 	{
-		for( j = 0 ; j < dim ; j++ ) xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
+		for( j = 0 ; j < dim ; j++ )
+    {
+      xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
+    }
 	}
 }
 
@@ -476,7 +504,7 @@ bool isSteadyStateSimulation( ITG * nmethod )
 	return *nmethod == 1;
 }
 
-char* concat( char * prefix, char * string, char * suffix )
+char* concat( char const * prefix, char const * string, char const * suffix )
 {
 	int nameLength = strlen( string ) + strlen( prefix ) + strlen( suffix ) + 1;
 	char * result = malloc( nameLength );
@@ -486,16 +514,118 @@ char* concat( char * prefix, char * string, char * suffix )
 	return result;
 }
 
+bool startsWith(const char * string, const char * prefix)
+{
+    char sc, pc;
+    do {
+        sc =*string++;
+        pc =*prefix++;
+        if (pc == '\0') return true;
+    } while (sc == pc);
+    return false;
+}
+
+bool isEqual(const char * lhs, const char * rhs)
+{
+  return strcmp(lhs, rhs) == 0;
+}
+
+bool isDoubleEqual(const double a, const double b)
+{
+	return fabs(a - b) < 1.e-14;
+}
+
+bool isQuasi2D3D(const int quasi2D3D)
+{
+	return quasi2D3D == 1;
+}
+
+void setDoubleArrayZero(double * values, const int length, const int dim)
+{
+	ITG i, j;
+
+	for ( i = 0; i < length; i++ )
+	{
+		for ( j = 0; j < dim; j++ )
+		{
+			values[i*dim + j] = 0.0;
+		}
+	}
+}
+
+void printVectorData(const double * values, const int nv, const int dim)
+{
+	ITG i, j;
+
+	for ( i = 0; i < nv; i++ )
+	{
+		printf("[");
+		for ( j = 0; j < dim; j++ )
+		{
+			printf("%f, ", values[i*dim + j]);
+		}
+		printf("]\n");
+	}
+}
+
+
+void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values3D[i*3] = values2D[id*2]*0.5;
+		values3D[i*3 + 1] = values2D[id*2 + 1]*0.5;
+		values3D[i*3 + 2] = 0;
+	}
+}
+
+void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values2D[id*2] += values3D[i*3]*0.5;
+		values2D[id*2 + 1] += values3D[i*3 + 1]*0.5;
+	}
+}
+
+void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values3D[i] = values2D[id]*0.5;
+	}
+}
+
+void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D)
+{
+	ITG id, i;
+
+	for ( i = 0; i < numNodes3D; i++ )
+	{
+		id = mapping2D3D[i];
+		values2D[id] += values3D[i]*0.5;
+	}
+}
+
 /* Errors messages */
 
-void nodeSetNotFoundError( char * setName )
+void nodeSetNotFoundError( char const * setName )
 {
 	printf( "ERROR: Set %s does not exist! Please check that the interface names are correct and that .nam file is provided.\n", setName );
 	fflush( stdout );
 	exit( EXIT_FAILURE );
 }
 
-void faceSetNotFoundError( char * setName )
+void faceSetNotFoundError( char const * setName )
 {
 	printf( "ERROR: Set %s does not exist! Please check the following: \n 1) If nearest projection mapping is required, check that the interface names are correct and that .sur file is provided.\n 2) If nearest-projection mapping is not required, remove 'nodes-mesh-mesh-connectivity' and replace with 'nodes-mesh' in the config.yml file", setName );
 	fflush( stdout );
@@ -532,3 +662,8 @@ void missingFilmBCError()
 	exit( EXIT_FAILURE );
 }
 
+void unreachableError()
+{
+	printf( "ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n" );
+	exit( EXIT_FAILURE );
+}

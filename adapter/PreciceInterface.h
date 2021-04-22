@@ -21,12 +21,16 @@
 typedef struct PreciceInterface {
 
 	char * name;
-	int dim;
+	int dim; // Dimension received from preCICE configuration
+	int dimCCX; // Dimension as seen by CalculiX
 
 	// Interface nodes
 	int numNodes;
+	int num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
 	int * nodeIDs;
+	int * mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
 	double * nodeCoordinates;
+	double * node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
 	int nodeSetID;
 	int * preciceNodeIDs;
 	int nodesMeshID;
@@ -45,7 +49,9 @@ typedef struct PreciceInterface {
 
 	// Arrays to store the coupling data
 	double * nodeScalarData;
-	double * nodeVectorData; //Forces, displacements, velocities, positions and displacementDeltas are vector quantities
+	double * node2DScalarData; // Scalar quantities in 2D in case quasi 2D-3D coupling is done
+	double * nodeVectorData; // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
+	double * node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
 	double * faceCenterData;
 
 	// preCICE Data IDs
@@ -69,6 +75,8 @@ typedef struct PreciceInterface {
 	// Mapping type if nearest-projection mapping
 	int mapNPType;
 
+	// Indicates if pseudo 2D-3D coupling is implemented
+	int quasi2D3D;
 
 	int numReadData;
 	int numWriteData;
@@ -239,7 +247,7 @@ void Precice_FreeData( SimulationData * sim );
  * @param sim
  * @param config
  */
-void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
@@ -282,7 +290,7 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
  * @param sim
  * @param config
  */
-void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig * config );
+void PreciceInterface_ConfigureCouplingData( PreciceInterface * interface, SimulationData * sim, InterfaceConfig const * config );
 
 /**
  * @brief Frees the memory

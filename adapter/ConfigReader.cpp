@@ -8,96 +8,138 @@
  *********************************************************************************************/
 
 #include "ConfigReader.hpp"
+#include "ConfigReader.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
-#include <string.h>
+#include <cstring>
+#include <cassert>
 #include <algorithm>
+#include <cstdlib>
+#include <iterator>
 
-void ConfigReader_Read( char * configFilename, char * participantName, char ** preciceConfigFilename, InterfaceConfig ** interfaces, int * numInterface )
+
+void ConfigReader_Read(char const * configFilename, char const * participantName, AdapterConfig * adapterConfig)
 {
-
 	YAML::Node config = YAML::LoadFile( configFilename );
 
-	*preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
+  adapterConfig->preciceConfigFilename = strdup( config["precice-config-file"].as<std::string>().c_str() );
 
-	*numInterface = config["participants"][participantName]["interfaces"].size();
-	*interfaces = (InterfaceConfig*) malloc( sizeof( InterfaceConfig ) * *numInterface );
+	int numInterfaces = config["participants"][participantName]["interfaces"].size();
+  	adapterConfig->numInterfaces = numInterfaces;
+  	adapterConfig->interfaces = (InterfaceConfig*) calloc( numInterfaces, sizeof( InterfaceConfig ) );
 
-	
-
-	for( int i = 0 ; i < *numInterface ; i++ )
+	for( int i = 0 ; i < numInterfaces ; i++ )
 	{
+    InterfaceConfig * currentInterfacePointer = adapterConfig->interfaces;
+    std::advance( currentInterfacePointer, i );
+    new ( currentInterfacePointer ) InterfaceConfig();
+    InterfaceConfig& interface = *currentInterfacePointer;
+
 		if( config["participants"][participantName]["interfaces"][i]["nodes-mesh"] )
 		{
-			( *interfaces )[i].nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
+			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str() );
+			interface.map = 0;
 		}
 		else if ( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"] ) 
 		{
-			( *interfaces )[i].nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].as<std::string>().c_str() );
-			( *interfaces )[i].map = 1;
+			interface.nodesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].as<std::string>().c_str() );
+			interface.map = 1;
 		}
 		else
 		{
-			( *interfaces )[i].nodesMeshName = NULL;
+			interface.nodesMeshName = NULL;
 		}
 
 		if( config["participants"][participantName]["interfaces"][i]["faces-mesh"] )
 		{
-			( *interfaces )[i].facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["faces-mesh"].as<std::string>().c_str() );
+			interface.facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["faces-mesh"].as<std::string>().c_str() );
 		}
 		else
 		{
-			( *interfaces )[i].facesMeshName = NULL;
+			interface.facesMeshName = NULL;
 		}
 		
 		if( config["participants"][participantName]["interfaces"][i]["mesh"] )
 		{
-			( *interfaces )[i].facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
+			interface.facesMeshName = strdup( config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str() );
 		}
 
 		std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();
 		std::transform( patchName.begin(), patchName.end(), patchName.begin(), toupper );
-		( *interfaces )[i].patchName = strdup( patchName.c_str() );
-		
-		( *interfaces )[i].numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
-		( *interfaces )[i].numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
+		interface.patchName = strdup( patchName.c_str() );
 
-		if( ( *interfaces )[i].numWriteData == 0 )
-		{
-			// write-data is a string
-			( *interfaces )[i].numWriteData = 1;
-			( *interfaces )[i].writeDataNames = (char**) malloc( sizeof( char* ) * ( *interfaces )[i].numWriteData );
-			( *interfaces )[i].writeDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"].as<std::string>().c_str() );
-		}
-		else
-		{
-			// write-data is an array
-			( *interfaces )[i].writeDataNames = (char**) malloc( sizeof( char* ) * ( *interfaces )[i].numWriteData );
+		interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
+		interface.numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
 
-			for( int j = 0 ; j < ( *interfaces )[i].numWriteData ; j++ )
+		if( config["participants"][participantName]["interfaces"][i]["write-data"] )
+		{
+			if( interface.numWriteData == 0 )
 			{
-				( *interfaces )[i].writeDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"][j].as<std::string>().c_str() );
+				// write-data is a string
+				interface.numWriteData = 1;
+				interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
+				interface.writeDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"].as<std::string>().c_str() );
+			}
+			else
+			{
+				// write-data is an array
+				interface.writeDataNames = (char**) malloc( sizeof( char* ) * interface.numWriteData );
+
+				for( int j = 0 ; j < interface.numWriteData ; j++ )
+				{
+					interface.writeDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["write-data"][j].as<std::string>().c_str() );
+				}
 			}
 		}
 
-		if( ( *interfaces )[i].numReadData == 0 )
+		if( config["participants"][participantName]["interfaces"][i]["read-data"] )
 		{
-			// read-data is a string
-			( *interfaces )[i].numReadData = 1;
-			( *interfaces )[i].readDataNames = (char**) malloc( sizeof( char* ) * ( *interfaces )[i].numReadData );
-			( *interfaces )[i].readDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"].as<std::string>().c_str() );
-		}
-		else
-		{
-			// read-data is an array
-			( *interfaces )[i].readDataNames = (char**) malloc( sizeof( char* ) * ( *interfaces )[i].numReadData );
-
-			for( int j = 0 ; j < ( *interfaces )[i].numReadData ; j++ )
+			if( interface.numReadData == 0 )
 			{
-				( *interfaces )[i].readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
+				// read-data is a string
+				interface.numReadData = 1;
+				interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
+				interface.readDataNames[0] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"].as<std::string>().c_str() );
 			}
-		}	
+			else
+			{
+				// read-data is an array
+				interface.readDataNames = (char**) malloc( sizeof( char* ) * interface.numReadData );
 
+				for( int j = 0 ; j < interface.numReadData ; j++ )
+				{
+					interface.readDataNames[j] = strdup( config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str() );
+				}
+			}	
+		}
 	}
 }
 
+
+void AdapterConfig_Free(AdapterConfig * adapterConfig)
+{
+  assert(adapterConfig != NULL);
+  free(adapterConfig->preciceConfigFilename);
+
+  int i;
+  for (i = 0; i < adapterConfig->numInterfaces; ++i) {
+    InterfaceConfig * interface = &adapterConfig->interfaces[i];
+
+    // Owning char arrays
+    free(interface->facesMeshName);
+    free(interface->nodesMeshName);
+    free(interface->patchName);
+
+    // Owning arrays of char arrays
+    char ** writeDataNamesEnd = interface->writeDataNames;
+    std::advance(writeDataNamesEnd, interface->numWriteData);
+    std::for_each(interface->writeDataNames, writeDataNamesEnd, free);
+    free(interface->writeDataNames);
+
+    char ** readDataNamesEnd = interface->readDataNames;
+    std::advance(readDataNamesEnd, interface->numReadData);
+    std::for_each(interface->readDataNames, readDataNamesEnd, free);
+    free(interface->readDataNames);
+  }
+  free(adapterConfig->interfaces);
+}
