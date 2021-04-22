@@ -21,18 +21,16 @@ Are you encountering an unexpected error? Have a look at our [Troubleshooting](a
 
 Do you Want to build on a cluster? Look at our [instructions for SuperMUC](adapter-calculix-supermuc.html) (outdated).
 
-
-
-
 ## Versions
 
 Please check the [Calculix adapter README](https://github.com/precice/calculix-adapter/blob/master/README.md) for the newest compatible CalculiX version.
 
 Adapters for older versions of CalculiX and preCICE are available in various branches. Branches compatible with **preCICE v2.x:**
- - master
- - v2.15_preCICE2.x
- 
-All other branches are compatible with **preCICE v1.x**. 
+
+* master
+* v2.15_preCICE2.x
+
+All other branches are compatible with **preCICE v1.x**.
 
 ## History
 
@@ -42,5 +40,4 @@ The adapter was initially developed for conjugate heat transfer (CHT) simulation
 
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
 
-[2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017. 
-
+[2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017.
