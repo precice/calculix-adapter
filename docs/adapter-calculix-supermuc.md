@@ -9,7 +9,7 @@ summary: "This page explains how to build the CalculiX adapter on SuperMUC. Even
 
 In order to install CalculiX and the adapter on superMUC, a number of depencies are first required. Initially, [preCICE must be installed](installation-overview.html)
 
-Additionally, [SPOOLES](http://www.netlib.org/linalg/spooles/spooles.2.2.html), [ARPACK](https://www.caam.rice.edu/software/ARPACK/) and [yaml-cpp](https://github.com/jbeder/yaml-cpp) are required. 
+Additionally, [SPOOLES](http://www.netlib.org/linalg/spooles/spooles.2.2.html), [ARPACK](https://www.caam.rice.edu/software/ARPACK/) and [yaml-cpp](https://github.com/jbeder/yaml-cpp) are required.
 
 To install SPOOLES, some changes are necessary.
 

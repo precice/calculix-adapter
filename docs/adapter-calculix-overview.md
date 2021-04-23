@@ -15,7 +15,7 @@ summary: "The CalculiX adapter can be used to couple CalculiX to CFD solvers for
 4. Follow a tutorial:
    * [Tutorial for CHT with OpenFOAM and CalculiX](https://github.com/precice/precice/wiki/Tutorial-for-CHT-with-OpenFOAM-and-CalculiX): Flow in a shell-and-tube heat exchanger
    * [Tutorial for FSI with OpenFOAM and CalculiX](https://github.com/precice/precice/wiki/Tutorial-for-FSI-with-OpenFOAM-and-CalculiX): Flow in a channel with an elastic flap, either perpendicular, or parallel to the flow and attached to a cylinder.
-   * [Tutorial on structure-structure coupling](https://github.com/precice/precice/wiki/Tutorial-for-SSI-with-CalculiX): Elastic beam artificially cut into two halves 
+   * [Tutorial on structure-structure coupling](https://github.com/precice/precice/wiki/Tutorial-for-SSI-with-CalculiX): Elastic beam artificially cut into two halves.
 
 Are you encountering an unexpected error? Have a look at our [Troubleshooting](adapter-calculix-troubleshooting.html) page.
 

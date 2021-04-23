@@ -19,7 +19,7 @@ After [installing preCICE](installation-overview.html) and [getting the CalculiX
 
 2. Edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
-   - Otherwise, set `CCX` and, if built from source, the include and lib flags for SPOOLES, ARPACK, and yaml-cpp. 
+   - Otherwise, set `CCX` and, if built from source, the include and lib flags for SPOOLES, ARPACK, and yaml-cpp.
 3. Clean any previous builds with `make clean`.
 4. Build with `make` (e.g. `make -j 4` for parallel).
 5. You should now have a new executable `ccx_preCICE` in the `bin/` folder of the adapter. You may move this file to a path known by your system, or [add this to your `PATH`](https://unix.stackexchange.com/a/26059/36693) (careful when doing this!).
