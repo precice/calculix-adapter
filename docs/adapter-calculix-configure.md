@@ -124,7 +124,7 @@ The input file for this example would be *flap.inp*. Note that the suffix ".inp"
 
 ### Supported elements
 
-The preCICE CalculiX adapter supports solid and shell elements. It can been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8 and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. For shell elements, currently S3 and S6 tetrahedral elements are supported. There is a restriction when using nearest-projection mapping that you have to use tetrahedral elements.
+The preCICE CalculiX adapter supports solid and shell elements. It can been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8 and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. For shell elements, currently S3 and S6 tetrahedral elements are supported. There is a restriction when using nearest-projection mapping that you have to use tetrahedral elements. If a quasi 2D-3D case is set up (single element in out-of-place direction) then only linear elements are supported.
 
 ### Nearest-projection mapping
 
