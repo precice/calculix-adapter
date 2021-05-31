@@ -26,6 +26,15 @@ These can be found in many distributions as binary packages. For example, in Ubu
 sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev
 ```
 
+For example, in Arch or Manjaro, install `arpack` and `yaml-cpp`, and compile `spooles` using an AUR helper (e.g. `yay`):
+
+```bash
+sudo pacman -S arpack yaml-cpp
+yay spooles
+```
+
+If `spooles` compilation breaks with `-Werror=format-security`, replace the flag with `-Wformat-security` in `CFLAGS` (file `/etc/makepkg.conf`).
+
 ### Building Spooles from source
 
 <details markdown="1"><summary>If you cannot get a binary for Spooles, try these instructions.</summary>
