@@ -138,7 +138,7 @@ The source code is now in the `~/CalculiX/ccx_VERSION/src` directory. The adapte
 
 ### Building the "vanilla" CalculiX (optional)
 
-If you want to build the "vanilla" (i.e. without preCICE) CalculiX, you can now run `make` inside the `src/` directory. You may still run into issues with ARPACK in this case, but this is out of scope for our needs, as we use a different Makefile.
+If you want to build the "vanilla" (i.e. without preCICE) CalculiX, you can now run `make` inside the `src/` directory. Depending on how you installed the dependencies above (using `apt` or from source), you might get compilation errors, such as `spooles.h:26:10: fatal error: misc.h: No such file or directory`. Often these errors can be easily fixed by modifying CalculiX `Makefile`. Please refer to [our adapter's makefile options](adapter-calculix-get-adapter.html#makefile-options) for a list of library and include flag you might have to set depending on your installation procedure.
 
 ### Building the modified CalculiX
 
