@@ -5,7 +5,7 @@ keywords: adapter, calculix, cluster, modules
 summary: "This page explains how to build the CalculiX adapter on SuperMUC. Even though SuperMUC was shut down in 2019, this page may still be useful for other clusters."
 ---
 
-:warning: This page needs updates for preCICE v2 :warning:
+{% include warning.html content="This page needs updates for preCICE v2." %}
 
 In order to install CalculiX and the adapter on superMUC, a number of depencies are first required. Initially, [preCICE must be installed](installation-overview.html)
 
