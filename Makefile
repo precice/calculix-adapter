@@ -1,5 +1,5 @@
-# See our wiki for getting the CalculiX dependencies:
-# https://github.com/precice/calculix-adapter/wiki/Installation-instructions-for-CalculiX
+# See the adapter documentation for getting the adapter dependencies:
+# https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.16/src )
 CCX             = $(HOME)/CalculiX/ccx_2.16/src
