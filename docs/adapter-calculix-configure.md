@@ -60,7 +60,7 @@ Note that the square brackets imply that several read- and write-data types can 
 
 ## CalculiX case input file
 
-An exemplary CalculiX case input file may look like the following:
+CalculiX is designed to be compatible with the Abaqus file format. Here is an example of a CalculiX input file:
 
 ```text
 *INCLUDE, INPUT=all.msh
