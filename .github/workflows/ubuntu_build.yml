@@ -23,7 +23,7 @@ jobs:
       run: sudo apt update && sudo apt upgrade -y
     - uses: actions/checkout@v2
       with:
-        ref: deb
+        ref: ${{ github.ref }}
     - name: get preCICE
       run: wget https://github.com/precice/precice/releases/download/v2.3.0/libprecice2_2.3.0_${{matrix.name}}.deb &&
         sudo apt install ./libprecice2_2.3.0_${{matrix.name}}.deb -y
