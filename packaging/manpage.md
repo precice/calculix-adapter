@@ -24,13 +24,13 @@ CalculiX is used alone when the -precice-participant option is not used.
 
 : Prints current version of CalculiX. 
 
-**-i <jobname>**
+**-i < jobname >**
 
 : Starts the job defined in <jobname>.inp. Be sure to omit the extension .inp in the job name.
 
-**-precice-participant <participant>**
+**-precice-participant < participant >**
 
-: Runs a preCICE simulation with name <participant>. This name must be the one used in the YAML config file as well as in the preCICE configuration file.
+: Runs a preCICE simulation with name < participant >. This name must be the one used in the YAML config file as well as in the preCICE configuration file.
 
 # EXAMPLES
 
