@@ -1,0 +1,66 @@
+name: Calculix 2.17 with preCICE adapter test build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+        include:
+          - os: ubuntu-18.04
+            name: bionic
+          - os: ubuntu-20.04
+            name: focal
+#          - os: ubuntu-21.04
+#            name: hirsute
+    runs-on: ${{matrix.os}}
+    continue-on-error: true
+
+    steps:
+    - name: Update system
+      run: sudo apt update && sudo apt upgrade -y
+    - uses: actions/checkout@v2
+      with:
+        ref: deb
+    - name: get preCICE
+      run: wget https://github.com/precice/precice/releases/download/v2.3.0/libprecice2_2.3.0_${{matrix.name}}.deb &&
+        sudo apt install ./libprecice2_2.3.0_${{matrix.name}}.deb -y
+    - name: install dependencies
+      run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
+    - name: Download Calculix
+      run: wget http://www.dhondt.de/ccx_2.17.src.tar.bz2
+    - name: Unpack Calculix
+      run: bzip2 -d ccx_2.17.src.tar.bz2 && tar -xf ccx_2.17.src.tar
+    - run: echo "CCX=$(pwd)/CalculiX/ccx_2.17/src" >> $GITHUB_ENV
+    - name: Show paths
+      run: echo "${{env.CCX}}" && ls "${{env.CCX}}"
+    - name: make
+      run: make -j 4 CCX=${CCX}
+    - name: Test run
+      run: ./bin/ccx_preCICE -h
+    - name: Store binary artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ccx_preCICE
+        path: ./bin/ccx_preCICE
+    - name: Download tools for packaging
+      run: sudo apt install lintian pandoc -y
+    - name: Create Debian Package
+      run: |
+        mkdir -p packaging/calculix-precice_2.17-1_amd64/usr/bin &&
+        cp ./bin/ccx_preCICE ./packaging/calculix-precice_2.17-1_amd64/usr/bin/ccx_preCICE &&
+        cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
+    - name: Store Debian package artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
+        path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
+    # - name: Store Debian Package
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: calculix-precice_2.17-1_amd64.deb
+    #     path: ./packaging/calculix-precice_2.17-1_amd64.deb
+    # - name: Inspect package with lintian
+    #   run: sudo apt install lintian -y && lintian ./packaging/calculix-precice_2.17-1_amd64.deb
