@@ -34,6 +34,6 @@ CalculiX is used alone when the -precice-participant option is not used.
 
 # EXAMPLES
 
-**ccx_preCICE -i flap -precice-participant Calculix** : Runs the coupled simulation flap.inp as participant "CalculiX".
+**ccx_preCICE -i flap -precice-participant CalculiX** : Runs the coupled simulation flap.inp as participant "CalculiX".
 
 **ccx_preCICE -i flap** : Runs a CalculiX-only simulation with flap.inp as input file.
