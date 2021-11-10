@@ -13,8 +13,6 @@ jobs:
             name: bionic
           - os: ubuntu-20.04
             name: focal
-#          - os: ubuntu-21.04
-#            name: hirsute
     runs-on: ${{matrix.os}}
     continue-on-error: true
 
