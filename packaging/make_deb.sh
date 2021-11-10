@@ -5,8 +5,8 @@ echo $DISTRIBUTION
 
 # Compress the changelog, strip the binaries
 cp changelog.Debian calculix-precice_2.17-1_amd64/usr/share/doc/calculix-precice/changelog.Debian
-# Options : -f for removing file if it was there, -n for no time stamp
-gzip -9 calculix-precice_2.17-1_amd64/usr/share/doc/calculix-precice/changelog.Debian -f -n
+# Options : --best for best compression, -f for removing file if it was there, -n for no time stamp
+gzip --best -f -n calculix-precice_2.17-1_amd64/usr/share/doc/calculix-precice/changelog.Debian
 strip --strip-unneeded calculix-precice_2.17-1_amd64/usr/bin/ccx_preCICE
 
 #Compile and compress the manual
