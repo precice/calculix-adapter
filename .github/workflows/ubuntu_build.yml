@@ -27,7 +27,7 @@ jobs:
         sudo apt install ./libprecice2_2.3.0_${{matrix.name}}.deb -y
     - name: install dependencies
       run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
-    - name: Download Calculix
+    - name: Download CalculiX
       run: wget http://www.dhondt.de/ccx_2.17.src.tar.bz2
     - name: Unpack Calculix
       run: bzip2 -d ccx_2.17.src.tar.bz2 && tar -xf ccx_2.17.src.tar
