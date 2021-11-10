@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
-    - name: get preCICE
+    - name: Get preCICE v2.3.0
       run: wget https://github.com/precice/precice/releases/download/v2.3.0/libprecice2_2.3.0_${{matrix.name}}.deb &&
         sudo apt install ./libprecice2_2.3.0_${{matrix.name}}.deb -y
     - name: install dependencies
