@@ -55,6 +55,13 @@ jobs:
       with:
         name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
         path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
+    - name: Compute SHA256 checksum
+      run: sha256sum "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb" > "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
+    - name: Store SHA256 checksum as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
+        path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
     # - name: Store Debian Package
     #   uses: actions/upload-artifact@v2
     #   with:
