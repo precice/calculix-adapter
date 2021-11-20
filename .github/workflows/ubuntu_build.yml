@@ -38,11 +38,6 @@ jobs:
       run: make -j 4 CCX=${CCX}
     - name: Test run
       run: ./bin/ccx_preCICE -h
-    - name: Store binary artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: ccx_preCICE
-        path: ./bin/ccx_preCICE
     - name: Download tools for packaging
       run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
@@ -62,10 +57,5 @@ jobs:
       with:
         name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
         path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
-    # - name: Store Debian Package
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: calculix-precice_2.17-1_amd64.deb
-    #     path: ./packaging/calculix-precice_2.17-1_amd64.deb
-    # - name: Inspect package with lintian
-    #   run: sudo apt install lintian -y && lintian ./packaging/calculix-precice_2.17-1_amd64.deb
+    - name: Inspect package with lintian
+      run: sudo apt install lintian -y && lintian ./packaging/calculix-precice_2.17-1_amd64.deb
