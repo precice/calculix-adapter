@@ -15,6 +15,8 @@ jobs:
             name: focal
     runs-on: ${{matrix.os}}
     continue-on-error: true
+    env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
+      PACKAGE_NAME: "calculix-precice2_2.17-1_amd64"
 
     steps:
     - name: Update system
@@ -35,27 +37,27 @@ jobs:
     - name: Show paths
       run: echo "${{env.CCX}}" && ls "${{env.CCX}}"
     - name: make
-      run: make -j 4 CCX=${CCX}
+      run: make -j 4 CCX="./CalculiX/ccx_2.17/src"
     - name: Test run
       run: ./bin/ccx_preCICE -h
     - name: Download tools for packaging
       run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
       run: |
-        mkdir -p packaging/calculix-precice_2.17-1_amd64/usr/bin &&
-        cp ./bin/ccx_preCICE ./packaging/calculix-precice_2.17-1_amd64/usr/bin/ccx_preCICE &&
+        mkdir -p "packaging/calculix-precice2_2.17-1_amd64/usr/bin" &&
+        cp ./bin/ccx_preCICE ./packaging/calculix-precice2_2.17-1_amd64/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v2
       with:
-        name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
-        path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb"
+        name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
+        path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
     - name: Compute SHA256 checksum
-      run: sha256sum "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb" > "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
+      run: sha256sum "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb" > "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
     - name: Store SHA256 checksum as artifact
       uses: actions/upload-artifact@v2
       with:
-        name: "calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
-        path: "packaging/calculix-precice_2.17-1_amd64_${{matrix.name}}.deb.sha256"
+        name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
+        path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
     - name: Inspect package with lintian
-      run: sudo apt install lintian -y && lintian ./packaging/calculix-precice_2.17-1_amd64.deb
+      run: sudo apt install lintian -y && lintian ./packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb

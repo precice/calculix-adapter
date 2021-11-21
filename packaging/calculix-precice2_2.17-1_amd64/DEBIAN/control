@@ -1,6 +1,6 @@
-Package: calculix-precice
+Package: calculix-precice2
 Version: 2.17-1
-Source: calculix-precice
+Source: calculix-precice2
 Architecture: amd64
 Section: contrib/science
 Priority: optional
