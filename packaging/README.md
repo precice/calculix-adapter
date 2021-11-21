@@ -6,5 +6,5 @@ This contains the necessary files to build a Debian package containing the adapt
 
 - Keep up to date the list of dependencies in the control file with `dpkg-shlibs`. Care must be taken when preCICE gets updated, typically.
 - Update the changelog.
-- The script `make_deb.sh` does the required actions to compress the changelog and manpage and put them at the right place. Building the package should be as simple as running it.
-- `lintian` and `pandoc` are required to run that script. The first checks the validity of the package and the second compiles the `man` page from Markdown into the appropraite format
+- The script `make_deb.sh` compresses the changelog and manpage and puts them at the right places. Building the package should be as simple as running this script.
+    - Dependencies: `lintian` (to validate the package) and `pandoc` (to generate the `man` page).
