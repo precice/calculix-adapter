@@ -13,10 +13,6 @@ ccx_preCICE - Adapter for using CalculiX with the preCICE library.
 This page briefly summarizes how to use CalculiX with or without preCICE. For more detailed instructions, read the CalculiX documention on http://www.dhondt.de/ccx_2.17.pdf and preCICE documentation on https://precice.org/docs.html.
 Omitting the -precice-participant option starts a stand-alone CalculiX simulation.
 
-## Using with preCICE
-
-## Regular usage
-
 
 # OPTIONS
 
