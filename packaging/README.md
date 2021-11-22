@@ -8,4 +8,4 @@ This contains the necessary files to build a Debian package containing the adapt
 - Update the changelog.
 - The script `make_deb.sh` compresses the changelog and manpage and puts them at the right places. Building the package should be as simple as running this script.
     - Dependencies: `lintian` (to validate the package) and `pandoc` (to generate the `man` page).
-- To update CalculiX version: update the Github action workflow file (in `.github/workflows`). Update the `PACKAGE_NAME` variable, the paths (e.g. replace `wget http://www.dhondt.de/ccx_2.17.src.tar.bz2` by `wget http://www.dhondt.de/ccx_2.XX.src.tar.bz2` with XX the corresponding minor version of CalculiX and folder paths.
+- To update CalculiX version: update the Github action workflow file (in `.github/workflows`). Update the `PACKAGE_NAME` variable and the paths (e.g. replace `wget http://www.dhondt.de/ccx_2.17.src.tar.bz2` by `wget http://www.dhondt.de/ccx_2.XX.src.tar.bz2` with XX the corresponding minor version of CalculiX and folder paths). The files `make_deb.sh`, `DEBIAN/control`, `changelog.DEBIAN` and `manpage.md` may require an update too. 
