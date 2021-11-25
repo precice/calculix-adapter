@@ -19,3 +19,15 @@ Go to the [adapter documentation](https://precice.org/adapter-calculix-overview.
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
 
 [2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017. 
+
+## License compatibility
+
+The calculix-adapter is licensed under the [GPLv3](./LICENSE).
+This is compatible with the GPLv2 License Calculix due to following statement:
+
+From the official [license published on dhondt.de](http://www.dhondt.de/gpl-2.0.txt)
+
+>    This program is free software; you can redistribute it and/or modify
+>    it under the terms of the GNU General Public License as published by
+>    the Free Software Foundation; either version 2 of the License, or
+>    (at your option) any later version.
