@@ -33,9 +33,6 @@ jobs:
       run: wget http://www.dhondt.de/ccx_2.17.src.tar.bz2
     - name: Unpack Calculix
       run: tar -xjf ccx_2.17.src.tar.bz2
-    - run: echo "CCX=$(pwd)/CalculiX/ccx_2.17/src" >> $GITHUB_ENV
-    - name: Show paths
-      run: echo "${{env.CCX}}" && ls "${{env.CCX}}"
     - name: make
       run: make -j 4 CCX="./CalculiX/ccx_2.17/src"
     - name: Test run
