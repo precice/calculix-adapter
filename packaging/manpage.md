@@ -1,7 +1,3 @@
-% ccx_preCICE(1) 2.17
-% Boris Martin
-% Oct 2021
-
 # NAME
 ccx_preCICE - Adapter for using CalculiX with the preCICE library.
 
@@ -33,3 +29,7 @@ Omitting the -precice-participant option starts a stand-alone CalculiX simulatio
 **ccx_preCICE -i flap -precice-participant CalculiX** : Runs the coupled simulation flap.inp as participant "CalculiX".
 
 **ccx_preCICE -i flap** : Runs a CalculiX-only simulation with flap.inp as input file.
+
+# REPORTING BUGS
+
+: Report issues on the Github repository: https://github.com/precice/calculix-adapter.
