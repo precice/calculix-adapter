@@ -22,7 +22,7 @@ Omitting the -precice-participant option starts a stand-alone CalculiX simulatio
 
 **-precice-participant < participant >**
 
-: Runs a preCICE simulation with name < participant >. This name must be the one used in the YAML config file as well as in the preCICE configuration file.
+: Runs a preCICE simulation with name < participant >. This name must be the same as the one used in the adapter configuration file as well as in the preCICE configuration file.
 
 # EXAMPLES
 
