@@ -420,6 +420,7 @@ void Precice_FreeData( SimulationData * sim )
 		if( sim->preciceInterfaces[i] != NULL ){
 			free( sim->preciceInterfaces[i] );
 		}
+		free( sim->preciceInterfaces );
 	}
 
 	precicec_finalize();
