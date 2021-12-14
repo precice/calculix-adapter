@@ -418,9 +418,9 @@ void Precice_FreeData( SimulationData * sim )
 	{
 		PreciceInterface_FreeData( sim->preciceInterfaces[i] );
 		free( sim->preciceInterfaces[i] );
-		free( sim->preciceInterfaces );
 	}
-
+	
+	free( sim->preciceInterfaces );
 	precicec_finalize();
 }
 
