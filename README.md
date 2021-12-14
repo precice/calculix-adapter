@@ -19,3 +19,7 @@ Go to the [adapter documentation](https://precice.org/adapter-calculix-overview.
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
 
 [2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017. 
+
+## License
+
+This project contains modified CalculiX files (licensed under [GPLv2 or later](http://www.dhondt.de/gpl-2.0.txt)) and additional adapter-specific files ([GPLv3](./LICENSE)). As a whole, this project is licensed under GPLv3.
