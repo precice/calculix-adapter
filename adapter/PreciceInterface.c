@@ -11,6 +11,7 @@
 #include <assert.h>
 #include "PreciceInterface.h"
 #include "ConfigReader.h"
+#include "CCXHelpers.h"
 #include "precice/SolverInterfaceC.h"
 
 void Precice_Setup( char * configFilename, char * participantName, SimulationData * sim )
@@ -273,13 +274,46 @@ void Precice_WriteCouplingData( SimulationData * sim )
 	PreciceInterface ** interfaces = sim->preciceInterfaces;
 	int numInterfaces = sim->numPreciceInterfaces;
   int i, j;
-	int iset;
+  int iset;
 
 	if( precicec_isWriteDataRequired( sim->solver_dt ) || precicec_isActionRequired( "write-initial-data" ) )
 	{
 		for( i = 0 ; i < numInterfaces ; i++ )
 		{
-
+      // Prepare data
+      double * KDelta = NULL;
+      double * T = NULL;
+			for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
+			{
+        enum CouplingDataType type = interfaces[i]->writeData[j];
+        if (type == SINK_TEMPERATURE || type == HEAT_TRANSFER_COEFF) {
+          if (KDelta == NULL) {
+            int iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
+            KDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
+            T = malloc( interfaces[i]->numElements * sizeof( double ) );
+            FORTRAN( getkdeltatemp, ( sim->co,
+                          sim->ntmat_,
+                          sim->vold,
+                          sim->cocon,
+                          sim->ncocon,
+                          &iset,
+                          sim->istartset,
+                          sim->iendset,
+                          sim->ipkon,
+                          *sim->lakon,
+                          sim->kon,
+                          sim->ialset,
+                          sim->ielmat,
+                          sim->mi,
+                          KDelta,
+                          T
+                          )
+                );
+          }
+        }
+      }
+      
+      // Write data
 			for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
 			{
 
@@ -322,35 +356,12 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					printf( "Writing HEAT_FLUX coupling data with ID '%d'. \n",interfaces[i]->fluxDataID );
 					break;
 				case SINK_TEMPERATURE:
-					iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
-					double * myKDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
-					double * T = malloc( interfaces[i]->numElements * sizeof( double ) );
-					FORTRAN( getkdeltatemp, ( sim->co,
-											  sim->ntmat_,
-											  sim->vold,
-											  sim->cocon,
-											  sim->ncocon,
-											  &iset,
-											  sim->istartset,
-											  sim->iendset,
-											  sim->ipkon,
-											  *sim->lakon,
-											  sim->kon,
-											  sim->ialset,
-											  sim->ielmat,
-											  sim->mi,
-											  myKDelta,
-											  T
-											  )
-							 );
 					precicec_writeBlockScalarData( interfaces[i]->kDeltaTemperatureWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, T );
 					printf( "Writing SINK_TEMPERATURE coupling data with ID '%d'. \n",interfaces[i]->kDeltaTemperatureWriteDataID );
-					free( T );
 					break;
 				case HEAT_TRANSFER_COEFF:
-					precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, myKDelta );
+					precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, KDelta );
 					printf( "Writing HEAT_TRANSFER_COEFF coupling data with ID '%d'. \n",interfaces[i]->kDeltaWriteDataID );
-					free( myKDelta );
 					break;
 				case DISPLACEMENTS:
 					getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
@@ -397,8 +408,10 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					break;
 				}
 			}
+      // Cleanup data
+      free( T );
+      free( KDelta );
 		}
-
 		if( precicec_isActionRequired( "write-initial-data" ) )
 		{
 			precicec_markActionFulfilled( "write-initial-data" );
