@@ -452,7 +452,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
   interface->nodeIDs = NULL;
   interface->mapping2D3D = NULL;
 	interface->preciceNodeIDs = NULL;
-	interface->triangles = NULL;
 	interface->nodeScalarData = NULL;
   interface->node2DScalarData = NULL;
 	interface->nodeVectorData = NULL;
@@ -621,13 +620,11 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
 	char * faceSetName = toFaceSetName( interface->name );
 	interface->faceSetID = getSetID( faceSetName, sim->set, sim->nset );
 	numElements = getNumSetElements( interface->faceSetID, sim->istartset, sim->iendset );
-	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
 	interface->elementIDs = malloc( numElements * sizeof( ITG ) );
 	interface->faceIDs = malloc( numElements * sizeof( ITG ) );
 	interface->faceCenterCoordinates = malloc( numElements * 3 * sizeof( double ) );
 	getSurfaceElementsAndFaces( interface->faceSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs, interface->faceIDs );
 	interface->numElements = numElements;
-	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
 	PreciceInterface_ConfigureTetraFaces( interface, sim );
 }
 
@@ -647,13 +644,14 @@ void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, Simulat
 	printf("Setting node connectivity for nearest projection mapping: \n");
 	if( interface->nodesMeshName != NULL )
 	{
-		interface->triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
-		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->triangles );
+		int * triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
+		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, triangles);
 
 		for( i = 0 ; i < interface->numElements ; i++ )
 		{
-			precicec_setMeshTriangleWithEdges( interface->nodesMeshID, interface->triangles[3*i], interface->triangles[3*i+1], interface->triangles[3*i+2] );
+			precicec_setMeshTriangleWithEdges( interface->nodesMeshID, triangles[3*i], triangles[3*i+1], triangles[3*i+2] );
 		}
+    free( triangles );
 	}
 }
 
@@ -848,10 +846,6 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 
 	if( preciceInterface->preciceNodeIDs != NULL ){
 		free( preciceInterface->preciceNodeIDs );
-	}
-
-	if( preciceInterface->triangles != NULL ){
-		free( preciceInterface->triangles );
 	}
 
 	if( preciceInterface->nodeScalarData != NULL ){
