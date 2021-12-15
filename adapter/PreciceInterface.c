@@ -417,11 +417,10 @@ void Precice_FreeData( SimulationData * sim )
 	for( i = 0 ; i < sim->numPreciceInterfaces ; i++ )
 	{
 		PreciceInterface_FreeData( sim->preciceInterfaces[i] );
-		if( sim->preciceInterfaces[i] != NULL ){
-			free( sim->preciceInterfaces[i] );
-		}
+		free( sim->preciceInterfaces[i] );
 	}
-
+	
+	free( sim->preciceInterfaces );
 	precicec_finalize();
 }
 
