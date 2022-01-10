@@ -30,10 +30,11 @@ PKGCONF_LIBS    = $(shell pkg-config --libs libprecice)
 # Specify where to store the generated .o files
 OBJDIR = bin
 
-# To get the correct path, export the required folders for pkg-config. Example: export PKG_CONFIG_PATH=~/PaStiX/pastix_i8/lib/pkgconfig/:~/PaStiX/hwloc_i8/lib/pkgconfig/:~/PaStiX/parsec_i8/lib/pkgconfig/
+# To get the correct path, export the required folders for pkg-config. 
+# Example: export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/PaStiX/pastix_i8/lib/pkgconfig/:~/PaStiX/hwloc_i8/lib/pkgconfig/:~/PaStiX/parsec_i8/lib/pkgconfig/
 
 PASTIX_INCLUDE = $(shell pkg-config --cflags pastix)
-PASTIX_LIBS = $(shell pkg-config --libs pastix hwloc parsec lapacke) $(HOME)/OpenBLAS_i8/libopenblas.a \
+PASTIX_LIBS = $(shell pkg-config --libs pastix hwloc parsec) $(HOME)/OpenBLAS_i8/libopenblas.a \
 $(HOME)/PaStiX/pastix_i8/lib/libpastix_kernels.a \
    /usr/lib/x86_64-linux-gnu/libcublas_static.a \
   /usr/lib/x86_64-linux-gnu/libculibos.a /usr/lib/x86_64-linux-gnu/libcublasLt_static.a \
