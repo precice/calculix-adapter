@@ -69,7 +69,7 @@ FC = mpifort
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
-SCCXMAIN = ccx_2.16.c
+SCCXMAIN = ccx_2.19.c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c CCXHelpers.c PreciceInterface.c
