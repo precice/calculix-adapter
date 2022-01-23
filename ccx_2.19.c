@@ -131,15 +131,6 @@ int preciceUsed = 0;
 	FORTRAN(stop,());
       }
 
-      // Get preCICE participantName
-    if(strcmp1(argv[i],"-precice-participant")==0) {
-        strcpy(preciceParticipantName,argv[i+1]);
-        preciceUsed = 1;
-    }
-    // Overwrite YAML config file name in case a specific file name is given on the command line
-    if(strcmp1(argv[i],"-precice-config")==0) {
-        strcpy(configFilename,argv[i+1]);
-    }
     }
     if(jin==0){strcpy(jobnamec,argv[1]);strcpy1(jobnamef,argv[1],132);}
 
@@ -149,6 +140,21 @@ int preciceUsed = 0;
       if(strcmp1(argv[i],"-o")==0){
 	strcpy(output,argv[i+1]);break;}
 	}*/
+
+  for(i=1;i<argc;i++){
+    if(strcmp1(argv[i],"-o")==0) {
+    strcpy(output,argv[i+1]);break;}
+
+    // Get preCICE participantName
+    if(strcmp1(argv[i],"-precice-participant")==0) {
+        strcpy(preciceParticipantName,argv[i+1]);
+        preciceUsed = 1;
+    }
+    // Overwrite YAML config file name in case a specific file name is given on the command line
+    if(strcmp1(argv[i],"-precice-config")==0) {
+        strcpy(configFilename,argv[i+1]);
+    }
+  }
   }
 
   putenv("CCX_JOBNAME_GETJOBNAME=jobnamec");
@@ -1215,7 +1221,6 @@ int preciceUsed = 0;
     /* nmethod=14: Robustness w.r.t. to geometric tolerances */
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
-
     if(preciceUsed) {
         int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
         int isDynamic = nmethod == 4;
