@@ -2,7 +2,7 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.16/src )
-CCX             = $(HOME)/CalculiX/ccx_2.16/src
+CCX             = $(HOME)/CalculiX/ccx_2.19/src
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
