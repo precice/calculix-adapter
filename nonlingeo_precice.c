@@ -3451,6 +3451,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       SFREE(bhat);	  
       SFREE(islavactdof);
     }   
+	
+	/* Adapter: Copy necessary data for coupling */
+	simulationData.fn = fn;
+    memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
 
 	Precice_WriteCouplingData( &simulationData );
     /* Adapter: Advance the coupling */
