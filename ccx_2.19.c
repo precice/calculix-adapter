@@ -1258,7 +1258,7 @@ int preciceUsed = 0;
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
 	     velo,veloo,energy,itempuser,
        /* New args from 2.19 */
-       ipobody, inewton, t0g, t1g, ifreebody,
+       &ipobody, &inewton, &t0g, &t1g, &ifreebody,
        /* PreCICE args */
        preciceParticipantName,configFilename);
             
@@ -1300,7 +1300,7 @@ int preciceUsed = 0;
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
 	     velo,veloo,energy,itempuser,
        /* New args from 2.19 */
-       ipobody, inewton, t0g, t1g, ifreebody,
+       &ipobody, &inewton, &t0g, &t1g, &ifreebody,
        /* PreCICE args */
        preciceParticipantName,configFilename);
                 
@@ -1338,7 +1338,7 @@ int preciceUsed = 0;
 	     xmodal,&iaxial,&inext,&nprop,&network,orname,vel,&nef,
 	     velo,veloo,energy,itempuser,
        /* New args from 2.19 */
-       ipobody, inewton, t0g, t1g, ifreebody,
+       &ipobody, &inewton, &t0g, &t1g, &ifreebody,
        /* PreCICE args */
        preciceParticipantName,configFilename);
                 
