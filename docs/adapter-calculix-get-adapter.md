@@ -12,14 +12,15 @@ After [installing preCICE](installation-overview.html) and [getting the CalculiX
 1. Download and unzip the adapter (e.g. in the `CaluliX` folder):
 
     ```bash
-    wget https://github.com/precice/calculix-adapter/archive/master.zip 
-    unzip master.zip 
-    cd calculix-adapter-master
+    wget https://github.com/precice/calculix-adapter/archive/refs/heads/v{{site.calculix_version}}.zip 
+    unzip v{{site.calculix_version}}.zip 
+    cd calculix-adapter-{{site.calculix_version}}
     ```
 
 2. Edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
    - Otherwise, set `CCX` and, if built from source, the include and lib flags for SPOOLES, ARPACK, and yaml-cpp.
+   - Read below if you are [using GCC 10 or later](#compiling-with-gcc-10-or-newer).
 3. Clean any previous builds with `make clean`.
 4. Build with `make` (e.g. `make -j 4` for parallel).
 5. You should now have a new executable `ccx_preCICE` in the `bin/` folder of the adapter. You may move this file to a path known by your system, or [add this to your `PATH`](https://unix.stackexchange.com/a/26059/36693) (careful when doing this!).
@@ -33,7 +34,7 @@ Since version 2.17 of CalculiX, it is possible to link the PaStiX solver for inc
 The adapter is built using GNU Make. The `Makefile` contains a few variables on top, which need to be adapted to your system:
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
-    - Example: `$(HOME)/CalculiX/ccx_2.16/src`
+    - Example: `$(HOME)/CalculiX/ccx_{{site.calculix_version}}/src`
  2. `SPOOLES_INCLUDE`: Include flags for SPOOLES
     - Example 1: `SPOOLES_INCLUDE   = -I/usr/include/spooles/` (installed)
     - Example 2: `SPOOLES_INCLUDE   = -I$(HOME)/SPOOLES.2.2/` (source)
