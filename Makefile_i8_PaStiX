@@ -1,0 +1,132 @@
+# See our wiki for getting the CalculiX dependencies:
+# https://precice.org/adapter-calculix-get-calculix.html
+# Set the following variables before building:
+# Path to original CalculiX source (e.g. $(HOME)/ccx_2.19/src )
+CCX             = $(HOME)/CalculiX/ccx_2.19/src
+
+### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
+# SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
+SPOOLES_INCLUDE   = -I/usr/include/spooles/
+# SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
+SPOOLES_LIBS      = -lspooles
+#
+# ARPACK include flags (e.g. -I$(HOME)/ARPACK)
+ARPACK_INCLUDE    =
+# ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
+ARPACK_LIBS       = $(HOME)/ARPACK/libarpack_INTEL.a 
+#ARPACK_LIBS       = -larpack -llapack -lblas
+#
+# yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
+YAML_INCLUDE      = -I/usr/include/
+# yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
+YAML_LIBS         = -lyaml-cpp
+
+# Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
+# If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
+# path where this is stored into PKG_CONFIG_PATH when building the adapter.
+PKGCONF_CFLAGS  = $(shell pkg-config --cflags libprecice)
+PKGCONF_LIBS    = $(shell pkg-config --libs libprecice)
+
+# Specify where to store the generated .o files
+OBJDIR = bin
+
+# To get the correct path, export the required folders for pkg-config. 
+# Example: export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/PaStiX/pastix_i8/lib/pkgconfig/:~/PaStiX/hwloc_i8/lib/pkgconfig/:~/PaStiX/parsec_i8/lib/pkgconfig/
+
+PASTIX_INCLUDE = $(shell pkg-config --cflags pastix)
+PASTIX_LIBS = $(shell pkg-config --libs pastix hwloc parsec) $(HOME)/OpenBLAS_i8/libopenblas.a \
+$(HOME)/PaStiX/pastix_i8/lib/libpastix_kernels.a \
+   /usr/lib/x86_64-linux-gnu/libcublas_static.a \
+  /usr/lib/x86_64-linux-gnu/libculibos.a /usr/lib/x86_64-linux-gnu/libcublasLt_static.a \
+  $(HOME)/PaStiX/scotch_i8/lib/libscotch.a $(HOME)/PaStiX/scotch_i8/lib/libscotcherrexit.a 
+
+
+# Includes and libs
+INCLUDES = \
+	-I./ \
+	-I./adapter \
+	-I$(CCX) \
+	$(SPOOLES_INCLUDE) \
+	$(PKGCONF_CFLAGS) \
+	$(ARPACK_INCLUDE) \
+	$(YAML_INCLUDE) \
+	$(PASTIX_INCLUDE)
+
+LIBS = \
+	$(SPOOLES_LIBS) \
+	$(PKGCONF_LIBS) \
+	-lstdc++ \
+	$(YAML_LIBS) \
+	$(ARPACK_LIBS) \
+	-lpthread -lm -lc \
+	$(PASTIX_LIBS) \
+	-lhwloc
+
+# Compilers and flags
+#CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
+#FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
+
+#Disabled flags
+WFLAGS = -Wno-unused-dummy-argument -Wno-unused-variable -Wno-maybe-uninitialized -Wno-unused-label -Wno-conversion -Wno-argument-mismatch
+CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DPASTIX -DLONGLONG -DPASTIX_FP32 -DPASTIX_GPU $(WFLAGS)
+
+# OS-specific options
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	CC = /usr/local/bin/gcc
+else
+	CC = mpicc
+endif
+
+FFLAGS = -Wall -O3 -fopenmp -fdefault-integer-8  $(INCLUDES) $(WFLAGS)
+# Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
+FC = mpifort
+# FC = mpif90
+# FC = gfortran
+
+# Include a list of all the source files
+include $(CCX)/Makefile.inc
+SCCXMAIN = ccx_2.19.c
+
+# Append additional sources
+SCCXC += nonlingeo_precice.c CCXHelpers.c PreciceInterface.c
+SCCXF += getflux.f getkdeltatemp.f
+
+
+
+# Source files in this folder and in the adapter directory
+$(OBJDIR)/%.o : %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o : %.f
+	$(FC) $(FFLAGS) -c $< -o $@
+$(OBJDIR)/%.o : adapter/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o : adapter/%.cpp
+	g++ -std=c++11 $(YAML_INCLUDE) -c $< -o $@ $(LIBS)
+	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+
+# Source files in the $(CCX) folder
+$(OBJDIR)/%.o : $(CCX)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJDIR)/%.o : $(CCX)/%.f
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# Generate list of object files from the source files, prepend $(OBJDIR)
+OCCXF = $(SCCXF:%.f=$(OBJDIR)/%.o)
+OCCXC = $(SCCXC:%.c=$(OBJDIR)/%.o)
+OCCXMAIN = $(SCCXMAIN:%.c=$(OBJDIR)/%.o)
+OCCXC += $(OBJDIR)/ConfigReader.o
+
+
+
+$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.19.a
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.19.a $(LIBS)
+
+$(OBJDIR)/ccx_2.19.a: $(OCCXF) $(OCCXC)
+	ar vr $@ $?
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+clean:
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.19.a $(OBJDIR)/ccx_preCICE

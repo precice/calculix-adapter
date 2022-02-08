@@ -143,7 +143,7 @@ void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, ITG mt,
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacementDeltas: output array with the displacementDeltas in preCICE-conform order of the input nodes
  */
-void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, int mt, double * displacementDeltas );
+void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, ITG mt, double * displacementDeltas );
 
 /**
  * @brief Computes the center of one of the faces of a tetrahedral element
