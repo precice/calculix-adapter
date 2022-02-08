@@ -1,4 +1,12 @@
-calculix-precice (2.17) unstable; urgency=medium
+
+calculix-precice2 (2.19) unstable; urgency=medium
+  * Update to CalculiX 2.19
+  * Comes compiled with the USE_MT flag, required for parallel usage of
+    Spooles
+
+ -- Boris Martin <boris.martin@tum.de>  Tue, 8 Feb 2022 15:45:00 +0200
+
+calculix-precice2 (2.17) unstable; urgency=medium
   * Initial packaging
   * First official Debian package of the CalculiX adapter for preCICE
 
