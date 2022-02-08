@@ -11,6 +11,7 @@
 #include <assert.h>
 #include "PreciceInterface.h"
 #include "ConfigReader.h"
+#include "CCXHelpers.h"
 #include "precice/SolverInterfaceC.h"
 
 void Precice_Setup( char * configFilename, char * participantName, SimulationData * sim )
@@ -273,13 +274,46 @@ void Precice_WriteCouplingData( SimulationData * sim )
 	PreciceInterface ** interfaces = sim->preciceInterfaces;
 	int numInterfaces = sim->numPreciceInterfaces;
   int i, j;
-	int iset;
+  int iset;
 
 	if( precicec_isWriteDataRequired( sim->solver_dt ) || precicec_isActionRequired( "write-initial-data" ) )
 	{
 		for( i = 0 ; i < numInterfaces ; i++ )
 		{
-
+      // Prepare data
+      double * KDelta = NULL;
+      double * T = NULL;
+			for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
+			{
+        enum CouplingDataType type = interfaces[i]->writeData[j];
+        if (type == SINK_TEMPERATURE || type == HEAT_TRANSFER_COEFF) {
+          if (KDelta == NULL) {
+            int iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
+            KDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
+            T = malloc( interfaces[i]->numElements * sizeof( double ) );
+            FORTRAN( getkdeltatemp, ( sim->co,
+                          sim->ntmat_,
+                          sim->vold,
+                          sim->cocon,
+                          sim->ncocon,
+                          &iset,
+                          sim->istartset,
+                          sim->iendset,
+                          sim->ipkon,
+                          *sim->lakon,
+                          sim->kon,
+                          sim->ialset,
+                          sim->ielmat,
+                          sim->mi,
+                          KDelta,
+                          T
+                          )
+                );
+          }
+        }
+      }
+      
+      // Write data
 			for( j = 0 ; j < interfaces[i]->numWriteData ; j++ )
 			{
 
@@ -322,35 +356,12 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					printf( "Writing HEAT_FLUX coupling data with ID '%d'. \n",interfaces[i]->fluxDataID );
 					break;
 				case SINK_TEMPERATURE:
-					iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
-					double * myKDelta = malloc( interfaces[i]->numElements * sizeof( double ) );
-					double * T = malloc( interfaces[i]->numElements * sizeof( double ) );
-					FORTRAN( getkdeltatemp, ( sim->co,
-											  sim->ntmat_,
-											  sim->vold,
-											  sim->cocon,
-											  sim->ncocon,
-											  &iset,
-											  sim->istartset,
-											  sim->iendset,
-											  sim->ipkon,
-											  *sim->lakon,
-											  sim->kon,
-											  sim->ialset,
-											  sim->ielmat,
-											  sim->mi,
-											  myKDelta,
-											  T
-											  )
-							 );
 					precicec_writeBlockScalarData( interfaces[i]->kDeltaTemperatureWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, T );
 					printf( "Writing SINK_TEMPERATURE coupling data with ID '%d'. \n",interfaces[i]->kDeltaTemperatureWriteDataID );
-					free( T );
 					break;
 				case HEAT_TRANSFER_COEFF:
-					precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, myKDelta );
+					precicec_writeBlockScalarData( interfaces[i]->kDeltaWriteDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, KDelta );
 					printf( "Writing HEAT_TRANSFER_COEFF coupling data with ID '%d'. \n",interfaces[i]->kDeltaWriteDataID );
-					free( myKDelta );
 					break;
 				case DISPLACEMENTS:
 					getNodeDisplacements( interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->nodeVectorData );
@@ -397,8 +408,10 @@ void Precice_WriteCouplingData( SimulationData * sim )
 					break;
 				}
 			}
+      // Cleanup data
+      free( T );
+      free( KDelta );
 		}
-
 		if( precicec_isActionRequired( "write-initial-data" ) )
 		{
 			precicec_markActionFulfilled( "write-initial-data" );
@@ -438,7 +451,6 @@ void PreciceInterface_Create( PreciceInterface * interface, SimulationData * sim
   interface->nodeIDs = NULL;
   interface->mapping2D3D = NULL;
 	interface->preciceNodeIDs = NULL;
-	interface->triangles = NULL;
 	interface->nodeScalarData = NULL;
   interface->node2DScalarData = NULL;
 	interface->nodeVectorData = NULL;
@@ -607,13 +619,11 @@ void PreciceInterface_NodeConnectivity( PreciceInterface * interface, Simulation
 	char * faceSetName = toFaceSetName( interface->name );
 	interface->faceSetID = getSetID( faceSetName, sim->set, sim->nset );
 	numElements = getNumSetElements( interface->faceSetID, sim->istartset, sim->iendset );
-	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
 	interface->elementIDs = malloc( numElements * sizeof( ITG ) );
 	interface->faceIDs = malloc( numElements * sizeof( ITG ) );
 	interface->faceCenterCoordinates = malloc( numElements * 3 * sizeof( double ) );
 	getSurfaceElementsAndFaces( interface->faceSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs, interface->faceIDs );
 	interface->numElements = numElements;
-	interface->triangles = malloc( numElements * 3 * sizeof( ITG ) );
 	PreciceInterface_ConfigureTetraFaces( interface, sim );
 }
 
@@ -633,13 +643,14 @@ void PreciceInterface_ConfigureTetraFaces( PreciceInterface * interface, Simulat
 	printf("Setting node connectivity for nearest projection mapping: \n");
 	if( interface->nodesMeshName != NULL )
 	{
-		interface->triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
-		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, interface->triangles );
+		int * triangles = malloc( interface->numElements * 3 * sizeof( ITG ) );
+		getTetraFaceNodes( interface->elementIDs, interface->faceIDs,  interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, triangles);
 
 		for( i = 0 ; i < interface->numElements ; i++ )
 		{
-			precicec_setMeshTriangleWithEdges( interface->nodesMeshID, interface->triangles[3*i], interface->triangles[3*i+1], interface->triangles[3*i+2] );
+			precicec_setMeshTriangleWithEdges( interface->nodesMeshID, triangles[3*i], triangles[3*i+1], triangles[3*i+2] );
 		}
+    free( triangles );
 	}
 }
 
@@ -834,10 +845,6 @@ void PreciceInterface_FreeData( PreciceInterface * preciceInterface )
 
 	if( preciceInterface->preciceNodeIDs != NULL ){
 		free( preciceInterface->preciceNodeIDs );
-	}
-
-	if( preciceInterface->triangles != NULL ){
-		free( preciceInterface->triangles );
 	}
 
 	if( preciceInterface->nodeScalarData != NULL ){
