@@ -117,7 +117,7 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
 	}
 }
 
-void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, int mt, double * displacements )
+void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, ITG mt, double * displacements )
 {
 
 	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
@@ -134,7 +134,7 @@ void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, int m
 	}
 }
 
-void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, int mt, double * displacementDeltas )
+void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, ITG mt, double * displacementDeltas )
 {
 
 	// CalculiX variable mt = 4 : temperature + 3 displacements (depends on the type of analysis)
@@ -151,7 +151,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
 	}
 }
 
-void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, int mt, double * velocities )
+void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, ITG mt, double * velocities )
 {
 
 	// CalculiX variable mt = 4 : temperature rate + 3 velocities (depends on the type of analysis)
@@ -448,17 +448,17 @@ void setXload( double * xload, int * xloadIndices, double * values, int numValue
 	}
 }
 
-void setFaceFluxes( double * fluxes, int numFaces, int * xloadIndices, double * xload )
+void setFaceFluxes( double * fluxes, ITG numFaces, int * xloadIndices, double * xload )
 {
 	setXload( xload, xloadIndices, fluxes, numFaces, DFLUX );
 }
 
-void setFaceHeatTransferCoefficients( double * coefficients, int numFaces, int * xloadIndices, double * xload )
+void setFaceHeatTransferCoefficients( double * coefficients, ITG numFaces, int * xloadIndices, double * xload )
 {
 	setXload( xload, xloadIndices, coefficients, numFaces, FILM_H );
 }
 
-void setFaceSinkTemperatures( double * sinkTemperatures, int numFaces, int * xloadIndices, double * xload )
+void setFaceSinkTemperatures( double * sinkTemperatures, ITG numFaces, int * xloadIndices, double * xload )
 {
 	setXload( xload, xloadIndices, sinkTemperatures, numFaces, FILM_T );
 }
