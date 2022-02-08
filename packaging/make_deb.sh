@@ -1,11 +1,10 @@
 #!/usr/bin/bash
 
 DISTRIBUTION="_$1"
-echo $DISTRIBUTION
 ADAPTER_VERSION="2.19.0"
 PACKAGE_VERSION="1"
 
-PACKAGE_FOLDER="calculix-precice2_$ADAPTER_VERSION-$PACKAGE_VERSION_amd64"
+PACKAGE_FOLDER="calculix-precice2_$ADAPTER_VERSION-${PACKAGE_VERSION}_amd64"
 
 # Compress the changelog, strip the binaries
 cp changelog.Debian $PACKAGE_FOLDER/usr/share/doc/calculix-precice2/changelog.Debian
@@ -26,5 +25,5 @@ mv ccx_preCICE.1.gz $PACKAGE_FOLDER/usr/share/man/man1
 cp -r $PACKAGE_FOLDER/ "$PACKAGE_FOLDER$DISTRIBUTION"
 
 dpkg-deb --build --root-owner-group "$PACKAGE_FOLDER$DISTRIBUTION"
-lintian *.deb
+lintian ./*.deb
 
