@@ -2,14 +2,33 @@
 title: Get the CalculiX adapter
 permalink: adapter-calculix-get-adapter.html
 keywords: adapter, calculix, building
-summary: "How to build the adapted CalculiX `ccx_preCICE`"
+summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can get the adapter either from a Debian package (on Ubuntu), or build it from source."
 ---
 
 After [installing preCICE](installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e. a modified CCX executable.
 
+There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), or (b) build it from source. The latest adapter version is v{{ site.calculix_adapter_version }} and the versioning format is `<CalculiX major.minor version>.<adapter revision>`.
+
+## Get a binary package
+
+You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, simply open it in your software center.
+
+Alternatively, download & install it from the command line. For Ubuntu 20.04 (focal):
+
+```bash
+wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_focal.deb
+sudo apt install ./calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_focal.deb
+```
+
+This requires that also preCICE itself has been installed from a Debian package.
+
+{% note %}
+We started offering Debian packages for the CalculiX adapter since v2.19.0. Please [give us your feedback](community-channels.html)!
+{% endnote %}
+
 ## Building the adapted CalculiX
 
-1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), supporting CalculiX v{{site.calculix_version}}:
+1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), currently supporting CalculiX v{{site.calculix_version}}:
 
     ```bash
     wget https://github.com/precice/calculix-adapter/archive/refs/heads/master.tar.gz
