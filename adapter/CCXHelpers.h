@@ -10,10 +10,10 @@
 #ifndef CCXHELPERS_H
 #define CCXHELPERS_H
 
-#include <stdio.h>
 #include <math.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../CalculiX.h"
 
 /*
@@ -26,7 +26,9 @@
 /**
  * @brief Possible variables in xload (CalculiX variable for the load)
  */
-enum xloadVariable { DFLUX, FILM_H, FILM_T };
+enum xloadVariable { DFLUX,
+                     FILM_H,
+                     FILM_T };
 
 /**
  * @brief Type of coupling data
@@ -39,21 +41,29 @@ enum xloadVariable { DFLUX, FILM_H, FILM_T };
  *  Velocities - FSI data to be written (by the Calculix adapter)
  *  Positions - FSI data to be written (by the Calculix adapter)
  */
-enum CouplingDataType { TEMPERATURE, HEAT_FLUX, SINK_TEMPERATURE, HEAT_TRANSFER_COEFF, FORCES, DISPLACEMENTS, DISPLACEMENTDELTAS, VELOCITIES, POSITIONS };
+enum CouplingDataType { TEMPERATURE,
+                        HEAT_FLUX,
+                        SINK_TEMPERATURE,
+                        HEAT_TRANSFER_COEFF,
+                        FORCES,
+                        DISPLACEMENTS,
+                        DISPLACEMENTDELTAS,
+                        VELOCITIES,
+                        POSITIONS };
 
 /**
  * @brief Returns node set name with internal CalculiX format
  * Prepends and appends an N: e.g. If the input name is "interface",
  * it returns NinterfaceN
  */
-char* toNodeSetName( char const * name );
+char *toNodeSetName(char const *name);
 
 /**
  * @brief Returns face set name with internal CalculiX format
  * Prepends an S and appends a T: e.g. If the input name is "interface",
  * it returns SinterfaceT
  */
-char* toFaceSetName( char const * name );
+char *toFaceSetName(char const *name);
 
 /**
  * @brief Returns id of a set given its name
@@ -61,12 +71,12 @@ char* toFaceSetName( char const * name );
  * @param set: CalculiX array for all the set names
  * @param nset: CalculiX variable for the number of sets
  */
-ITG getSetID( char const * setName, char const * set, ITG nset );
+ITG getSetID(char const *setName, char const *set, ITG nset);
 
 /**
  * @brief Returns number of elements in a set
  */
-ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset );
+ITG getNumSetElements(ITG setID, ITG *istartset, ITG *iendset);
 
 /**
  * @brief Gets the element and face IDs given a set ID
@@ -77,7 +87,7 @@ ITG getNumSetElements( ITG setID, ITG * istartset, ITG * iendset );
  * @param elements: output element IDs
  * @param faces: output face IDs (local IDs: e.g. 1, 2, 3, 4 for tetrahedral elements)
  */
-void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG * iendset, ITG * elements, ITG * faces );
+void getSurfaceElementsAndFaces(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements, ITG *faces);
 
 /**
  * @brief Gets the coordinates of a list of input node IDs
@@ -88,7 +98,7 @@ void getSurfaceElementsAndFaces( ITG setID, ITG * ialset, ITG * istartset, ITG *
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param coordinates: output array with the coordinates of the input nodes
  */
-void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double * v, int mt, double * coordinates );
+void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v, int mt, double *coordinates);
 
 /**
  * @brief getNodeTemperatures
@@ -99,7 +109,7 @@ void getNodeCoordinates( ITG * nodes, ITG numNodes, int dim, double * co, double
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param temperatures: output array with the temperatures of the input nodes
  */
-void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double * temperatures );
+void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *temperatures);
 
 /**
  * @brief getNodeForces
@@ -109,7 +119,7 @@ void getNodeTemperatures( ITG * nodes, ITG numNodes, double * v, int mt, double 
  * @param mt: CalculiX variable describing the number of force variables in fn
  * @param forces: output array with the forces of the input nodes
  */
-void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, double * forces );
+void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double *forces);
 
 /**
  * @brief getNodeDisplacements
@@ -120,7 +130,7 @@ void getNodeForces( ITG * nodes, ITG numNodes, int dim, double * fn, ITG mt, dou
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacements: output array with the displacements in preCICE-conform order of the input nodes
  */
-void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, ITG mt, double * displacements );
+void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, double *displacements);
 
 /**
  * @brief getNodeVelocities
@@ -131,7 +141,7 @@ void getNodeDisplacements( ITG * nodes, ITG numNodes, int dim, double * v, ITG m
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param velocities: output array with the velocities in preCICE-conform order of the input nodes
  */
-void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, ITG mt, double * velocities );
+void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, double *velocities);
 
 /**
  * @brief getNodeDisplacementDeltas
@@ -143,7 +153,7 @@ void getNodeVelocities( ITG * nodes, ITG numNodes, int dim, double * ve, ITG mt,
  * @param mt: CalculiX variable describing the number of solution variables in the solution array v
  * @param displacementDeltas: output array with the displacementDeltas in preCICE-conform order of the input nodes
  */
-void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, double * v_init, int mt, double * displacementDeltas );
+void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, double *v_init, ITG mt, double *displacementDeltas);
 
 /**
  * @brief Computes the center of one of the faces of a tetrahedral element
@@ -155,7 +165,7 @@ void getNodeDisplacementDeltas( ITG * nodes, ITG numNodes, int dim, double * v, 
  * @param co: CalculiX array with the coordinates of all the nodes
  * @param faceCenters: output array with the face centers of the input element faces
  */
-void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters );
+void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters);
 
 /**
  * @brief Gets a list of node IDs from a list of input element faces
@@ -168,7 +178,7 @@ void getTetraFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * ko
  * @param ipkon: CalculiX array (see description in ccx_2.10.pdf)
  * @param tetraFaceNodes: output list of node IDs that belong to the input element faces
  */
-void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElements, ITG numNodes, ITG * kon, ITG * ipkon, int * tetraFaceNodes );
+void getTetraFaceNodes(ITG *elements, ITG *faces, ITG *nodes, ITG numElements, ITG numNodes, ITG *kon, ITG *ipkon, int *tetraFaceNodes);
 
 /**
  * @brief Gets the indices of the xload where the DFLUX and FILM boundary conditions must be applied
@@ -181,7 +191,7 @@ void getTetraFaceNodes( ITG * elements, ITG * faces, ITG * nodes, ITG numElement
  * @param sideload: CalculiX array containing the faces to which the DFLUX or FILM boundary conditions are applied
  * @param xloadIndices: output list of indices of the xload array
  */
-void getXloadIndices( char const * loadType, ITG * elementIDs, ITG * faceIDs, ITG numElements, ITG nload, ITG * nelemload, char const * sideload, ITG * xloadIndices );
+void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG numElements, ITG nload, ITG *nelemload, char const *sideload, ITG *xloadIndices);
 
 /**
  * @brief Gets the indices of the xboun array where the boundary conditions must be applied
@@ -193,7 +203,7 @@ void getXloadIndices( char const * loadType, ITG * elementIDs, ITG * faceIDs, IT
  * @param xbounIndices: output list of indices of the xboun array
  * @param couplDataType: indicates whether indices must be for temperature or displacement BC
  */
-void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * ilboun, int * xbounIndices, enum CouplingDataType couplDataType );
+void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilboun, int *xbounIndices, enum CouplingDataType couplDataType);
 
 /**
  * @brief Gets the indices of the xforc array where the forces must be applied
@@ -204,7 +214,7 @@ void getXbounIndices( ITG * nodes, ITG numNodes, int nboun, int * ikboun, int * 
  * @param ilforc: CalculiX auxiliary array for dealing with the indices of the point loads
  * @param xforcIndices: output list of indices of the xforc array
  */
-void getXforcIndices( ITG * nodes, ITG numNodes, int nforc, int * ikforc, int * ilforc, int * xforcIndices );
+void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilforc, int *xforcIndices);
 
 /**
  * @brief Modifies the values of a DFLUX or FILM boundary condition
@@ -214,7 +224,7 @@ void getXforcIndices( ITG * nodes, ITG numNodes, int nforc, int * ikforc, int * 
  * @param numValues: number of boundary values provided
  * @param xloadVar: variable that is actually modified: DFLUX for heat flux, FILM_H for heat transfer coeff, FILM_T for sink temperature
  */
-void setXload( double * xload, int * xloadIndices, double * values, int numValues, enum xloadVariable xloadVar );
+void setXload(double *xload, int *xloadIndices, double *values, int numValues, enum xloadVariable xloadVar);
 
 /**
  * @brief Calls setXload to update the flux values at the specified indices
@@ -223,7 +233,7 @@ void setXload( double * xload, int * xloadIndices, double * values, int numValue
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceFluxes( double * fluxes, ITG numFaces, int * xloadIndices, double * xload );
+void setFaceFluxes(double *fluxes, ITG numFaces, int *xloadIndices, double *xload);
 
 /**
  * @brief Calls setXload to update the heat transfer coefficients at the specified indices
@@ -232,7 +242,7 @@ void setFaceFluxes( double * fluxes, ITG numFaces, int * xloadIndices, double * 
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceHeatTransferCoefficients( double * coefficients, ITG numFaces, int * xloadIndices, double * xload );
+void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xloadIndices, double *xload);
 
 /**
  * @brief Calls setXload to update the sink temperature at the specified indices
@@ -241,7 +251,7 @@ void setFaceHeatTransferCoefficients( double * coefficients, ITG numFaces, int *
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceSinkTemperatures( double * sinkTemperatures, ITG numFaces, int * xloadIndices, double * xload );
+void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload);
 
 /**
  * @brief Modifies the values of the temperature boundary condition
@@ -250,7 +260,7 @@ void setFaceSinkTemperatures( double * sinkTemperatures, ITG numFaces, int * xlo
  * @param xbounIndices: indices of the xboun array to modify
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
-void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndices, double * xboun );
+void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun);
 
 /**
  * @brief Modifies the values of the concentrated loads (point forces) applied to the structure
@@ -261,7 +271,7 @@ void setNodeTemperatures( double * temperatures, ITG numNodes, int * xbounIndice
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, double * xforc );
+void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, double *xforc);
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
@@ -271,13 +281,13 @@ void setNodeForces( double * forces, ITG numNodes, int dim, int * xforcIndices, 
  * @param xbounIndices: indices of the xboun array to modify
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
-void setNodeDisplacements( double * displacements, ITG numNodes, int dim, int * xbounIndices, double * xboun );
+void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun);
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod
  * @param nmethod: CalculiX variable with information regarding the type of analysis
  */
-bool isSteadyStateSimulation( ITG * nmethod );
+bool isSteadyStateSimulation(ITG *nmethod);
 
 /**
  * @brief Concatenates prefix + string + suffix
@@ -285,21 +295,21 @@ bool isSteadyStateSimulation( ITG * nmethod );
  * @param string
  * @param suffix
  */
-char * concat(char const * prefix, char const * string, char const * suffix);
+char *concat(char const *prefix, char const *string, char const *suffix);
 
 /**
  * @brief Checks wheather one zero-terminated string is prefixed by another
  * @param string the string to inspect
  * @param prefix the prefix to look for
  */
-bool startsWith(const char * string, const char * prefix);
+bool startsWith(const char *string, const char *prefix);
 
 /**
  * @brief Checks wheather two zero-terminated strings are identical
  * @param lhs the left-hand string
  * @param rhs the right-hand string
  */
-bool isEqual(const char * lhs, const char * rhs);
+bool isEqual(const char *lhs, const char *rhs);
 
 /**
  * @brief Checks wheather two doubles are identical
@@ -320,7 +330,7 @@ bool isQuasi2D3D(const int quasi2D3D);
  * @param length is the number of elements in array
  * @param dim is the dimension of the array data
  */
-void setDoubleArrayZero(double * values, const int length, const int dim);
+void setDoubleArrayZero(double *values, const int length, const int dim);
 
 /**
  * @brief Maps vector data from 2D mesh nodes to 3D mesh nodes
@@ -329,7 +339,7 @@ void setDoubleArrayZero(double * values, const int length, const int dim);
  * @param numNodes3D the number of nodes on 3D mesh
  * @param values3D is the array of vector values on 3D mesh nodes
  */
-void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D);
+void mapData2Dto3DVector(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D);
 
 /**
  * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
@@ -338,7 +348,7 @@ void mapData2Dto3DVector(const double * values2D, const int * mapping2D3D, const
  * @param numNodes3D the number of nodes on 3D mesh
  * @param values2D is the array of vector values on 2D mesh nodes
  */
-void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
+void mapData3Dto2DVector(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D);
 
 /**
  * @brief Maps data from 2D mesh nodes to 3D mesh nodes
@@ -347,7 +357,7 @@ void mapData3Dto2DVector(const double * values3D, const int * mapping2D3D, const
  * @param numNodes3D the number of nodes on 3D mesh
  * @param values3D is the array of values on 3D mesh nodes
  */
-void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const int numNodes3D, double * values3D);
+void mapData2Dto3DScalar(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D);
 
 /**
  * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
@@ -356,7 +366,7 @@ void mapData2Dto3DScalar(const double * values2D, const int * mapping2D3D, const
  * @param numNodes3D the number of nodes on 3D mesh
  * @param values2D is the array of values on 2D mesh nodes
  */
-void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const int numNodes3D, double * values2D);
+void mapData3Dto2DScalar(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D);
 
 /**
  * @brief Prints contents of a multi-dimension array
@@ -364,7 +374,7 @@ void mapData3Dto2DScalar(const double * values3D, const int * mapping2D3D, const
  * @param length is the number of elements in array
  * @param dim is the dimension of the array data
  */
-void printVectorData(const double * values, const int nv, const int dim);
+void printVectorData(const double *values, const int nv, const int dim);
 
 /* Error messages */
 
@@ -372,13 +382,13 @@ void printVectorData(const double * values, const int nv, const int dim);
  * @brief Terminate program if a node set is not defined for the interface (e.g. missing interface.nam file)
  * @param setName
  */
-void nodeSetNotFoundError( char const * setName );
+void nodeSetNotFoundError(char const *setName);
 
 /**
  * @brief Terminate program if a face set is not defined for the interface (e.g. missing interface.sur file)
  * @param setName
  */
-void faceSetNotFoundError( char const * setName );
+void faceSetNotFoundError(char const *setName);
 
 /**
  * @brief Terminate program if a temperature BC is not defined when using Dirichlet BC for coupling (e.g. missing line under *BOUNDARY)
