@@ -12,9 +12,7 @@
 
 extern "C" {
 
-	#include "ConfigReader.h"
-
+#include "ConfigReader.h"
 }
-
 
 #endif
