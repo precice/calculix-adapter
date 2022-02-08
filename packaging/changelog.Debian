@@ -1,5 +1,5 @@
 
-calculix-precice2 (2.19) unstable; urgency=medium
+calculix-precice2 (2.19.0) unstable; urgency=medium
   * Update to CalculiX 2.19
   * Comes compiled with the USE_MT flag, required for parallel usage of
     Spooles

@@ -1,5 +1,5 @@
 Package: calculix-precice2
-Version: 2.19-1
+Version: 2.19.0-1
 Source: calculix-precice2
 Architecture: amd64
 Section: contrib/science
