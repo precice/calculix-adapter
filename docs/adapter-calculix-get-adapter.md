@@ -9,12 +9,12 @@ After [installing preCICE](installation-overview.html) and [getting the CalculiX
 
 ## Building the adapted CalculiX
 
-1. Download and unzip the adapter (e.g. in the `CaluliX` folder):
+1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), supporting CalculiX v{{site.calculix_version}}:
 
     ```bash
-    wget https://github.com/precice/calculix-adapter/archive/refs/heads/v{{site.calculix_version}}.zip 
-    unzip v{{site.calculix_version}}.zip 
-    cd calculix-adapter-{{site.calculix_version}}
+    wget https://github.com/precice/calculix-adapter/archive/refs/heads/master.tar.gz
+    tar -xzf master.tar.gz
+    cd calculix-adapter-master
     ```
 
 2. Edit the `Makefile` to set the paths to dependencies.
