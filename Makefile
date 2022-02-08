@@ -1,8 +1,9 @@
 # See the adapter documentation for getting the adapter dependencies:
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
-# Path to original CalculiX source (e.g. $(HOME)/ccx_2.16/src )
-CCX             = $(HOME)/CalculiX/ccx_2.16/src
+# Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
+CCX_VERSION			= 2.19
+CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
@@ -51,7 +52,7 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
+CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
@@ -69,7 +70,7 @@ FC = mpifort
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
-SCCXMAIN = ccx_2.16.c
+SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c CCXHelpers.c PreciceInterface.c
@@ -102,14 +103,14 @@ OCCXC += $(OBJDIR)/ConfigReader.o
 
 
 
-$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_2.16.a
-	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_2.16.a $(LIBS)
+$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
 
-$(OBJDIR)/ccx_2.16.a: $(OCCXF) $(OCCXC)
+$(OBJDIR)/ccx_$(CCX_VERSION).a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_2.16.a $(OBJDIR)/ccx_preCICE
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_$(CCX_VERSION).a $(OBJDIR)/ccx_preCICE
