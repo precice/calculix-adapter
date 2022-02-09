@@ -5,33 +5,21 @@ keywords: adapter, calculix
 summary: "The CalculiX adapter can be used to couple CalculiX to CFD solvers for FSI or CHT application or even to couple CalculiX to itself."
 ---
 
-
-
 ## Start here
 
-1. [Get CalculiX and the dependencies](adapter-calculix-get-calculix.html)
-2. [Build the Adapter](adapter-calculix-get-adapter.html)
-3. [Configure and run simulations](adapter-calculix-config.html)
-4. Follow a tutorial:
-   * [Tutorial for CHT with OpenFOAM and CalculiX](https://github.com/precice/precice/wiki/Tutorial-for-CHT-with-OpenFOAM-and-CalculiX): Flow in a shell-and-tube heat exchanger
-   * [Tutorial for FSI with OpenFOAM and CalculiX](https://github.com/precice/precice/wiki/Tutorial-for-FSI-with-OpenFOAM-and-CalculiX): Flow in a channel with an elastic flap, either perpendicular, or parallel to the flow and attached to a cylinder.
-   * [Tutorial on structure-structure coupling](https://github.com/precice/precice/wiki/Tutorial-for-SSI-with-CalculiX): Elastic beam artificially cut into two halves.
+1. [Get the adapter from a package](adapter-calculix-get-adapter.html)
+   - Alternatively, [Get CalculiX and the dependencies](adapter-calculix-get-calculix.html), and then [Build the Adapter](adapter-calculix-get-adapter.html).
+2. [Configure and run simulations](adapter-calculix-config.html)
+3. Follow a tutorial:
+   - [Heat exchanger](tutorials-heat-exchanger.html) (conjugate heat transfer)
+   - [Perpendicular flap](tutorials-perpendicular-flap.html) (fluid-structure interaction)
+   - [Partitioned elastic beam](tutorials-partitioned-elastic-beam.html) (structure-structure interaction)
 
 Are you encountering an unexpected error? Have a look at our [Troubleshooting](adapter-calculix-troubleshooting.html) page.
-
-Do you Want to build on a cluster? Look at our [instructions for SuperMUC](adapter-calculix-supermuc.html) (outdated).
 
 ## Versions
 
 The latest supported CalculiX version is {{site.calculix_version}}. If you already have a copy of the adapter, check the [adapter README](https://github.com/precice/calculix-adapter/blob/master/README.md) for the CalculiX version it was made for.
-
-Adapters for older versions of CalculiX and preCICE are available in various branches. Branches compatible with **preCICE v2.x:**
-
-* master
-* v2.16
-* v2.15_preCICE2.x
-
-All other branches are compatible with **preCICE v1.x**.
 
 ## History
 
