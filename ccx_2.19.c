@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
       // Get preCICE participantName
       if (strcmp1(argv[i], "-precice-participant") == 0) {
-        assert(i +1 < argc);
+        assert(i + 1 < argc);
         strcpy(preciceParticipantName, argv[i + 1]);
         preciceUsed = 1;
       }
@@ -1312,7 +1312,7 @@ int main(int argc, char *argv[])
     /* nmethod=16: Feasible direction based on sensitivity information */
 
     /* Adapter: if preCICE is used, override the main loop and use our own. */
-    
+
     if (preciceUsed) {
       int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
       int isDynamic         = nmethod == 4;
