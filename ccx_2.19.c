@@ -23,6 +23,7 @@ _set_output_format(_TWO_DIGIT_EXPONENT);
 #include <spoolesMPI.h>
 #endif
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
