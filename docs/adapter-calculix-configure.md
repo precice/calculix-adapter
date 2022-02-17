@@ -153,3 +153,8 @@ must be changed to
 ```
 
 Note that an error will only occur if nodes-mesh-with-connectivity is specified without a .sur file. The calculix-adapter with nearest-projection mapping only supports tetrahedral elements (C3D4 and C3D10) as preCICE only works with surface triangles for nearest-projection mapping.
+
+### Parallelization
+
+CalculiX comes with OpenMP and the SPOOLES library which itself can use OpenMP. The adapter also supports this and parallel runs can be used in the same way as with the uncoupled version of CalculiX. You can specify the number of threads via the `OMP_NUM_THREADS` environment variable. For a finer configuration, look at the CalculiX documentation.
+You can also try [GPU acceleration with PaStiX](adapter-calculix-pastix-build.html).
