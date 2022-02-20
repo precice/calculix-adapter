@@ -476,7 +476,7 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  printf("Entering ConfigureFaceCentersMesh \n");
+  //printf("Entering ConfigureFaceCentersMesh \n");
   char *faceSetName      = toFaceSetName(interface->name);
   interface->faceSetID   = getSetID(faceSetName, sim->set, sim->nset);
   interface->numElements = getNumSetElements(interface->faceSetID, sim->istartset, sim->iendset);
@@ -497,7 +497,7 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
 
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  printf("Entering configureNodesMesh \n");
+  //printf("Entering configureNodesMesh \n");
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
