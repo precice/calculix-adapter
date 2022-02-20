@@ -265,21 +265,22 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
  * @param interface
  * @param type of data requiring mesh ID
  */
-void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char* type);
+void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char *type);
 
 /**
  * @brief Terminate execution if the faces mesh ID is not valid
  * @param interface
  * @param type of data requiring mesh ID
  */
-void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface* interface, const char *type):
+void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type)
+    :
 
-/**
+      /**
  * @brief Configures the faces mesh (for tetrahedral elements only)
  * @param interface
  * @param sim
  */
-void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, SimulationData *sim);
+      void PreciceInterface_ConfigureTetraFaces(PreciceInterface * interface, SimulationData * sim);
 
 /**
  * @brief Configures the node connectivity for nearest-projection mapping

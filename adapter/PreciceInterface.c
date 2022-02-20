@@ -573,7 +573,7 @@ void PreciceInterface_NodeConnectivity(PreciceInterface *interface, SimulationDa
   PreciceInterface_ConfigureTetraFaces(interface, sim);
 }
 
-void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char* type)
+void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char *type)
 {
   if (interface->nodesMeshID < 0) {
     printf("Nodes mesh not provided in YAML config file. They are required for writing/reading the data %s.\n", type);
@@ -597,7 +597,8 @@ void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, Simulatio
   }
 }
 
-void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface* interface, const char *type) {
+void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type)
+{
   if (interface->faceCentersMeshID < 0) {
     printf("Face centers mesh not provided in YAML config file. They are required for writing/reading the data %s.\n", type);
     fflush(stdout);
@@ -651,7 +652,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->kDeltaTemperatureReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaTemperatureReadDataID);
     } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient-")) {
-      interface->readData[i]      = HEAT_TRANSFER_COEFF;
+      interface->readData[i] = HEAT_TRANSFER_COEFF;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Transfer Coefficient");
       interface->kDeltaReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaReadDataID);
@@ -688,15 +689,15 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
     } else if (isEqual(config->writeDataNames[i], "Heat-Flux")) {
       interface->writeData[i] = HEAT_FLUX;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Flux");
-      interface->fluxDataID   = precicec_getDataID("Heat-Flux", interface->faceCentersMeshID);
+      interface->fluxDataID = precicec_getDataID("Heat-Flux", interface->faceCentersMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->fluxDataID);
     } else if (startsWith(config->writeDataNames[i], "Sink-Temperature-")) {
-      interface->writeData[i]                 = SINK_TEMPERATURE;
+      interface->writeData[i] = SINK_TEMPERATURE;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Sink temperature");
       interface->kDeltaTemperatureWriteDataID = precicec_getDataID(config->writeDataNames[i], interface->faceCentersMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->kDeltaTemperatureWriteDataID);
     } else if (startsWith(config->writeDataNames[i], "Heat-Transfer-Coefficient-")) {
-      interface->writeData[i]      = HEAT_TRANSFER_COEFF;
+      interface->writeData[i] = HEAT_TRANSFER_COEFF;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Transfer Coefficient");
       interface->kDeltaWriteDataID = precicec_getDataID(config->writeDataNames[i], interface->faceCentersMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->kDeltaWriteDataID);
