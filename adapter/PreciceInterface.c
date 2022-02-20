@@ -715,7 +715,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->writeData[i]    = POSITIONS;
       interface->positionsDataID = precicec_getDataID(config->writeDataNames[i], interface->nodesMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->positionsDataID);
-    } else if (startsWith(config->writeDataNames[i], "Velocit")) {
+    } else if (startsWith(config->writeDataNames[i], "Velocity")) {
       PreciceInterface_EnsureValidNodesMeshID(interface);
       interface->writeData[i]     = VELOCITIES;
       interface->velocitiesDataID = precicec_getDataID(config->writeDataNames[i], interface->nodesMeshID);
