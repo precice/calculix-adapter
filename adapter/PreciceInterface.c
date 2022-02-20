@@ -576,7 +576,7 @@ void PreciceInterface_NodeConnectivity(PreciceInterface *interface, SimulationDa
 void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char* type)
 {
   if (interface->nodesMeshID < 0) {
-    printf("Nodes mesh not provided in YAML config file. They are required for writing/reading the data %s\n", type);
+    printf("Nodes mesh not provided in YAML config file. They are required for writing/reading the data %s.\n", type);
     fflush(stdout);
     exit(EXIT_FAILURE);
   }
@@ -599,7 +599,7 @@ void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, Simulatio
 
 void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface* interface, const char *type) {
   if (interface->faceCentersMeshID < 0) {
-    printf("Face centers mesh not provided in YAML config file. They are required for writing/reading the data %s\n", type);
+    printf("Face centers mesh not provided in YAML config file. They are required for writing/reading the data %s.\n", type);
     fflush(stdout);
     exit(EXIT_FAILURE);
   }
