@@ -577,7 +577,8 @@ void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const 
 {
   if (interface->nodesMeshID < 0) {
     printf("Nodes mesh configuration not provided in YAML config file. They are required for writing/reading the data %s.\n"
-           " Please check you configured a nodes-mesh or nodes-mesh-with-connectivity in the config file.\n", type);
+           " Please check you configured a nodes-mesh or nodes-mesh-with-connectivity in the config file.\n",
+           type);
     fflush(stdout);
     exit(EXIT_FAILURE);
   }
@@ -602,7 +603,8 @@ void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const 
 {
   if (interface->faceCentersMeshID < 0) {
     printf("Faces centers mesh configuration not provided in YAML config file. They are required for writing/reading the data %s.\n"
-           " Please check you configured a faces-mesh (mesh) in the config file.\n", type);
+           " Please check you configured a faces-mesh (mesh) in the config file.\n",
+           type);
     fflush(stdout);
     exit(EXIT_FAILURE);
   }
