@@ -216,6 +216,11 @@ void Precice_ReadCouplingData(SimulationData *sim)
           setNodeForces(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
           printf("Reading FORCES coupling data with ID '%d'. \n", interfaces[i]->forcesDataID);
           break;
+        case PRESSURE:
+          precicec_readBlockScalarData(interfaces[i]->pressureDataID, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, interfaces[i]->faceCenterData);
+          setFacePressure(interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload);
+          printf("Reading PRESSURE coupling data with ID '%d'. \n", interfaces[i]->pressureDataID);
+          break;
         case DISPLACEMENTS:
           // Read and set displacements as single point constraints (Dirichlet BC)
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
@@ -280,7 +285,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
                                     sim->istartset,
                                     sim->iendset,
                                     sim->ipkon,
-                                    *sim->lakon,
+                                    sim->lakon,
                                     sim->kon,
                                     sim->ialset,
                                     sim->ielmat,
@@ -317,7 +322,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
                             sim->istartset,
                             sim->iendset,
                             sim->ipkon,
-                            *sim->lakon,
+                            sim->lakon,
                             sim->kon,
                             sim->ialset,
                             sim->ielmat,
@@ -435,6 +440,7 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->positionsDataID              = -1;
   interface->velocitiesDataID             = -1;
   interface->forcesDataID                 = -1;
+  interface->pressureDataID               = -1;
 
   // Check if quasi 2D-3D coupling needs to be implemented
   if (interface->dim == 2) {
@@ -487,7 +493,13 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
 
   interface->faceCenterCoordinates = malloc(interface->numElements * 3 * sizeof(double));
   interface->preciceFaceCenterIDs  = malloc(interface->numElements * 3 * sizeof(int));
-  getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+  if (startsWith(&sim->lakon[1*8], "C3D4") || startsWith(&sim->lakon[1*8], "C3D10")){
+    getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+  } else if (startsWith(&sim->lakon[1*8], "C3D8") || startsWith(&sim->lakon[1*8], "C3D20")){
+    getHexaFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+  } else{
+    supportedElementError();
+  }
 
   interface->faceCentersMeshID    = precicec_getMeshID(interface->faceCentersMeshName);
   interface->preciceFaceCenterIDs = malloc(interface->numElements * sizeof(int));
@@ -644,6 +656,12 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->readData[i]      = HEAT_TRANSFER_COEFF;
       interface->kDeltaReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaReadDataID);
+    } else if (startsWith(config->readDataNames[i], "Pressure")) {
+      interface->readData[i]  = PRESSURE;
+      interface->xloadIndices = malloc(interface->numElements * sizeof(int));
+      getXloadIndices("PRESSUREDLOAD", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
+      interface->pressureDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
+      printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->pressureDataID);
     } else if (startsWith(config->readDataNames[i], "Force")) {
       PreciceInterface_EnsureValidNodesMeshID(interface);
       interface->readData[i]  = FORCES;

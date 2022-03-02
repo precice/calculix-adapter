@@ -199,6 +199,40 @@ void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, I
   }
 }
 
+void getHexaFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters )
+{
+
+  // Assume all hexa elements -- maybe implement checking later...
+
+  // Node numbering for faces of hexahedral elements (in the documentation the number is + 1)
+  // Numbering is the same for first and second order elements
+  int faceNodes[6][4] = { { 0,1,2,3 }, { 4,7,6,5 }, { 0,4,5,1 }, { 1,5,6,2 }, { 2,6,7,3 }, { 3,7,4,0 } };
+
+  ITG i, j;
+
+  for (i = 0; i < numElements; i++) {
+
+    ITG    faceIdx    = faces[i] - 1;
+    ITG    elementIdx = elements[i] - 1;
+    double x = 0, y = 0, z = 0;
+
+    for (j = 0; j < 4; j++){
+
+      ITG nodeNum = faceNodes[faceIdx][j];
+      ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
+      ITG nodeIdx = ( nodeID - 1 ) * 3;
+      // The nodeIdx is already multiplied by 3, therefore it must be divided by 3 ONLY when checking if coordinates match getNodeCoordinates
+
+      x += co[nodeIdx + 0];
+      y += co[nodeIdx + 1];
+      z += co[nodeIdx + 2];
+    }
+    faceCenters[i * 3 + 0] = x / 4;
+    faceCenters[i * 3 + 1] = y / 4;
+    faceCenters[i * 3 + 2] = z / 4;
+  }
+}
+
 /*
    void getSurfaceGaussPoints(int setID, ITG * co, ITG istartset, ITG iendset, ITG * ipkon, ITG * lakon, ITG * kon, ITG * ialset, double * coords) {
 
@@ -250,6 +284,8 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
     faceLabel[0] = (char) 'S';
   } else if (strcmp(loadType, "FILM") == 0) {
     faceLabel[0] = (char) 'F';
+  } else if (strcmp(loadType, "PRESSUREDLOAD") == 0) {
+    faceLabel[0] = (char) 'P';
   }
 
   for (k = 0; k < numElements; k++) {
@@ -272,6 +308,8 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
       missingDfluxBCError();
     } else if (!found && strcmp(loadType, "FILM") == 0) {
       missingFilmBCError();
+    } else if (!found && strcmp(loadType, "PRESSUREDLOAD") == 0) {
+      missingPressureError();
     }
   }
 }
@@ -377,6 +415,8 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
     return 0;
   case FILM_T:
     return 1;
+  case PRESSUREDLOAD:
+    return 0;
   default:
     unreachableError();
     return -1;
@@ -406,6 +446,11 @@ void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xl
 void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, sinkTemperatures, numFaces, FILM_T);
+}
+
+void setFacePressure(double *pressure, ITG numFaces, int *xloadIndices, double *xload)
+{
+  setXload(xload, xloadIndices, pressure, numFaces, PRESSUREDLOAD);
 }
 
 void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun)
@@ -594,8 +639,20 @@ void missingFilmBCError()
   exit(EXIT_FAILURE);
 }
 
+void missingPressureError()
+{
+  printf("ERROR: Cannot apply Pressure to one or more interface elements.  Please make sure that a .dlo file is provided for the interface, when using Pressure and DLOAD.\n");
+  exit(EXIT_FAILURE);
+}
+
 void unreachableError()
 {
   printf("ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n");
+  exit(EXIT_FAILURE);
+}
+
+void supportedElementError()
+{
+  printf("ERROR: Cannot use the given surface elements to configure a faces mesh!\n");
   exit(EXIT_FAILURE);
 }
