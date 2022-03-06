@@ -99,7 +99,7 @@ $(OBJDIR)/%.o : $(CCX)/%.f
 OCCXF = $(SCCXF:%.f=$(OBJDIR)/%.o)
 OCCXC = $(SCCXC:%.c=$(OBJDIR)/%.o)
 OCCXMAIN = $(SCCXMAIN:%.c=$(OBJDIR)/%.o)
-OCCXC += $(OBJDIR)/ConfigReader.o
+OCCXC += $(OBJDIR)/ConfigReader.o $(OBJDIR)/2D3DCoupling.o
 
 
 
