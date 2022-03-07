@@ -175,8 +175,8 @@ void conservativeVectorRead(Mapping2D3D *map, int dataID)
 
   // For each 3D point, take a fraction of the value in 2D
   for (int i = 0; i < map->num3DNodes; ++i) {
-    map->bufferVector3D[3 * i]     = map->bufferVector2D[map->mapping3D2D[2 * i]] / map->numParentNodes[map->mapping3D2D[i]];
-    map->bufferVector3D[3 * i + 1] = map->bufferVector2D[map->mapping3D2D[2 * i + 1]] / map->numParentNodes[map->mapping3D2D[i]];
+    map->bufferVector3D[3 * i]     = map->bufferVector2D[map->mapping3D2D[i] * 2] / map->numParentNodes[map->mapping3D2D[i]];
+    map->bufferVector3D[3 * i + 1] = map->bufferVector2D[map->mapping3D2D[i] * 2 + 1] / map->numParentNodes[map->mapping3D2D[i]];
   }
 }
 

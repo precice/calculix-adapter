@@ -27,9 +27,7 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int          num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
   int *        nodeIDs;
-  int *        mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
   double *     node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling

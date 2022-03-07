@@ -536,50 +536,12 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);
 
-  // Extract 2D coordinates from 3D coordinates for quasi 2D-3D coupling (Nodes mesh only)
-  if (isQuasi2D3D(interface->quasi2D3D) && interface->nodesMeshName != NULL) {
-    interface->nodesMeshID      = precicec_getMeshID(interface->nodesMeshName);
-    interface->mappingQuasi2D3D = createMapping(interface->nodeCoordinates, interface->numNodes, interface->nodesMeshID);
-    /*
-    int count                    = 0;
-    int dim                      = interface->dim;
-    int dimCCX                   = interface->dimCCX;
-    interface->num2DNodes        = interface->numNodes / 2;
-    interface->node2DCoordinates = malloc(interface->num2DNodes * dim * sizeof(double));
-    interface->mappingQuasi2D3D       = malloc(interface->numNodes * sizeof(int));
-    for (int i = 0; i < interface->numNodes; i++) {
-      // Filter out nodes which are in the XY plane (Z = 0) for getting 2D mesh
-      if (isDoubleEqual(interface->nodeCoordinates[i * dimCCX + 2], 0.0)) {
-        interface->node2DCoordinates[count * dim]     = interface->nodeCoordinates[i * dimCCX];
-        interface->node2DCoordinates[count * dim + 1] = interface->nodeCoordinates[i * dimCCX + 1];
-        count += 1;
-      }
-    }
-    assert(count == interface->num2DNodes && "Filtering of 2D nodes not done properly. Please make sure the out-of-plane axis is Z-axis");
-
-    count = 0;
-    for (int i = 0; i < interface->numNodes; i++) {
-      for (int ii = 0; ii < interface->numNodes; ii++) {
-        // Compare each node with every other node to find nodes with matching X and Y coordinates
-        if (isDoubleEqual(interface->nodeCoordinates[ii * dimCCX], interface->nodeCoordinates[i * dimCCX]) &&
-            isDoubleEqual(interface->nodeCoordinates[ii * dimCCX + 1], interface->nodeCoordinates[i * dimCCX + 1]) &&
-            !isDoubleEqual(interface->nodeCoordinates[ii * dimCCX + 2], interface->nodeCoordinates[i * dimCCX + 2])) {
-          if (!isDoubleEqual(interface->nodeCoordinates[i * dimCCX + 2], 0.0)) {
-            interface->mappingQuasi2D3D[i]  = count;
-            interface->mappingQuasi2D3D[ii] = count;
-            count += 1;
-          }
-        }
-      }
-    }*/
-  }
-
+  // If 2D-3Q coupling is used (for a node mesh) delegate this to the specialized data structure.
   if (interface->nodesMeshName != NULL) {
-    //printf("nodesMeshName is not null \n");
     interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
+
     if (isQuasi2D3D(interface->quasi2D3D)) {
-      //interface->preciceNodeIDs = malloc(interface->num2DNodes * sizeof(int));
-      //precicec_setMeshVertices(interface->nodesMeshID, interface->num2DNodes, interface->node2DCoordinates, interface->preciceNodeIDs);
+      interface->mappingQuasi2D3D = createMapping(interface->nodeCoordinates, interface->numNodes, interface->nodesMeshID);
     } else {
       interface->preciceNodeIDs = malloc(interface->numNodes * sizeof(int));
       precicec_setMeshVertices(interface->nodesMeshID, interface->numNodes, interface->nodeCoordinates, interface->preciceNodeIDs);
@@ -634,19 +596,6 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
 {
   interface->nodeScalarData = malloc(interface->numNodes * sizeof(double));
   interface->nodeVectorData = malloc(interface->numNodes * 3 * sizeof(double));
-
-  if (isQuasi2D3D(interface->quasi2D3D)) {
-    interface->node2DScalarData = malloc(interface->num2DNodes * sizeof(double));
-    interface->node2DVectorData = malloc(interface->num2DNodes * 2 * sizeof(double));
-
-    int dim = interface->dim;
-    for (int i = 0; i < interface->num2DNodes; i++) {
-      interface->node2DScalarData[i]           = 0.0;
-      interface->node2DVectorData[i * dim]     = 0.0;
-      interface->node2DVectorData[i * dim + 1] = 0.0;
-    }
-  }
-
   interface->faceCenterData = malloc(interface->numElements * sizeof(double));
 
   int i;
