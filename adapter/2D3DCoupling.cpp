@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
-#include "CCXHelpers.h"
 #include "precice/SolverInterfaceC.h"
 
 namespace MappingHelper {
@@ -43,6 +42,17 @@ struct Point2D {
 using Bijection = std::map<Point2D, std::vector<int>>;
 
 } // namespace MappingHelper
+
+static void setDoubleArrayZero(double *values, const int length, const int dim)
+{
+  int i, j;
+
+  for (i = 0; i < length; i++) {
+    for (j = 0; j < dim; j++) {
+      values[i * dim + j] = 0.0;
+    }
+  }
+}
 
 Mapping2D3D *createMapping(const double *nodeCoordinates, int num3Dnodes, int nodesMeshID)
 {

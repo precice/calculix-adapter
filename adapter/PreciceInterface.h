@@ -11,6 +11,7 @@
 #define PRECICEINTERFACE_H
 
 #include <string.h>
+#include "2D3DCoupling.h"
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
 
@@ -25,16 +26,17 @@ typedef struct PreciceInterface {
   int   dimCCX; // Dimension as seen by CalculiX
 
   // Interface nodes
-  int     numNodes;
-  int     num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
-  int *   nodeIDs;
-  int *   mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
-  double *nodeCoordinates;
-  double *node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
-  int     nodeSetID;
-  int *   preciceNodeIDs;
-  int     nodesMeshID;
-  char *  nodesMeshName;
+  int          numNodes;
+  int          num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
+  int *        nodeIDs;
+  int *        mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
+  Mapping2D3D *mappingQuasi2D3D;
+  double *     nodeCoordinates;
+  double *     node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
+  int          nodeSetID;
+  int *        preciceNodeIDs;
+  int          nodesMeshID;
+  char *       nodesMeshName;
 
   // Interface face elements
   int     numElements;
