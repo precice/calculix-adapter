@@ -10,6 +10,15 @@
 #ifndef CCX_2D3D_H
 #define CCX_2D3D_H
 
+/**
+ * @brief Structure for holding data of a 2D-3D (nodal) mapping. It also handles the 2D preCICE mesh.
+ * Usage: initialize with geometry data and mesh ID. This will compute the mapping and create the mesh.
+ * Then:
+ * - to write data: fill the scalar or vector 3D buffer and call the relevant function with the data preCICE ID.
+ * - to read data: Call the relevant function with data ID. Read data will be stored in the scalar of vector 3D buffer and can be recovered.
+ *  Don't forget the cleanup call.
+ */
+
 typedef struct {
   double *pos2D;
   int *   preciceNodesIDs;

@@ -180,10 +180,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
           // Read and set temperature BC
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             consistentScalarRead(interfaces[i]->mappingQuasi2D3D, interfaces[i]->temperatureDataID);
-            //precicec_readBlockScalarData(interfaces[i]->temperatureDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DScalarData);
-            //mapData2Dto3DScalar(interfaces[i]->node2DScalarData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->nodeScalarData);
             setNodeTemperatures(interfaces[i]->mappingQuasi2D3D->bufferScalar3D, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun);
-
           } else {
             precicec_readBlockScalarData(interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData);
             setNodeTemperatures(interfaces[i]->nodeScalarData, interfaces[i]->numNodes, interfaces[i]->xbounIndices, sim->xboun);
@@ -218,9 +215,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             conservativeVectorRead(interfaces[i]->mappingQuasi2D3D, interfaces[i]->forcesDataID);
             setNodeForces(interfaces[i]->mappingQuasi2D3D->bufferVector3D, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
-
-            //precicec_readBlockVectorData(interfaces[i]->forcesDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData);
-            //mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
           } else {
             precicec_readBlockVectorData(interfaces[i]->forcesDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
             setNodeForces(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xforcIndices, sim->xforc);
@@ -232,9 +226,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             conservativeVectorRead(interfaces[i]->mappingQuasi2D3D, interfaces[i]->displacementsDataID);
             setNodeDisplacements(interfaces[i]->mappingQuasi2D3D->bufferVector3D, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xbounIndices, sim->xboun);
-
-            //precicec_readBlockVectorData(interfaces[i]->displacementsDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData);
-            //mapData2Dto3DVector(interfaces[i]->node2DVectorData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->nodeVectorData);
           } else {
             precicec_readBlockVectorData(interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
             setNodeDisplacements(interfaces[i]->nodeVectorData, interfaces[i]->numNodes, interfaces[i]->dimCCX, interfaces[i]->xbounIndices, sim->xboun);
@@ -313,9 +304,6 @@ void Precice_WriteCouplingData(SimulationData *sim)
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             getNodeTemperatures(interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->mappingQuasi2D3D->bufferScalar3D);
             consistentScalarWrite(interfaces[i]->mappingQuasi2D3D, interfaces[i]->temperatureDataID);
-            //setDoubleArrayZero(interfaces[i]->node2DScalarData, interfaces[i]->num2DNodes, 1);
-            //mapData3Dto2DScalar(interfaces[i]->nodeScalarData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->node2DScalarData);
-            //precicec_writeBlockScalarData(interfaces[i]->temperatureDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DScalarData);
           } else {
             getNodeTemperatures(interfaces[i]->nodeIDs, interfaces[i]->numNodes, sim->vold, sim->mt, interfaces[i]->nodeScalarData);
             precicec_writeBlockScalarData(interfaces[i]->temperatureDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeScalarData);
@@ -356,32 +344,21 @@ void Precice_WriteCouplingData(SimulationData *sim)
           printf("Writing HEAT_TRANSFER_COEFF coupling data with ID '%d'. \n", interfaces[i]->kDeltaWriteDataID);
           break;
         case DISPLACEMENTS:
-          //getNodeDisplacements(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->nodeVectorData);
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             getNodeDisplacements(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->mappingQuasi2D3D->bufferVector3D);
             consistentVectorWrite(interfaces[i]->mappingQuasi2D3D, interfaces[i]->displacementsDataID);
-            //setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
-            //mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
-            //precicec_writeBlockVectorData(interfaces[i]->displacementsDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData);
           } else {
             getNodeDisplacements(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->mt, interfaces[i]->nodeVectorData);
-
             precicec_writeBlockVectorData(interfaces[i]->displacementsDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
           }
           printf("Writing DISPLACEMENTS coupling data with ID '%d'. \n", interfaces[i]->displacementsDataID);
           break;
         case DISPLACEMENTDELTAS:
-          //getNodeDisplacementDeltas(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData);
           if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
             getNodeDisplacementDeltas(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->mappingQuasi2D3D->bufferVector3D);
             consistentVectorWrite(interfaces[i]->mappingQuasi2D3D, interfaces[i]->displacementDeltasDataID);
-
-            //setDoubleArrayZero(interfaces[i]->node2DVectorData, interfaces[i]->num2DNodes, interfaces[i]->dim);
-            //mapData3Dto2DVector(interfaces[i]->nodeVectorData, interfaces[i]->mappingQuasi2D3D, interfaces[i]->numNodes, interfaces[i]->node2DVectorData);
-            //precicec_writeBlockVectorData(interfaces[i]->displacementDeltasDataID, interfaces[i]->num2DNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->node2DVectorData);
           } else {
             getNodeDisplacementDeltas(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->vold, sim->coupling_init_v, sim->mt, interfaces[i]->nodeVectorData);
-
             precicec_writeBlockVectorData(interfaces[i]->displacementDeltasDataID, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
           }
           printf("Writing DISPLACEMENTDELTAS coupling data with ID '%d'. \n", interfaces[i]->displacementDeltasDataID);
