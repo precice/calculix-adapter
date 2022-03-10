@@ -75,7 +75,7 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
 	  double *ctrl,ITG *itpamp,double *tietol,ITG *nalset,
 	  ITG *ikforc,ITG *ilforc,double *thicke,ITG *nslavs,ITG *nmat,
 	  char *typeboun,ITG *ielprop,double *prop,char *orname,
-	  double *t0g,double *t1g
+	  double *t0g,double *t1g,
           /* Adapter: Add variables for the participant name and the config file */
           char *preciceParticipantName,char *configFilename){
 
