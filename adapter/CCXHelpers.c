@@ -481,7 +481,6 @@ bool isQuasi2D3D(const int quasi2D3D)
   return quasi2D3D == 1;
 }
 
-
 /* Errors messages */
 
 void nodeSetNotFoundError(char const *setName)
