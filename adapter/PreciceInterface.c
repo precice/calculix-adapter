@@ -417,7 +417,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
   interface->nodeCoordinates       = NULL;
-  interface->node2DCoordinates     = NULL;
   interface->nodeIDs               = NULL;
   interface->mappingQuasi2D3D      = NULL;
   interface->preciceNodeIDs        = NULL;
@@ -705,10 +704,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
 
   if (preciceInterface->nodeCoordinates != NULL) {
     free(preciceInterface->nodeCoordinates);
-  }
-
-  if (preciceInterface->node2DCoordinates != NULL) {
-    free(preciceInterface->node2DCoordinates);
   }
 
   if (preciceInterface->preciceNodeIDs != NULL) {

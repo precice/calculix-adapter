@@ -30,7 +30,6 @@ typedef struct PreciceInterface {
   int *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
-  double *     node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
   int          nodeSetID;
   int *        preciceNodeIDs;
   int          nodesMeshID;
