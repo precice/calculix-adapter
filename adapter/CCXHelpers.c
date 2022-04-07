@@ -199,14 +199,14 @@ void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, I
   }
 }
 
-void getHexaFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon, ITG * ipkon, double * co, double * faceCenters )
+void getHexaFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters)
 {
 
   // Assume all hexa elements -- maybe implement checking later...
 
   // Node numbering for faces of hexahedral elements (in the documentation the number is + 1)
   // Numbering is the same for first and second order elements
-  int faceNodes[6][4] = { { 0,1,2,3 }, { 4,7,6,5 }, { 0,4,5,1 }, { 1,5,6,2 }, { 2,6,7,3 }, { 3,7,4,0 } };
+  int faceNodes[6][4] = {{0, 1, 2, 3}, {4, 7, 6, 5}, {0, 4, 5, 1}, {1, 5, 6, 2}, {2, 6, 7, 3}, {3, 7, 4, 0}};
 
   ITG i, j;
 
@@ -216,11 +216,11 @@ void getHexaFaceCenters( ITG * elements, ITG * faces, ITG numElements, ITG * kon
     ITG    elementIdx = elements[i] - 1;
     double x = 0, y = 0, z = 0;
 
-    for (j = 0; j < 4; j++){
+    for (j = 0; j < 4; j++) {
 
       ITG nodeNum = faceNodes[faceIdx][j];
-      ITG nodeID = kon[ipkon[elementIdx] + nodeNum];
-      ITG nodeIdx = ( nodeID - 1 ) * 3;
+      ITG nodeID  = kon[ipkon[elementIdx] + nodeNum];
+      ITG nodeIdx = (nodeID - 1) * 3;
       // The nodeIdx is already multiplied by 3, therefore it must be divided by 3 ONLY when checking if coordinates match getNodeCoordinates
 
       x += co[nodeIdx + 0];

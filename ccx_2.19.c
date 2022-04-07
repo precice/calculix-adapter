@@ -1308,10 +1308,10 @@ int main(int argc, char *argv[])
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
     if (preciceUsed) {
-      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) && (iperturb[0]>1);
-      int isDynamic         = ((nmethod == 4) && (iperturb[0]>1));
+      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) && (iperturb[0] > 1);
+      int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
-      int isModalDynamic    = ((nmethod == 4) && (iperturb[0]<2));    
+      int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
@@ -1446,42 +1446,42 @@ int main(int argc, char *argv[])
           printf("ERROR: This simulation type is not available with preCICE");
           exit(0);
         }
-      } else if (isModalDynamic){
+      } else if (isModalDynamic) {
 
         printf("Starting FSI analysis via preCICE\n");
 
-        if((ne1d!=0)||(ne2d!=0)){
+        if ((ne1d != 0) || (ne2d != 0)) {
           printf(" *WARNING: 1-D or 2-D elements may cause problems in modal dynamic calculations\n");
           printf("           ensure that point loads defined in a *MODAL DYNAMIC step\n");
           printf("           and applied to nodes belonging to 1-D or 2-D elements have been\n");
           printf("           applied to the same nodes in the preceding FREQUENCY step with\n");
-          printf("           magnitude zero; look at example shellf.inp for a guideline.\n\n");}
-
-          printf(" Composing the dynamic response from the eigenmodes\n\n");
-
-          dyna_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, &nodeboun, &ndirboun, &xboun, &nboun,
-                       &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
-                       &nforc,
-                       nelemload, sideload, xload, &nload,
-                       &nactdof, neq, &nzl, icol, irow, &nmethod, &ikmpc, &ilmpc, &ikboun, &ilboun,
-                       elcon, nelcon, rhcon, nrhcon, cocon, ncocon,
-                       alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, &t0,
-                       &t1, ithermal, prestr, &iprestr, &vold, iperturb, &sti, nzs,
-                       timepar, xmodal, &veold, amname, amta,
-                       namta, &nam, iamforc, iamload, &iamt1,
-                       jout, &kode, filab, &eme, xforcold, xloadold,
-                       &t1old, &iamboun, &xbounold, &iexpl, plicon,
-                       nplicon, plkcon, nplkcon, &xstate, &npmat_, matname,
-                       mi, &ncmat_, &nstate_, &ener, jobnamec, &ttime, set, &nset,
-                       istartset, iendset, &ialset, &nprint, prlab,
-                       prset, &nener, trab, &inotr, &ntrans, &fmpc, ipobody, ibody, xbody, &nbody,
-                       xbodyold, &istep, &isolver, jq, output, &mcs, &nkon, &mpcend, ics, cs,
-                       &ntie, tieset, &idrct, jmax, ctrl, &itpamp, tietol, &nalset,
-                       ikforc, ilforc, thicke, &nslavs, &nmat, typeboun, ielprop, prop, orname,
-                       t0g, t1g,
-                       preciceParticipantName,configFilename);
+          printf("           magnitude zero; look at example shellf.inp for a guideline.\n\n");
         }
-      else {
+
+        printf(" Composing the dynamic response from the eigenmodes\n\n");
+
+        dyna_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, &nodeboun, &ndirboun, &xboun, &nboun,
+                     &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
+                     &nforc,
+                     nelemload, sideload, xload, &nload,
+                     &nactdof, neq, &nzl, icol, irow, &nmethod, &ikmpc, &ilmpc, &ikboun, &ilboun,
+                     elcon, nelcon, rhcon, nrhcon, cocon, ncocon,
+                     alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, &t0,
+                     &t1, ithermal, prestr, &iprestr, &vold, iperturb, &sti, nzs,
+                     timepar, xmodal, &veold, amname, amta,
+                     namta, &nam, iamforc, iamload, &iamt1,
+                     jout, &kode, filab, &eme, xforcold, xloadold,
+                     &t1old, &iamboun, &xbounold, &iexpl, plicon,
+                     nplicon, plkcon, nplkcon, &xstate, &npmat_, matname,
+                     mi, &ncmat_, &nstate_, &ener, jobnamec, &ttime, set, &nset,
+                     istartset, iendset, &ialset, &nprint, prlab,
+                     prset, &nener, trab, &inotr, &ntrans, &fmpc, ipobody, ibody, xbody, &nbody,
+                     xbodyold, &istep, &isolver, jq, output, &mcs, &nkon, &mpcend, ics, cs,
+                     &ntie, tieset, &idrct, jmax, ctrl, &itpamp, tietol, &nalset,
+                     ikforc, ilforc, thicke, &nslavs, &nmat, typeboun, ielprop, prop, orname,
+                     t0g, t1g,
+                     preciceParticipantName, configFilename);
+      } else {
         printf("ERROR: Only thermal coupling or FSI is available with preCICE");
         exit(0);
       }
