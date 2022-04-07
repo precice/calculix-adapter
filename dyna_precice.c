@@ -1429,6 +1429,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       }
     }
     if (Precice_IsWriteCheckpointRequired()) {
+      printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
       Precice_WriteIterationCheckpoint(&simulationData, vini);
       Precice_FulfilledWriteCheckpoint();
     }
@@ -2036,6 +2037,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     Precice_Advance(&simulationData);
     /* Adapter: If the coupling does not converge, read the checkpoint */
     if (Precice_IsReadCheckpointRequired()) {
+      printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vold);
         icutb++;
