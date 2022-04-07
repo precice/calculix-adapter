@@ -64,6 +64,7 @@ typedef struct PreciceInterface {
   int positionsDataID;          //New data ID for positions
   int velocitiesDataID;         //New data ID for velocities
   int forcesDataID;             //New data ID for forces
+  int pressureDataID;           //New data ID for pressure
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -96,7 +97,7 @@ typedef struct SimulationData {
   ITG *   ielmat;
   ITG *   istartset;
   ITG *   iendset;
-  char ** lakon;
+  char *  lakon;
   ITG *   kon;
   ITG *   ipkon;
   ITG     nset;

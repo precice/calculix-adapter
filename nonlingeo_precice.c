@@ -314,7 +314,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .iendset   = iendset,
       .kon       = kon,
       .ipkon     = ipkon,
-      .lakon     = &lakon,
+      .lakon     = lakon,
       .co        = co,
       .set       = set,
       .nset      = *nset,
