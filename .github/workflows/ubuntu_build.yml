@@ -8,10 +8,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-18.04
-            name: bionic
           - os: ubuntu-20.04
             name: focal
+          - os: ubuntu-22-04
+            name: jammy
     runs-on: ${{matrix.os}}
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
