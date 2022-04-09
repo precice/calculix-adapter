@@ -511,7 +511,6 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
   interface->preciceFaceCenterIDs = malloc(interface->numElements * sizeof(int));
 
   sendFaceCentersVertices(interface);
-  //precicec_setMeshVertices(interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs);
 }
 
 void sendFaceCentersVertices(PreciceInterface *interface)
