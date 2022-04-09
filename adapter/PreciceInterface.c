@@ -510,7 +510,25 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
   interface->faceCentersMeshID    = precicec_getMeshID(interface->faceCentersMeshName);
   interface->preciceFaceCenterIDs = malloc(interface->numElements * sizeof(int));
 
-  precicec_setMeshVertices(interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs);
+  sendFaceCentersVertices(interface);
+  //precicec_setMeshVertices(interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs);
+}
+
+void sendFaceCentersVertices(PreciceInterface *interface)
+{
+  // Send the data of face centers to preCICE. If 2D coupling is used, skip the z component!
+
+  if (!isQuasi2D3D(interface->quasi2D3D)) {
+    precicec_setMeshVertices(interface->faceCentersMeshID, interface->numElements, interface->faceCenterCoordinates, interface->preciceFaceCenterIDs);
+  } else {
+    double *coordinates2D = malloc(interface->numElements * 2 * sizeof(double));
+    for (int i = 0; i < interface->numElements; ++i) {
+      coordinates2D[2 * i]     = interface->faceCenterCoordinates[3 * i];
+      coordinates2D[2 * i + 1] = interface->faceCenterCoordinates[3 * i + 1];
+    }
+    precicec_setMeshVertices(interface->faceCentersMeshID, interface->numElements, coordinates2D, interface->preciceFaceCenterIDs);
+    free(coordinates2D);
+  }
 }
 
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim)
