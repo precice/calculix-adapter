@@ -247,11 +247,19 @@ void Precice_FreeData(SimulationData *sim);
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
 
 /**
- * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
+ * @brief Configures the face centers mesh and calls sendFaceCentersVertices, 
+ * who is responsible for calling preCICE
  * @param interface
  * @param sim
  */
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim);
+
+/**
+ * @brief Send the faces centers to preCICE.
+ * 
+ * @param interface 
+ */
+void sendFaceCentersVertices(PreciceInterface *interface);
 
 /**
  * @brief Configures the nodes mesh
