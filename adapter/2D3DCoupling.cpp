@@ -10,6 +10,7 @@
 #include "2D3DCoupling.hpp"
 #include <cassert>
 #include <cstdlib>
+#include <cstdio>
 #include <map>
 #include <vector>
 #include "precice/SolverInterfaceC.h"
