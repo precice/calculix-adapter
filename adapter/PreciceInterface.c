@@ -524,7 +524,7 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
   if (elemType == TETRAHEDRA) {
     printf("Configuring faces mesh with tetrahedra.\n");
     getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
-  } else if (elemType == HEXAEDRA) {
+  } else if (elemType == HEXAHEDRA) {
     printf("Configuring faces mesh with hexahedra.\n");
     getHexaFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
   } else {
