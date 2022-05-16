@@ -497,7 +497,7 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
     if (startsWith(lakon_ptr, "C3D4") || startsWith(lakon_ptr, "C3D10")) {
       return TETRAHEDRA;
     } else if (startsWith(lakon_ptr, "C3D8") || startsWith(lakon_ptr, "C3D20")) {
-      return HEXAEDRA;
+      return HEXAHEDRA;
     }
     lakon_ptr += 8;
   }
