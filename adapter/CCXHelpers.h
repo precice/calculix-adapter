@@ -54,6 +54,17 @@ enum CouplingDataType { TEMPERATURE,
                         POSITIONS };
 
 /**
+ * @brief Type of element used for faces mesh, where we assume only one type of element is used.
+ *  TETRAHEDRA      - C3D4 or C3D10 element
+ *  HEXAEDRA        - C3D8 or C3D20 elment
+ *  INVALID_ELEMENT - Anything else
+ */
+enum ElemType { TETRAHEDRA,
+                HEXAEDRA,
+                INVALID_ELEMENT,
+};
+
+/**
  * @brief Returns node set name with internal CalculiX format
  * Prepends and appends an N: e.g. If the input name is "interface",
  * it returns NinterfaceN
