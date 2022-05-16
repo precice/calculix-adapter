@@ -56,7 +56,7 @@ enum CouplingDataType { TEMPERATURE,
 /**
  * @brief Type of element used for faces mesh, where we assume only one type of element is used.
  *  TETRAHEDRA      - C3D4 or C3D10 element
- *  HEXAEDRA        - C3D8 or C3D20 elment
+ *  HEXAHEDRA        - C3D8 or C3D20 elment
  *  INVALID_ELEMENT - Anything else
  */
 enum ElemType { TETRAHEDRA,
