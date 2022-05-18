@@ -60,7 +60,7 @@ enum CouplingDataType { TEMPERATURE,
  *  INVALID_ELEMENT - Anything else
  */
 enum ElemType { TETRAHEDRA,
-                HEXAEDRA,
+                HEXAHEDRA,
                 INVALID_ELEMENT,
 };
 
