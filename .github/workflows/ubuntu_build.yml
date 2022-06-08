@@ -41,8 +41,8 @@ jobs:
       run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
       run: |
-        mkdir -p "packaging/calculix-precice2_2.19.0-1_amd64/usr/bin" &&
-        cp ./bin/ccx_preCICE ./packaging/calculix-precice2_2.19.0-1_amd64/usr/bin/ccx_preCICE &&
+        mkdir -p "packaging/calculix-precice2_pkg/usr/bin" &&
+        cp ./bin/ccx_preCICE ./packaging/calculix-precice2_pkg/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v2

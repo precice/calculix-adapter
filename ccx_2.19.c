@@ -23,6 +23,7 @@ _set_output_format(_TWO_DIGIT_EXPONENT);
 #include <spoolesMPI.h>
 #endif
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +108,7 @@ int main(int argc, char *argv[])
   double totalCalculixTime;
 
   /*
+ * Adapter: 
  * Additional variables for the coupling with preCICE
  * preCICE is used only if a participant name is provided as a command line argument!
  */
@@ -149,6 +151,7 @@ int main(int argc, char *argv[])
 	strcpy(output,argv[i+1]);break;}
 	}*/
 
+    /* Adapter: parse a second time all command lines argument to see if some arr relevant to preCICE */
     for (i = 1; i < argc; i++) {
       if (strcmp1(argv[i], "-o") == 0) {
         strcpy(output, argv[i + 1]);
@@ -157,6 +160,7 @@ int main(int argc, char *argv[])
 
       // Get preCICE participantName
       if (strcmp1(argv[i], "-precice-participant") == 0) {
+        assert(i + 1 < argc);
         strcpy(preciceParticipantName, argv[i + 1]);
         preciceUsed = 1;
       }
@@ -1307,6 +1311,9 @@ int main(int argc, char *argv[])
     /* nmethod=14: Robustness w.r.t. to geometric tolerances */
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
+
+    /* Adapter: if preCICE is used, override the main loop and use our own. */
+
     if (preciceUsed) {
       int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) && (iperturb[0] > 1);
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
