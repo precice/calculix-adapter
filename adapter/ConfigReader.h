@@ -11,9 +11,9 @@
 #define CONFIGREADER_H
 
 typedef struct InterfaceConfig {
-  char * facesMeshName;
-  char * nodesMeshName;
-  char * patchName;
+  char  *facesMeshName;
+  char  *nodesMeshName;
+  char  *patchName;
   int    map;
   int    numWriteData;
   int    numReadData;
@@ -24,7 +24,7 @@ typedef struct InterfaceConfig {
 typedef struct AdapterConfig {
   int              numInterfaces;
   InterfaceConfig *interfaces;
-  char *           preciceConfigFilename;
+  char            *preciceConfigFilename;
 } AdapterConfig;
 
 /**  Reads the Adapter Config
@@ -43,7 +43,7 @@ void ConfigReader_Read(char const *configFilename, char const *participantName, 
  * @precondition adapterConfig points to an initialized instance of adapterConfig.
  * @precondition ConfigReader_Read was called on adapterConfig.
  * @postcondition all memory held by the struct adapterConfig is freed
- * @note This function does not free the pointer adapterConfig 
+ * @note This function does not free the pointer adapterConfig
  */
 void AdapterConfig_Free(AdapterConfig *adapterConfig);
 

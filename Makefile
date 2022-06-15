@@ -52,7 +52,7 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT -fallow-argument-mismatch
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
@@ -64,7 +64,7 @@ endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
 # Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
-FC = mpifort
+FC = mpifort -fallow-argument-mismatch
 # FC = mpif90
 # FC = gfortran
 

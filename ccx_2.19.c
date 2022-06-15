@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
   double totalCalculixTime;
 
   /*
- * Additional variables for the coupling with preCICE
- * preCICE is used only if a participant name is provided as a command line argument!
- */
+   * Additional variables for the coupling with preCICE
+   * preCICE is used only if a participant name is provided as a command line argument!
+   */
   char preciceParticipantName[256] = "", configFilename[256] = "config.yml";
   int  preciceUsed = 0;
 
@@ -146,8 +146,8 @@ int main(int argc, char *argv[])
 
     /*    for(i=1;i<argc;i++){
       if(strcmp1(argv[i],"-o")==0){
-	strcpy(output,argv[i+1]);break;}
-	}*/
+  strcpy(output,argv[i+1]);break;}
+  }*/
 
     for (i = 1; i < argc; i++) {
       if (strcmp1(argv[i], "-o") == 0) {
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
       xmodal[10] = nevdamp_ + 0.5;
 
       /* internal state variables (nslavs is needed for restart
-	 calculations) */
+   calculations) */
 
       if (mortar != 1) {
         NNEW(xstate, double, nstate_ *mi[0] * (ne + nslavs));
@@ -458,8 +458,8 @@ int main(int argc, char *argv[])
       }
 
       /* the number in next line is NOT 1.2357111317 -> points
-	 to user input; instead it is a generic nonzero
-	 initialization */
+   to user input; instead it is a generic nonzero
+   initialization */
 
       if (istep == 0) {
         DMEMSET(t0, 0, nk_, 1.2357111319);
@@ -1005,10 +1005,10 @@ int main(int argc, char *argv[])
       RENEW(vold, double, mt *nk);
 
       /* if the SPC boundary conditions were changed in the present step,
-	 they have to be rematched with those in the last step. Removed SPC 
-	 boundary conditions do not appear any more (this is different from
-	 forces and loads, where removed forces or loads are reset to zero;
-	 a removed SPC constraint does not have a numerical value any more) */
+   they have to be rematched with those in the last step. Removed SPC
+   boundary conditions do not appear any more (this is different from
+   forces and loads, where removed forces or loads are reset to zero;
+   a removed SPC constraint does not have a numerical value any more) */
 
       NNEW(reorder, double, nboun);
       NNEW(nreorder, ITG, nboun);
@@ -1027,8 +1027,8 @@ int main(int argc, char *argv[])
       SFREE(nreorder);
 
       /* for additional forces or loads in the present step, the
-	 corresponding slots in the force and load fields of the
-	 previous steps are initialized */
+   corresponding slots in the force and load fields of the
+   previous steps are initialized */
 
       RENEW(xforcold, double, nforc);
       for (i = nforcold; i < nforc; i++)
@@ -1919,9 +1919,9 @@ int main(int argc, char *argv[])
       if (irefineloop == 1) {
 
         /* refinement was requested in the step which was just
-	   finished and a refined mesh was created and stored.
-	   The calculation has to restart from the beginning with
-	   this new mesh */
+     finished and a refined mesh was created and stored.
+     The calculation has to restart from the beginning with
+     this new mesh */
 
         memcpy(ipoinp, ipoinp_sav, sizeof(ITG) * 2 * nentries);
         memcpy(inp, inp_sav, sizeof(ITG) * inp_size);
