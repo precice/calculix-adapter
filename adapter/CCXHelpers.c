@@ -75,7 +75,7 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
 
   for (i = 0; i < numNodes; i++) {
     int nodeIdx = nodes[i] - 1;
-    // The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
+    //The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
     for (j = 0; j < dim; j++) {
       coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
     }
@@ -114,7 +114,7 @@ void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, 
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
     }
@@ -129,7 +129,7 @@ void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, dou
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
     }
@@ -144,7 +144,7 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
     }
@@ -154,13 +154,13 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
 /*
    int getNodesPerFace(char * lakon, int elementIdx) {
 
-    int nodesPerFace;
-    if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
-        nodesPerFace = 3;
-    } else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
-        nodesPerFace = 6;
-    }
-    return nodesPerFace;
+		int nodesPerFace;
+		if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
+				nodesPerFace = 3;
+		} else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
+				nodesPerFace = 6;
+		}
+		return nodesPerFace;
 
    }
  */
@@ -279,7 +279,7 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
   char faceLabel[] = {'x', 'x', '\0'};
 
   /* Face number is prefixed with 'S' if it is DFLUX boundary condition
-   * and with 'F' if it is a FILM boundary condition */
+	 * and with 'F' if it is a FILM boundary condition */
   if (strcmp(loadType, "DFLUX") == 0) {
     faceLabel[0] = (char) 'S';
   } else if (strcmp(loadType, "FILM") == 0) {
@@ -369,7 +369,7 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
-    // x-direction
+    //x-direction
     int idof = 8 * (nodes[i] - 1) + 1; // 1 for x force DOF
     int k;
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
@@ -377,14 +377,14 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
     int m               = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i] = m;
 
-    // y-direction
+    //y-direction
     idof = 8 * (nodes[i] - 1) + 2; // 2 for y force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
     m                       = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i + 1] = m;
 
-    // z-direction
+    //z-direction
     idof = 8 * (nodes[i] - 1) + 3; // 3 for z force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
@@ -403,11 +403,11 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
 int getXloadIndexOffset(enum xloadVariable xloadVar)
 {
   /*
-   * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
-   * the array has two components:
-   * - the first component corresponds to the flux value and the heat transfer coefficient
-   * - the second component corresponds to the sink temperature
-   * */
+	 * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
+	 * the array has two components:
+	 * - the first component corresponds to the flux value and the heat transfer coefficient
+	 * - the second component corresponds to the sink temperature
+	 * */
   switch (xloadVar) {
   case DFLUX:
     return 0;

@@ -21,9 +21,9 @@
 
 typedef struct {
   double *pos2D;
-  int    *preciceNodesIDs;
-  int    *numParentNodes;
-  int    *mapping3D2D;
+  int *   preciceNodesIDs;
+  int *   numParentNodes;
+  int *   mapping3D2D;
   int     num2DNodes;
   int     num3DNodes;
   double *bufferVector2D;

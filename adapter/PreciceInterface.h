@@ -27,23 +27,23 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int         *nodeIDs;
+  int *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
-  double      *nodeCoordinates;
+  double *     nodeCoordinates;
   int          nodeSetID;
-  int         *preciceNodeIDs;
+  int *        preciceNodeIDs;
   int          nodesMeshID;
-  char        *nodesMeshName;
+  char *       nodesMeshName;
 
   // Interface face elements
   int     numElements;
-  int    *elementIDs;
-  int    *faceIDs;
+  int *   elementIDs;
+  int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   int     faceCentersMeshID;
-  char   *faceCentersMeshName;
-  int    *preciceFaceCenterIDs;
+  char *  faceCentersMeshName;
+  int *   preciceFaceCenterIDs;
 
   // Arrays to store the coupling data
   double *nodeScalarData;
@@ -59,12 +59,12 @@ typedef struct PreciceInterface {
   int kDeltaTemperatureWriteDataID;
   int kDeltaReadDataID;
   int kDeltaTemperatureReadDataID;
-  int displacementsDataID;      // New data ID for displacements
-  int displacementDeltasDataID; // New data ID for displacementDeltas
-  int positionsDataID;          // New data ID for positions
-  int velocitiesDataID;         // New data ID for velocities
-  int forcesDataID;             // New data ID for forces
-  int pressureDataID;           // New data ID for pressure
+  int displacementsDataID;      //New data ID for displacements
+  int displacementDeltasDataID; //New data ID for displacementDeltas
+  int positionsDataID;          //New data ID for positions
+  int velocitiesDataID;         //New data ID for velocities
+  int forcesDataID;             //New data ID for forces
+  int pressureDataID;           //New data ID for pressure
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -93,42 +93,41 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
-  ITG    *ialset;
-  ITG    *ielmat;
-  ITG    *istartset;
-  ITG    *iendset;
-  char   *lakon;
-  ITG    *kon;
-  ITG    *ipkon;
+  ITG *   ialset;
+  ITG *   ielmat;
+  ITG *   istartset;
+  ITG *   iendset;
+  char *  lakon;
+  ITG *   kon;
+  ITG *   ipkon;
   ITG     nset;
-  char   *set;
+  char *  set;
   double *co;
   ITG     nboun;
-  ITG     nforc; // total number of forces
-  ITG    *ikboun;
-  ITG    *ikforc; // the DoFs are all stored here in an array in numerical order
-  ITG    *ilboun;
-  ITG    *ilforc; // number of the force is stored here
-  ITG    *nelemload;
+  ITG     nforc; //total number of forces
+  ITG *   ikboun;
+  ITG *   ikforc; //the DoFs are all stored here in an array in numerical order
+  ITG *   ilboun;
+  ITG *   ilforc; //number of the force is stored here
+  ITG *   nelemload;
   int     nload;
-  char   *sideload;
+  char *  sideload;
   double  nk;
-  ITG     ne;
   ITG     mt;
   double *theta;
   double *dtheta;
   double *tper;
-  ITG    *nmethod;
+  ITG *   nmethod;
   double *xload;
-  double *xforc; // scalar value of the force in one direction
+  double *xforc; //scalar value of the force in one direction
   double *xboun;
-  ITG    *ntmat_;
+  ITG *   ntmat_;
   double *vold;
   double *veold;
-  double *fn; // values of forces read from calculix
+  double *fn; //values of forces read from calculix
   double *cocon;
-  ITG    *ncocon;
-  ITG    *mi;
+  ITG *   ncocon;
+  ITG *   mi;
 
   // Interfaces
   int                numPreciceInterfaces;
@@ -248,7 +247,7 @@ void Precice_FreeData(SimulationData *sim);
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
 
 /**
- * @brief Configures the face centers mesh and calls sendFaceCentersVertices,
+ * @brief Configures the face centers mesh and calls sendFaceCentersVertices, 
  * who is responsible for calling preCICE
  * @param interface
  * @param sim
@@ -257,8 +256,8 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
 
 /**
  * @brief Send the faces centers to preCICE.
- *
- * @param interface
+ * 
+ * @param interface 
  */
 void sendFaceCentersVertices(PreciceInterface *interface);
 
