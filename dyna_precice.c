@@ -1429,14 +1429,25 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         memcpy(&emeini[0], &eme[0], sizeof(double) * 6 * mi[0] * ne0);
       }
     }
-    if (Precice_IsWriteCheckpointRequired()) {
-      printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
-      Precice_WriteIterationCheckpoint(&simulationData, vini);
-      Precice_FulfilledWriteCheckpoint();
+
+    // Things to only do if this is the first iteration of this step (implicit coupling)
+    if (icutb == 0) {
+      iinc++;
+      jprint++;
+
+      if (Precice_IsWriteCheckpointRequired()) {
+        printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
+        Precice_WriteIterationCheckpoint(&simulationData, vini);
+        Precice_FulfilledWriteCheckpoint();
+      }
+
+      // TODO: reset ictub if converged!
     }
 
-    iinc++;
-    jprint++;
+    // If this is NOT the first iteration of the step
+    if (Precice_IsWriteCheckpointRequired()) {
+      printf("Write checkpoint after end of step?.\n");
+    }
 
     if (dashpot)
       RENEW(rpar, double, 4 + nev * (3 + nev));
@@ -2040,10 +2051,19 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if (Precice_IsReadCheckpointRequired()) {
       printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
       if (*nmethod == 4) {
+        printf("READING CHECKPOINT.\n\n\n");
+
         Precice_ReadIterationCheckpoint(&simulationData, vold);
         icutb++;
       }
       Precice_FulfilledReadCheckpoint();
+    }
+
+    // ?
+    if (icutb != 0) {
+      // TODO: FIND WHAT TO COPY ??
+      cpypardou(xbounact, xbounini, &isiz, &num_cpus);
+      memcpy(xbounact, xbounini, sizeof(double) * mt * *nk);
     }
 
     if (isteadystate == 1) {
@@ -2078,7 +2098,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         resultmaxprev = resultmax;
       }
     }
-  }
+  } // End of preCICE IsCouplingOngoing
 
   if ((intpointvar == 1))
     SFREE(stx);
