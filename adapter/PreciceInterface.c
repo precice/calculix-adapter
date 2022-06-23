@@ -458,8 +458,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->dimCCX    = interface->dim;
   }
 
-  //Mapping Type
-  // The patch identifies the set used as interface in Calculix
+  // Mapping Type
+  //  The patch identifies the set used as interface in Calculix
   interface->name = strdup(config->patchName);
   // Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else
   interface->mapNPType = config->map;
@@ -486,9 +486,28 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
 }
 
+static enum ElemType findSimulationMeshType(SimulationData *sim)
+{
+  // Assuming only tetrahedra are used, or only hexaedral, for faces meshes.
+  // Return first non-zero mesh type.
+  // lakon tab takes 8 chars per element
+
+  const char *lakon_ptr = sim->lakon;
+  for (int i = 0; i < sim->ne; ++i) {
+    if (startsWith(lakon_ptr, "C3D4") || startsWith(lakon_ptr, "C3D10")) {
+      return TETRAHEDRA;
+    } else if (startsWith(lakon_ptr, "C3D8") || startsWith(lakon_ptr, "C3D20")) {
+      return HEXAHEDRA;
+    }
+    lakon_ptr += 8;
+  }
+
+  return INVALID_ELEMENT;
+}
+
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  //printf("Entering ConfigureFaceCentersMesh \n");
+  // printf("Entering ConfigureFaceCentersMesh \n");
   char *faceSetName      = toFaceSetName(interface->name);
   interface->faceSetID   = getSetID(faceSetName, sim->set, sim->nset);
   interface->numElements = getNumSetElements(interface->faceSetID, sim->istartset, sim->iendset);
@@ -499,9 +518,14 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
 
   interface->faceCenterCoordinates = malloc(interface->numElements * 3 * sizeof(double));
   interface->preciceFaceCenterIDs  = malloc(interface->numElements * 3 * sizeof(int));
-  if (startsWith(&sim->lakon[1 * 8], "C3D4") || startsWith(&sim->lakon[1 * 8], "C3D10")) {
+
+  enum ElemType elemType = findSimulationMeshType(sim);
+
+  if (elemType == TETRAHEDRA) {
+    printf("Configuring faces mesh with tetrahedra.\n");
     getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
-  } else if (startsWith(&sim->lakon[1 * 8], "C3D8") || startsWith(&sim->lakon[1 * 8], "C3D20")) {
+  } else if (elemType == HEXAHEDRA) {
+    printf("Configuring faces mesh with hexahedra.\n");
     getHexaFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
   } else {
     supportedElementError();
@@ -532,11 +556,11 @@ void sendFaceCentersVertices(PreciceInterface *interface)
 
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  //printf("Entering configureNodesMesh \n");
+  // printf("Entering configureNodesMesh \n");
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
+  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
 
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);
