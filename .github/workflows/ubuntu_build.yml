@@ -7,14 +7,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-21.04, ubuntu-21.10, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
         include:
           - os: ubuntu-20.04
             name: focal
-          - os: ubuntu-21.04
-            name: hirsute
-          - os: ubuntu-21.10
-            name: impish
           - os: ubuntu-22.04
             name: jammy
             flags: -fallow-argument-mismatch
