@@ -458,8 +458,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->dimCCX    = interface->dim;
   }
 
-  //Mapping Type
-  // The patch identifies the set used as interface in Calculix
+  // Mapping Type
+  //  The patch identifies the set used as interface in Calculix
   interface->name = strdup(config->patchName);
   // Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else
   interface->mapNPType = config->map;
@@ -556,11 +556,11 @@ void sendFaceCentersVertices(PreciceInterface *interface)
 
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  //printf("Entering configureNodesMesh \n");
+  // printf("Entering configureNodesMesh \n");
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
+  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
 
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);

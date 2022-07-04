@@ -9,8 +9,8 @@
 
 #include "2D3DCoupling.hpp"
 #include <cassert>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <map>
 #include <vector>
 #include "precice/SolverInterfaceC.h"
@@ -34,7 +34,7 @@ struct Point2D {
     } else if (lhs.x > rhs.x) {
       return false;
     } else {
-      //Exactly same x => compare y
+      // Exactly same x => compare y
       return lhs.y < rhs.y;
     }
   }
@@ -82,7 +82,7 @@ Mapping2D3D *createMapping(const double *nodeCoordinates, int num3Dnodes, int no
 
   for (const auto &kv : helper) {
     MappingHelper::Point2D pos       = kv.first;
-    const auto &           indices3D = kv.second;
+    const auto            &indices3D = kv.second;
 
     map->pos2D[counter * 2]     = pos.x;
     map->pos2D[counter * 2 + 1] = pos.y;

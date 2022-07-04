@@ -44,7 +44,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   ITG **ipompcp, ITG **nodempcp, double **coefmpcp, char **labmpcp,
                   ITG *nmpc, ITG *nodeforc, ITG *ndirforc, double *xforc,
                   ITG *nforc, ITG *nelemload, char *sideload, double *xload,
-                  ITG * nload,
+                  ITG  *nload,
                   ITG **nactdofp, ITG *neq, ITG *nzl, ITG *icol, ITG *irow,
                   ITG *nmethod, ITG **ikmpcp, ITG **ilmpcp, ITG **ikbounp,
                   ITG **ilbounp, double *elcon, ITG *nelcon, double *rhcon,
@@ -59,7 +59,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   ITG *namta, ITG *nam, ITG *iamforc, ITG *iamload,
                   ITG **iamt1p, ITG *jout,
                   ITG *kode, char *filab, double **emep, double *xforcold,
-                  double * xloadold,
+                  double  *xloadold,
                   double **t1oldp, ITG **iambounp, double **xbounoldp, ITG *iexpl,
                   double *plicon, ITG *nplicon, double *plkcon, ITG *nplkcon,
                   double **xstatep, ITG *npmat_, char *matname, ITG *mi,
@@ -154,17 +154,17 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   ITG token;
 #endif
 
-  /*    if iabsload=0: aamech is modified by the present incremental 
-	contribution of fext
-	iabsload=1: the last incremental contribution is
-	subtracted before the new one is added to fext;
-	this latter incremental contribution is used
-	to update aamech
-	iabsload=2: aamech is determined by the absolute
-	contribution of fext (no incremental procedure
-	for the load; this is necessary if
-	- nonlinear MPC's are applied or
-	- user dloads are applied */
+  /*    if iabsload=0: aamech is modified by the present incremental
+  contribution of fext
+  iabsload=1: the last incremental contribution is
+  subtracted before the new one is added to fext;
+  this latter incremental contribution is used
+  to update aamech
+  iabsload=2: aamech is determined by the absolute
+  contribution of fext (no incremental procedure
+  for the load; this is necessary if
+  - nonlinear MPC's are applied or
+  - user dloads are applied */
 
   co       = *cop;
   kon      = *konp;
@@ -354,7 +354,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   }
 
   /* copying the displacements from the previous step as initial conditions in
-     vini (only if 
+     vini (only if
      - not cyclic symmetric; initial conditions for cyclic symmetric
        calculations are assumed to be zero
      - AND not perturbed: if this is a perturbation step the initial
@@ -387,7 +387,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                         nboun, nset, ntie, tieset, set, lakon, kon, ipkon, labmpc,
                         ilboun, filab, prlab, prset, nprint, ne, &cyclicsymmetry));
 
-  /* if results are requested in too many nodes, it is faster to 
+  /* if results are requested in too many nodes, it is faster to
      calculate the results in all nodes */
 
   if ((nmdnode > *nk / 2) && (!cyclicsymmetry)) {
@@ -439,7 +439,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     SFREE(inoel);
   }
 
-  /* if results are requested in too many nodes, it is faster to 
+  /* if results are requested in too many nodes, it is faster to
      calculate the results in all nodes */
 
   if ((nmdnode > *nk / 2) && (!cyclicsymmetry)) {
@@ -659,7 +659,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     for (i = 0; i < *mcs; i++) {
       //	  if(cs[17*i]>nsectors) nsectors=cs[17*i];
       if (cs[17 * i] > nsectors)
-        nsectors = (ITG)(cs[17 * i] + 0.5);
+        nsectors = (ITG) (cs[17 * i] + 0.5);
     }
 
     /* determining the maximum number of sectors to be plotted */
@@ -756,7 +756,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     for (i = 0; i < *ntie; i++) {
       if (tieset[i * (81 * 3) + 80] == 'C') {
 
-        //a contact constraint was found, so increase nalset
+        // a contact constraint was found, so increase nalset
 
         memcpy(tchar2, &tieset[i * (81 * 3) + 81], 81);
         tchar2[80] = '\0';
@@ -767,12 +767,12 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           tchar1[80] = '\0';
           if (strcmp(tchar1, tchar2) == 0) {
 
-            //dependent nodal surface was found
+            // dependent nodal surface was found
 
             (*nalset) += (iendset[j] - istartset[j] + 1) * (nsectors);
           } else if (strcmp(tchar1, tchar3) == 0) {
 
-            //independent element face surface was found
+            // independent element face surface was found
 
             (*nalset) += (iendset[j] - istartset[j] + 1) * (nsectors);
           }
@@ -885,7 +885,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   *tmax = *tmax / (*tper);
   theta = 0.;
 
-  /* check for rigid body modes 
+  /* check for rigid body modes
      if there is a jump of 1.e4 in two subsequent eigenvalues
      all eigenvalues preceding the jump are considered to
      be rigid body modes and their frequency is set to zero */
@@ -968,7 +968,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   /* contact conditions */
 
-  /* storing the element and topology information before introducing 
+  /* storing the element and topology information before introducing
      contact elements */
 
   ne0   = *ne;
@@ -990,11 +990,11 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       }
 
       /* if the nodal diameter exceeds half the number of sectors
-	 the sign of the damping has to be reversed (omega is negative) */
+   the sign of the damping has to be reversed (omega is negative) */
 
       /*	if(cyclicsymmetry){
-		if(nm[i]>nsectors/2) zeta[i]*=-1.;
-		}*/
+    if(nm[i]>nsectors/2) zeta[i]*=-1.;
+    }*/
     }
   }
   //  else{
@@ -1013,11 +1013,11 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       zeta[i] = xmodal[11 + i];
 
       /* if the nodal diameter exceeds half the number of sectors
-	 the sign of the damping has to be reversed (omega is negative) */
+   the sign of the damping has to be reversed (omega is negative) */
 
       /*   if(cyclicsymmetry){
-	   if(nm[i]>nsectors/2) zeta[i]*=-1.;
-	   }*/
+     if(nm[i]>nsectors/2) zeta[i]*=-1.;
+     }*/
     }
   }
 
@@ -1113,7 +1113,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     NNEW(ipobody,ITG,2**ne);
     for(k=1;k<=*nbody;k++){
       FORTRAN(bodyforce,(cbody,ibody,ipobody,nbody,set,istartset,
-			 iendset,ialset,&inewton,nset,&ifreebody,&k));
+       iendset,ialset,&inewton,nset,&ifreebody,&k));
       RENEW(ipobody,ITG,2*(*ne+ifreebody));
     }
     RENEW(ipobody,ITG,2*(ifreebody-1));
@@ -1187,9 +1187,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     }
   }
 
-  /*     calculating the instantaneous loads (forces, surface loading, 
-	 centrifugal and gravity loading or temperature) at time 0 
-	 setting iabsload to 2 if user subroutine dload is used */
+  /*     calculating the instantaneous loads (forces, surface loading,
+   centrifugal and gravity loading or temperature) at time 0
+   setting iabsload to 2 if user subroutine dload is used */
 
   /*  FORTRAN(tempload,(xforcold,xforc,xforcact,iamforc,nforc,xloadold,
       xload,xloadact,iamload,nload,ibody,xbody,nbody,xbodyold,
@@ -1461,9 +1461,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       dtheta    = dthetaref * dd;
 
       /* check increment length whether
-	 - it does not exceed tmax
-	 - the step length is not exceeded
-	 - a time point is not exceeded  */
+   - it does not exceed tmax
+   - the step length is not exceeded
+   - a time point is not exceeded  */
 
       dthetaref = dtheta;
       checkinclength(&time0, ttime, &theta, &dtheta, idrct, tper, tmax,
@@ -1475,7 +1475,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     time    = reltime * *tper;
     dtime   = dtheta * *tper;
 
-    /* calculating the instantaneous loads (forces, surface loading, 
+    /* calculating the instantaneous loads (forces, surface loading,
        centrifugal and gravity loading or temperature) */
 
     FORTRAN(temploaddiff, (xforcold, xforc, xforcact, iamforc, nforc,
@@ -1598,8 +1598,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         time    = reltime * *tper;
         dtime   = dtheta * *tper;
 
-        /* calculating the instantaneous loads (forces, surface loading, 
-	   centrifugal and gravity loading or temperature) */
+        /* calculating the instantaneous loads (forces, surface loading,
+     centrifugal and gravity loading or temperature) */
 
         FORTRAN(temploaddiff, (xforcold, xforc, xforcact, iamforc, nforc,
                                xloadold, xload, xloadact, iamload, nload, ibody, xbody,
@@ -1946,7 +1946,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if ((iout == 2) || (iout == -2)) {
 
       /* deactivating the elements for which the stresses are not
-	 needed */
+   needed */
 
       if (nmdnode > 0) {
         if ((intpointvar == 1)) {
@@ -2083,7 +2083,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   if ((intpointvar == 1))
     SFREE(stx);
 
-  /* calculating the displacements and velocities in all nodes as 
+  /* calculating the displacements and velocities in all nodes as
      initial condition for the next step; only needed if
      - nonzero initial conditions are allowed (-> no cyclic symmetry)
      - the output was restricted (-> nmdnode nonzero) */
@@ -2146,7 +2146,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     SFREE(qfx);
   }
 
-  /* updating the loading at the end of the step; 
+  /* updating the loading at the end of the step;
      important in case the amplitude at the end of the step
      is not equal to one */
 
