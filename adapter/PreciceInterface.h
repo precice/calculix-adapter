@@ -113,6 +113,7 @@ typedef struct SimulationData {
   int     nload;
   char *  sideload;
   double  nk;
+  ITG     ne;
   ITG     mt;
   double *theta;
   double *dtheta;

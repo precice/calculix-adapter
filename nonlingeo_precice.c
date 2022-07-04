@@ -329,6 +329,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .sideload  = sideload,
       .mt        = mt,
       .nk        = *nk,
+      .ne        = *ne,
       .theta     = &theta,
       .dtheta    = &dtheta,
       .tper      = tper,

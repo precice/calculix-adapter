@@ -230,6 +230,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       .sideload  = sideload,
       .mt        = mt,
       .nk        = *nk,
+      .ne        = *ne,
       .theta     = &theta,
       .dtheta    = &dtheta,
       .tper      = tper,
