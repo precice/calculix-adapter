@@ -11,9 +11,9 @@
 #define CONFIGREADER_H
 
 typedef struct InterfaceConfig {
-  char  *facesMeshName;
-  char  *nodesMeshName;
-  char  *patchName;
+  char * facesMeshName;
+  char * nodesMeshName;
+  char * patchName;
   int    map;
   int    numWriteData;
   int    numReadData;
@@ -24,7 +24,7 @@ typedef struct InterfaceConfig {
 typedef struct AdapterConfig {
   int              numInterfaces;
   InterfaceConfig *interfaces;
-  char            *preciceConfigFilename;
+  char *           preciceConfigFilename;
 } AdapterConfig;
 
 /**  Reads the Adapter Config

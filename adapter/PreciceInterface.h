@@ -27,23 +27,23 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int         *nodeIDs;
+  int *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
-  double      *nodeCoordinates;
+  double *     nodeCoordinates;
   int          nodeSetID;
-  int         *preciceNodeIDs;
+  int *        preciceNodeIDs;
   int          nodesMeshID;
-  char        *nodesMeshName;
+  char *       nodesMeshName;
 
   // Interface face elements
   int     numElements;
-  int    *elementIDs;
-  int    *faceIDs;
+  int *   elementIDs;
+  int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   int     faceCentersMeshID;
-  char   *faceCentersMeshName;
-  int    *preciceFaceCenterIDs;
+  char *  faceCentersMeshName;
+  int *   preciceFaceCenterIDs;
 
   // Arrays to store the coupling data
   double *nodeScalarData;
@@ -93,42 +93,42 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
-  ITG    *ialset;
-  ITG    *ielmat;
-  ITG    *istartset;
-  ITG    *iendset;
-  char   *lakon;
-  ITG    *kon;
-  ITG    *ipkon;
+  ITG *   ialset;
+  ITG *   ielmat;
+  ITG *   istartset;
+  ITG *   iendset;
+  char *  lakon;
+  ITG *   kon;
+  ITG *   ipkon;
   ITG     nset;
-  char   *set;
+  char *  set;
   double *co;
   ITG     nboun;
   ITG     nforc; // total number of forces
-  ITG    *ikboun;
-  ITG    *ikforc; // the DoFs are all stored here in an array in numerical order
-  ITG    *ilboun;
-  ITG    *ilforc; // number of the force is stored here
-  ITG    *nelemload;
+  ITG *   ikboun;
+  ITG *   ikforc; // the DoFs are all stored here in an array in numerical order
+  ITG *   ilboun;
+  ITG *   ilforc; // number of the force is stored here
+  ITG *   nelemload;
   int     nload;
-  char   *sideload;
+  char *  sideload;
   double  nk;
   ITG     ne;
   ITG     mt;
   double *theta;
   double *dtheta;
   double *tper;
-  ITG    *nmethod;
+  ITG *   nmethod;
   double *xload;
   double *xforc; // scalar value of the force in one direction
   double *xboun;
-  ITG    *ntmat_;
+  ITG *   ntmat_;
   double *vold;
   double *veold;
   double *fn; // values of forces read from calculix
   double *cocon;
-  ITG    *ncocon;
-  ITG    *mi;
+  ITG *   ncocon;
+  ITG *   mi;
 
   // Interfaces
   int                numPreciceInterfaces;

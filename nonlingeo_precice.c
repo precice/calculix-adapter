@@ -48,10 +48,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                        ITG *nmpc,
                        ITG *nodeforc, ITG *ndirforc, double *xforc, ITG *nforc,
                        ITG **nelemloadp, char **sideloadp, double *xload, ITG *nload,
-                       ITG  *nactdof,
+                       ITG * nactdof,
                        ITG **icolp, ITG *jq, ITG **irowp, ITG *neq, ITG *nzl,
                        ITG *nmethod, ITG **ikmpcp, ITG **ilmpcp, ITG *ikboun,
-                       ITG    *ilboun,
+                       ITG *   ilboun,
                        double *elcon, ITG *nelcon, double *rhcon, ITG *nrhcon,
                        double *alcon, ITG *nalcon, double *alzero, ITG **ielmatp,
                        ITG **ielorienp, ITG *norien, double *orab, ITG *ntmat_,
@@ -67,12 +67,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                        ITG *iamforc, ITG **iamloadp,
                        ITG *iamt1, double *alpha, ITG *iexpl,
                        ITG *iamboun, double *plicon, ITG *nplicon, double *plkcon,
-                       ITG     *nplkcon,
+                       ITG *    nplkcon,
                        double **xstatep, ITG *npmat_, ITG *istep, double *ttime,
                        char *matname, double *qaold, ITG *mi,
                        ITG *isolver, ITG *ncmat_, ITG *nstate_, ITG *iumat,
                        double *cs, ITG *mcs, ITG *nkon, double **enerp, ITG *mpcinfo,
-                       char   *output,
+                       char *  output,
                        double *shcon, ITG *nshcon, double *cocon, ITG *ncocon,
                        double *physcon, ITG *nflow, double *ctrl,
                        char *set, ITG *nset, ITG *istartset,
@@ -3547,11 +3547,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
           }
           printf(" average force= %f\n", qa[0]);
           printf(" time avg. forc= %f\n", qam[0]);
-          if ((ITG) ((double) nactdofinv[(ITG) ram[2]] / mt) + 1 == 0) {
+          if ((ITG)((double) nactdofinv[(ITG) ram[2]] / mt) + 1 == 0) {
             printf(" largest residual force= %f\n",
                    ram[0]);
           } else {
-            inode = (ITG) ((double) nactdofinv[(ITG) ram[2]] / mt) + 1;
+            inode = (ITG)((double) nactdofinv[(ITG) ram[2]] / mt) + 1;
             idir  = nactdofinv[(ITG) ram[2]] - mt * (inode - 1);
             printf(" largest residual force= %f in node %" ITGFORMAT
                    " and dof %" ITGFORMAT "\n",
@@ -3562,7 +3562,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             printf(" largest correction to disp= %e\n\n",
                    cam[0]);
           } else {
-            inode = (ITG) ((double) nactdofinv[(ITG) cam[3]] / mt) + 1;
+            inode = (ITG)((double) nactdofinv[(ITG) cam[3]] / mt) + 1;
             idir  = nactdofinv[(ITG) cam[3]] - mt * (inode - 1);
             printf(" largest correction to disp= %e in node %" ITGFORMAT
                    " and dof %" ITGFORMAT "\n\n",
@@ -3575,11 +3575,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
           }
           printf(" average flux= %f\n", qa[1]);
           printf(" time avg. flux= %f\n", qam[1]);
-          if ((ITG) ((double) nactdofinv[(ITG) ram[3]] / mt) + 1 == 0) {
+          if ((ITG)((double) nactdofinv[(ITG) ram[3]] / mt) + 1 == 0) {
             printf(" largest residual flux= %f\n",
                    ram[1]);
           } else {
-            inode = (ITG) ((double) nactdofinv[(ITG) ram[3]] / mt) + 1;
+            inode = (ITG)((double) nactdofinv[(ITG) ram[3]] / mt) + 1;
             idir  = nactdofinv[(ITG) ram[3]] - mt * (inode - 1);
             printf(" largest residual flux= %f in node %" ITGFORMAT
                    " and dof %" ITGFORMAT "\n",
@@ -3590,7 +3590,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             printf(" largest correction to temp= %e\n\n",
                    cam[1]);
           } else {
-            inode = (ITG) ((double) nactdofinv[(ITG) cam[4]] / mt) + 1;
+            inode = (ITG)((double) nactdofinv[(ITG) cam[4]] / mt) + 1;
             idir  = nactdofinv[(ITG) cam[4]] - mt * (inode - 1);
             printf(" largest correction to temp= %e in node %" ITGFORMAT
                    " and dof %" ITGFORMAT "\n\n",

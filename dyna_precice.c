@@ -44,7 +44,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   ITG **ipompcp, ITG **nodempcp, double **coefmpcp, char **labmpcp,
                   ITG *nmpc, ITG *nodeforc, ITG *ndirforc, double *xforc,
                   ITG *nforc, ITG *nelemload, char *sideload, double *xload,
-                  ITG  *nload,
+                  ITG * nload,
                   ITG **nactdofp, ITG *neq, ITG *nzl, ITG *icol, ITG *irow,
                   ITG *nmethod, ITG **ikmpcp, ITG **ilmpcp, ITG **ikbounp,
                   ITG **ilbounp, double *elcon, ITG *nelcon, double *rhcon,
@@ -59,7 +59,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   ITG *namta, ITG *nam, ITG *iamforc, ITG *iamload,
                   ITG **iamt1p, ITG *jout,
                   ITG *kode, char *filab, double **emep, double *xforcold,
-                  double  *xloadold,
+                  double * xloadold,
                   double **t1oldp, ITG **iambounp, double **xbounoldp, ITG *iexpl,
                   double *plicon, ITG *nplicon, double *plkcon, ITG *nplkcon,
                   double **xstatep, ITG *npmat_, char *matname, ITG *mi,
@@ -659,7 +659,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     for (i = 0; i < *mcs; i++) {
       //	  if(cs[17*i]>nsectors) nsectors=cs[17*i];
       if (cs[17 * i] > nsectors)
-        nsectors = (ITG) (cs[17 * i] + 0.5);
+        nsectors = (ITG)(cs[17 * i] + 0.5);
     }
 
     /* determining the maximum number of sectors to be plotted */
