@@ -62,7 +62,7 @@ else
 	CC = mpicc
 endif
 
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 # Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90

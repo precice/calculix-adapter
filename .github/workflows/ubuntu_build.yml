@@ -7,12 +7,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
         include:
-          - os: ubuntu-18.04
-            name: bionic
           - os: ubuntu-20.04
             name: focal
+          - os: ubuntu-22.04
+            name: jammy
+            flags: -fallow-argument-mismatch
+
     runs-on: ${{matrix.os}}
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
@@ -24,9 +26,9 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
-    - name: Get preCICE v2.3.0
-      run: wget https://github.com/precice/precice/releases/download/v2.3.0/libprecice2_2.3.0_${{matrix.name}}.deb &&
-        sudo apt install ./libprecice2_2.3.0_${{matrix.name}}.deb -y
+    - name: Get preCICE v2.4.0
+      run: wget https://github.com/precice/precice/releases/download/v2.4.0/libprecice2_2.4.0_${{matrix.name}}.deb &&
+        sudo apt install ./libprecice2_2.4.0_${{matrix.name}}.deb -y
     - name: install dependencies
       run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
     - name: Download CalculiX
@@ -34,7 +36,7 @@ jobs:
     - name: Unpack Calculix
       run: tar -xjf ccx_2.19.src.tar.bz2
     - name: make
-      run: make -j 4 CCX="./CalculiX/ccx_2.19/src"
+      run: make -j 4 CCX="./CalculiX/ccx_2.19/src" ADDITIONAL_FFLAGS="${{matrix.flags}}"
     - name: Test run
       run: ./bin/ccx_preCICE -h
     - name: Download tools for packaging
