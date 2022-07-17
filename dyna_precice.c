@@ -1432,11 +1432,11 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if (Precice_IsWriteCheckpointRequired()) {
       printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
       Precice_WriteIterationCheckpoint(&simulationData, vini);
+      // Otherwise, each iteration in implicit coupling would be written as a new step
+      iinc++;
+      jprint++;
       Precice_FulfilledWriteCheckpoint();
     }
-
-    iinc++;
-    jprint++;
 
     if (dashpot)
       RENEW(rpar, double, 4 + nev * (3 + nev));
