@@ -2041,7 +2041,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       printf("WARNING: implicit coupling with modal dynamic simulations is not working in the current version of the adapter.\n");
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vold);
-        icutb++;
+        memcpy(&bj[0], &cd[0], sizeof(double) * nev);
+        memcpy(&bjp[0], &cv[0], sizeof(double) * nev);
       }
       Precice_FulfilledReadCheckpoint();
     }
