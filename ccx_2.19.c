@@ -1312,6 +1312,7 @@ int main(int argc, char *argv[])
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
       int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
+      int isStaticNLGEOM = ((nmethod==1) && (iperturb[0]>1));
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
@@ -1446,6 +1447,49 @@ int main(int argc, char *argv[])
           printf("ERROR: This simulation type is not available with preCICE");
           exit(0);
         }
+      } else if (isStaticNLGEOM) {
+
+        printf("Starting STATIC analysis via preCICE...\n");
+
+        mpcinfo[0] = memmpc_;
+        mpcinfo[1] = mpcfree;
+        mpcinfo[2] = icascade;
+        mpcinfo[3] = maxlenmpc;
+
+        nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun, &nboun,
+                          &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
+                          &nforc, &nelemload, &sideload, xload, &nload,
+                          nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc,
+                          &ilmpc, ikboun, ilboun, elcon, nelcon, rhcon, nrhcon,
+                          alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_,
+                          t0, t1, t1old, ithermal, prestr, &iprestr,
+                          &vold, iperturb, sti, nzs, &kode, filab, &idrct, jmax,
+                          jout, timepar, eme, xbounold, xforcold, xloadold,
+                          veold, accold, amname, amta, namta,
+                          &nam, iamforc, &iamload, iamt1, alpha,
+                          &iexpl, iamboun, plicon, nplicon, plkcon, nplkcon,
+                          &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
+                          &isolver, &ncmat_, &nstate_, &iumat, cs, &mcs, &nkon, &ener,
+                          mpcinfo, output,
+                          shcon, nshcon, cocon, ncocon, physcon, &nflow, ctrl,
+                          set, &nset, istartset, iendset, ialset, &nprint, prlab,
+                          prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc,
+                          cbody, ibody, xbody, &nbody, xbodyold, ielprop, prop,
+                          &ntie, tieset, &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke,
+                          ics, &nintpoint, &mortar,
+                          &ifacecount, typeboun, &islavsurf, &pslavsurf, &clearini, &nmat,
+                          xmodal, &iaxial, &inext, &nprop, &network, orname, vel, &nef,
+                          velo, veloo, energy, itempuser,
+                          /* New args from 2.19 */
+                          &ipobody, &inewton, &t0g, &t1g, &ifreebody,
+                          /* PreCICE args */
+                          preciceParticipantName, configFilename);
+
+        memmpc_   = mpcinfo[0];
+        mpcfree   = mpcinfo[1];
+        icascade  = mpcinfo[2];
+        maxlenmpc = mpcinfo[3];
+
       } else if (isModalDynamic) {
 
         printf("Starting FSI analysis via preCICE\n");
