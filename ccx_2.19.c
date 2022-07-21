@@ -1312,7 +1312,7 @@ int main(int argc, char *argv[])
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
       int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
-      int isStaticNLGEOM = ((nmethod == 1) && (iperturb[0] > 1));
+      int isStaticNLGEOM    = ((nmethod == 1) && (iperturb[0] > 1));
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
