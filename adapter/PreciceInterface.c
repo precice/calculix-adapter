@@ -700,6 +700,8 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   interface->numWriteData = config->numWriteData;
   if (config->numWriteData > 0)
     interface->writeData = malloc(config->numWriteData * sizeof(int));
+  else 
+    interface->writeData = NULL;
 
   for (i = 0; i < config->numWriteData; i++) {
     if (isEqual(config->writeDataNames[i], "Temperature")) {
