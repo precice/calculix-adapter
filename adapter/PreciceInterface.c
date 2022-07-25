@@ -433,6 +433,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->xbounIndices          = NULL;
   interface->xloadIndices          = NULL;
   interface->xforcIndices          = NULL;
+  interface->writeData             = NULL;
+  interface->readData              = NULL;
 
   // Initialize data ids to -1
   interface->temperatureDataID            = -1;
