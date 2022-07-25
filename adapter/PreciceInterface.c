@@ -433,6 +433,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->xbounIndices          = NULL;
   interface->xloadIndices          = NULL;
   interface->xforcIndices          = NULL;
+  interface->writeData             = NULL;
+  interface->readData              = NULL;
 
   // Initialize data ids to -1
   interface->temperatureDataID            = -1;
@@ -700,8 +702,6 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   interface->numWriteData = config->numWriteData;
   if (config->numWriteData > 0)
     interface->writeData = malloc(config->numWriteData * sizeof(int));
-  else
-    interface->writeData = NULL;
 
   for (i = 0; i < config->numWriteData; i++) {
     if (isEqual(config->writeDataNames[i], "Temperature")) {
