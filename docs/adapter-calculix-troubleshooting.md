@@ -5,7 +5,7 @@ keywords: adapter, calculix, error
 summary: "While working with the CalculiX adapter, you may run onto common issues. This is a collection of what we know could go wrong."
 ---
 
-This list is definietly not complete. If after reading this, you still have issues, please [ask in the preCICE forum](https://precice.discourse.group/).
+This list is definitely not complete. If after reading this, you still have issues, please [ask in the preCICE forum](https://precice.discourse.group/).
 
 ## Things to check
 

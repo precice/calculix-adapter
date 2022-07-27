@@ -46,7 +46,7 @@ We started offering Debian packages for the CalculiX adapter since v2.19.0. Plea
 
 ### Building the adapter with PaStiX
 
-Since version 2.17 of CalculiX, it is possible to link the PaStiX solver for increased performance, mostly through GPUs. Building the adapter with PaStiX is quite tedious, as most dependencies of PaStiX and PaStiX itslef must be built from source. Check our [detailed instructions on building the adapter with PaStiX](adapter-calculix-pastix-build.html).
+Since version 2.17 of CalculiX, it is possible to link the PaStiX solver for increased performance, mostly through GPUs. Building the adapter with PaStiX is quite tedious, as most dependencies of PaStiX and PaStiX itself must be built from source. Check our [detailed instructions on building the adapter with PaStiX](adapter-calculix-pastix-build.html).
 
 ### Makefile options
 
