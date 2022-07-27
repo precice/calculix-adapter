@@ -26,7 +26,7 @@ You can get these elsewhere or build them from source. In particular, it is prob
 
 ## Downloading CalculiX source
 
-This guide assumes Calculix's source code is in the user's home folder `/home/user_name`, with the alias `~`. If you don't want to follow this convention, you may have to adapt slightly the instructions below. Donwload can be done on command line:
+This guide assumes Calculix's source code is in the user's home folder `/home/user_name`, with the alias `~`. If you don't want to follow this convention, you may have to adapt slightly the instructions below. Download can be done on command line:
 
 ```bash
     cd ~ && wget http://www.dhondt.de/ccx_2.17.src.tar.bz2
