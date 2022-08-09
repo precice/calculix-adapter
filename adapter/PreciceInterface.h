@@ -141,6 +141,9 @@ typedef struct SimulationData {
   double  precice_dt;
   double  solver_dt;
 
+  // Configuration infos
+  int isModalDynamic; // 0 for regular simulations, 1 for modal dynamic
+
 } SimulationData;
 
 /**
@@ -148,8 +151,6 @@ typedef struct SimulationData {
  * @param configFilename: YAML config file
  * @param participantName
  * @param sim
- * @param preciceInterfaces
- * @param numPreciceInterfaces
  */
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
