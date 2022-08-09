@@ -610,6 +610,17 @@ void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const 
   }
 }
 
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type)
+{
+  // Forbidden read data in modal dynamic simulations
+  if (sim->isModalDynamic) {
+    if (type == TEMPERATURE || type == DISPLACEMENTS || type == DISPLACEMENTDELTAS || type == VELOCITIES || type == POSITIONS) {
+      printf("In modal dynami simulations, only loads (forces, pressures, heat fluxes) can be read.\n"
+             "Degrees of freedom (positions, velocities, temperatures) cannot be read from preCICE.");
+    }
+  }
+}
+
 void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, SimulationData *sim)
 {
   int i;
@@ -642,6 +653,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   interface->nodeVectorData = malloc(interface->numNodes * 3 * sizeof(double));
   interface->faceCenterData = malloc(interface->numElements * sizeof(double));
 
+  // Configure all the read data, then the write data
   int i;
   interface->numReadData = config->numReadData;
   if (config->numReadData > 0)
@@ -649,6 +661,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   for (i = 0; i < config->numReadData; i++) {
     if (isEqual(config->readDataNames[i], "Temperature")) {
       PreciceInterface_EnsureValidNodesMeshID(interface, "Temperature");
+      PreciceInterface_EnsureValidRead(sim, TEMPERATURE);
       interface->readData[i]       = TEMPERATURE;
       interface->xbounIndices      = malloc(interface->numNodes * sizeof(int));
       interface->temperatureDataID = precicec_getDataID("Temperature", interface->nodesMeshID);
@@ -659,6 +672,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat-Flux");
+      PreciceInterface_EnsureValidRead(sim, HEAT_FLUX);
       interface->fluxDataID = precicec_getDataID("Heat-Flux", interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->fluxDataID);
     } else if (startsWith(config->readDataNames[i], "Sink-Temperature-")) {
@@ -666,21 +680,25 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("FILM", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       PreciceInterface_EnsureValidFacesMeshID(interface, "Sink Temperature");
+      PreciceInterface_EnsureValidRead(sim, SINK_TEMPERATURE);
       interface->kDeltaTemperatureReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaTemperatureReadDataID);
     } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient-")) {
       interface->readData[i] = HEAT_TRANSFER_COEFF;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Transfer Coefficient");
+      PreciceInterface_EnsureValidRead(sim, HEAT_TRANSFER_COEFF);
       interface->kDeltaReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaReadDataID);
     } else if (startsWith(config->readDataNames[i], "Pressure")) {
       interface->readData[i]  = PRESSURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
+      PreciceInterface_EnsureValidRead(sim, PRESSURE);
       getXloadIndices("PRESSUREDLOAD", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       interface->pressureDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->pressureDataID);
     } else if (startsWith(config->readDataNames[i], "Force")) {
       PreciceInterface_EnsureValidNodesMeshID(interface, "Force");
+      PreciceInterface_EnsureValidRead(sim, FORCES);
       interface->readData[i]  = FORCES;
       interface->xforcIndices = malloc(interface->numNodes * 3 * sizeof(int));
       interface->forcesDataID = precicec_getDataID(config->readDataNames[i], interface->nodesMeshID);
@@ -688,6 +706,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->forcesDataID);
     } else if (startsWith(config->readDataNames[i], "Displacement")) {
       PreciceInterface_EnsureValidNodesMeshID(interface, "Displacement");
+      PreciceInterface_EnsureValidRead(sim, DISPLACEMENTS);
       interface->readData[i]         = DISPLACEMENTS;
       interface->xbounIndices        = malloc(interface->numNodes * 3 * sizeof(int));
       interface->displacementsDataID = precicec_getDataID(config->readDataNames[i], interface->nodesMeshID);

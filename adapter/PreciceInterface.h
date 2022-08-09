@@ -285,6 +285,13 @@ void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const 
 void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type);
 
 /**
+ * @brief Terminate execution if this kind of data can't be read
+ * @param sim
+ * @param type of data to check
+ */
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type);
+
+/**
  * @brief Configures the faces mesh (for tetrahedral elements only)
  * @param interface
  * @param sim
