@@ -22,32 +22,46 @@ participants:
 precice-config-file: ../precice-config.xml
 ```
 
-The adapter allows to use several participants in one simulation (e.g. several instances of Calculix if several solid objects are taken into account). The name of the participant `Calculix` must match the specification of the participant on the command line when running the executable of `CCX` with the adapter being used (this is described later). Also, the name must be the same as the one used in the preCICE configuration file `precice-config.xml`.  
-One participant may have several FSI interfaces. Note that each interface specification starts with a dash.  
-For FSI simulations the mesh type of an interface is always "nodes-mesh", i.e. the mesh is defined node-wise, not element-wise. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file.  
-For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (here: `interface`).  
+The adapter allows us to use several participants in one simulation (e.g., several instances of Calculix if several solid objects are taken into account). The name of the participant `Calculix` must match the specification of the participant on the command line when running the executable of `CCX` with the adapter being used (this is described later). Also, the name must be the same as the one used in the preCICE configuration file `precice-config.xml`.  
+
+One participant may have several coupling interfaces. Note that each interface specification starts with a dash.
+Depending on the data you need to read and write, the interface should define either a `faces-mesh` (or simply `mesh` as a synonym) where the data points are centers of faces (computed by the adapter) or a mesh made of CalculiX vertices, with the keyword `nodes-mesh`. An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command, whereas meshes with nodes should define these nodes using `*NSET`. Using the wrong family of mesh (e.g. reading forces on faces) throws an error. If you need both kinds of meshes, you should define more than one interface.
+
+For FSI simulations the mesh type of an interface is always `nodes-mesh`, as forces and displacement are defined on nodes. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file. In CHT simulations, `faces-meshes` are usually chosen, as they are needed to apply heat fluxes or convective heat transfer.
+For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (here: "interface").  
+
 In the current FSI example, the adapter reads forces from preCICE and feeds displacement deltas (not absolute displacements, but the change of the displacements relative to the last time step) to preCICE. This is defined with the keywords `read-data` and `write-data`, respectively. The names (here: `Forces` and `DisplacementDeltas`) again need to match the specifications in the preCICE configuration file. In the current example, the coupled fluid solver expects displacement deltas instead of displacements. However, the adapter is capable of writing either type. Just use `write-data: [Displacements]` for absolute displacements rather than relative changes being transferred in each time step. Valid `readData` keywords in CalculiX are:
 
-```text
-* Forces
-* Displacements
-* Temperature
-* Heat-Flux
-* Sink-Temperature
-* Heat-Transfer-Coefficient
-```
+On faces-mesh:
+
+* Pressure (Use a `*DLOAD`)
+* Heat-Flux (Use a `*DFLUX`)
+* Sink-Temperature (Use `*FILM`)
+* Heat-Transfer-Coefficient (Use `*FILM`)
+
+On nodes-mesh:
+
+* Forces (Use a `*CLOAD`)
+* Displacements (Use `*BOUNDARY`)
+* Temperature (Use `*BOUNDARY`)
+
+Have a look at the CalculiX documentation for a detailed description of each of these commands. There is an [online (but outdated) version](https://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node1.html) and an [up-to-date PDF version](http://www.dhondt.de/ccx_2.19.pdf).
 
  Valid `writeData` keywords are:
 
-```text
+On faces-mesh:
+
+* Pressure
+* Heat-Flux
+* Sink-Temperature
+* Heat-Transfer-Coefficient
+
+On nodes-mesh:
+
 * Forces
 * Displacements
 * DisplacementDeltas
 * Temperature
-* Heat-Flux
-* Sink-Temperature
-* Heat-Transfer-Coefficient
-```
 
 From CalculiX version 2.15, additional `writeData` keywords are available:
 
@@ -95,7 +109,9 @@ CalculiX is designed to be compatible with the Abaqus file format. Here is an ex
 
 The adapter internally uses the CalculiX data format for point forces to apply the FSI forces at the coupling interface. This data structure is only initialized for those nodes, which are loaded at the beginning of a CalculiX analysis step via the input file. Thus, it is necessary to load all nodes of the node set, which defines the FSI interface in CalculiX (referring to the above example, the nodes of set `interface` (Note that in CalculiX a node set always begins with an `N` followed by the actual name of the set, which is here `interface`.) are loaded via the `CLOAD` keyword.), in each spatial direction. However, the values of these initial forces can (and should) be chosen to zero, such that the simulation result is not affected.
 
-CalculiX CCX offers both a geometrically linear as well as a geometrically non-linear solver. Both are coupled via the adapter. The keyword `NLGEOM` (as shown in the example) needs to be included in the CalculiX case input file in order to select the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword `NLGEOM` does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations via preCICE the keyword `*DYNAMIC` (enabling a dynamic computation) must appear in the CalculiX input file. The adapter also supports executing a static step (`*STATIC`) before starting the coupled simulation (only in combination with `NLGEOM`).
+When using "faces-meshes", instead of a node set (`\*NSET`), a `\*SURFACE` must be sent, defined by a list of elements and face numbers. Instead of starting with a "N", the name must start with a "S".
+
+CalculiX CCX offers both a geometrically linear as well as a geometrically non-linear solver. Both are coupled via the adapter. The keyword "NLGEOM" (as shown in the example) needs to be included in the CalculiX case input file in order to select the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword "NLGEOM" does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations via preCICE the keyword "DYNAMIC" (enabling a dynamic computation) must appear in the CalculiX input file.
 
 More input files that you may find in the CalculiX tutorial cases:
 
@@ -124,11 +140,25 @@ The input file for this example would be `flap.inp`. Note that the suffix `.inp`
 
 ### Supported elements
 
-The preCICE CalculiX adapter supports solid and shell elements. It can been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8, C3D8I, and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. For shell elements, currently S3 and S6 tetrahedral elements are supported. There is a restriction when using nearest-projection mapping that you have to use tetrahedral elements. If a quasi 2D-3D case is set up (single element in out-of-place direction) then only linear elements are supported.
+The preCICE CalculiX adapter should support most elements when using `nodes-meshes`. It has been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8, C3D8I, and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. There is however a restriction when using nearest-projection mapping: in that case, you have to use tetrahedral elements.
+
+When using face meshes, only tetrahedra and hexaedra are supported.
+
+### Coupling to 2D simulations
+
+The adapter supports quasi 2D simulations when the z-direction is ignored. If you set the preCICE interface dimension to 2, the adapter will map data from the CalculiX 3D simulation to 2D space and vice-versa. The 3D simulation should be made of solid elements (or shells) of unit thickness.
+
+#### Behavior with `nodes-mesh`
+
+When writing continuous fields (such as temperature and displacements), the adapter will send data that is averaged over thickness. For conservative data (such as forces), sums are computed. When reading forces, the load applied to a 2D point will be spread evenly between the 3D points sharing the same x and y coordinates.
+
+#### Behavior with `faces-mesh`
+
+When using `faces-mesh`, the behavior in unchanged and the z-component is simply discarded.
 
 ### Nearest-projection mapping
 
-In order to use nearest-projection mapping, a few additional changes are required. The first is that the interface surface file (`.sur`) must be added to the Calculix input file. An example of the addition to the input file is given below
+In order to use nearest-projection mapping, a few additional changes are required. The first is that the interface surface file (`.sur`) must be added to the CalculiX input file. An example of the addition to the input file is given below
 
 ```text
 *INCLUDE, INPUT=all.msh
@@ -153,6 +183,10 @@ must be changed to
 ```
 
 Note that an error will only occur if nodes-mesh-with-connectivity is specified without a `.sur` file. The CalculiX adapter with nearest-projection mapping only supports tetrahedral elements (C3D4 and C3D10) as preCICE only works with surface triangles for nearest-projection mapping.
+
+### Modal dynamic simulations
+
+The adapter supports modal dynamic simulations, where eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a linear combination of osicllating eigenmodes. This can be faster but slightly less accurate. It can be particularly useful if you need many runs of the simulation, as frequency analysis can be run only once. Run the frequency analysis without preCICE (`ccx_preCICE -i [CalculiX input file]`), then run a regular coupled simulation (configured as modal dynamic in the input file). Note that reading displacements is not supported in these simulations.
 
 ### Parallelization
 
