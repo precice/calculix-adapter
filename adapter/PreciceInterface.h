@@ -141,7 +141,7 @@ typedef struct SimulationData {
   double  precice_dt;
   double  solver_dt;
 
-  // Configuration infos
+  // Configuration information
   int isModalDynamic; // 0 for regular simulations, 1 for modal dynamic
 
 } SimulationData;
