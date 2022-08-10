@@ -141,6 +141,9 @@ typedef struct SimulationData {
   double  precice_dt;
   double  solver_dt;
 
+  // Configuration information
+  int isModalDynamic; // 0 for regular simulations, 1 for modal dynamic
+
 } SimulationData;
 
 /**
@@ -148,8 +151,6 @@ typedef struct SimulationData {
  * @param configFilename: YAML config file
  * @param participantName
  * @param sim
- * @param preciceInterfaces
- * @param numPreciceInterfaces
  */
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
@@ -282,6 +283,13 @@ void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const 
  * @param type of data requiring mesh ID
  */
 void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type);
+
+/**
+ * @brief Terminate execution if this kind of data can't be read
+ * @param sim
+ * @param type of data to check
+ */
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type);
 
 /**
  * @brief Configures the faces mesh (for tetrahedral elements only)
