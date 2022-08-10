@@ -615,8 +615,10 @@ void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType
   // Forbidden read data in modal dynamic simulations
   if (sim->isModalDynamic) {
     if (type == TEMPERATURE || type == DISPLACEMENTS || type == DISPLACEMENTDELTAS || type == VELOCITIES || type == POSITIONS) {
-      printf("In modal dynami simulations, only loads (forces, pressures, heat fluxes) can be read.\n"
+      printf("Error: in modal dynami simulations, only loads (forces, pressures, heat fluxes) can be read.\n"
              "Degrees of freedom (positions, velocities, temperatures) cannot be read from preCICE.");
+      fflush(stdout);
+      exit(EXIT_FAILURE);
     }
   }
 }
