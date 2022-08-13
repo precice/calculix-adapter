@@ -13,14 +13,18 @@ There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), o
 
 You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, simply open it in your software center.
 
-Alternatively, download & install it from the command line. For Ubuntu 20.04 (focal):
+Alternatively, download & install it from the command line. For Ubuntu 22.04 (jammy):
 
 ```bash
-wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_focal.deb
-sudo apt install ./calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_focal.deb
+wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_jammy.deb
+sudo apt install ./calculix-precice2_{{ site.calculix_adapter_version }}-1_amd64_jammy.deb
 ```
 
 This requires that also preCICE itself has been installed from a Debian package.
+
+{% tip %}
+Replace `jammy` with `focal` to get the package for Ubuntu 20.04.
+{% endtip  %}
 
 {% note %}
 We started offering Debian packages for the CalculiX adapter since v2.19.0. Please [give us your feedback](community-channels.html)!
