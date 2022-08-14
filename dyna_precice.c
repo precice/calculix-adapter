@@ -1415,6 +1415,10 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
+  /* Adapter: allocate checkpointing buffers. Freed in Precice_FreeData */
+  simulationData.eigenDOFs            = malloc(sizeof(double) * nev);
+  simulationData.eigenDOFsDerivatives = malloc(sizeof(double) * nev);
+
   /* Adapter: Give preCICE the control of the time stepping */
   while (Precice_IsCouplingOngoing()) {
 
@@ -1435,7 +1439,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       }
     }
     if (Precice_IsWriteCheckpointRequired()) {
-      Precice_WriteIterationCheckpoint(&simulationData, vini);
+      Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
       // Otherwise, each iteration in implicit coupling would be written as a new step
       iinc++;
       jprint++;
@@ -2043,9 +2047,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     /* Adapter: If the coupling does not converge, read the checkpoint */
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
-        Precice_ReadIterationCheckpoint(&simulationData, vold);
-        memcpy(&bj[0], &cd[0], sizeof(double) * nev);
-        memcpy(&bjp[0], &cv[0], sizeof(double) * nev);
+        Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
+        //memcpy(&bj[0], &cd[0], sizeof(double) * nev);
+        //memcpy(&bjp[0], &cv[0], sizeof(double) * nev);
       }
       Precice_FulfilledReadCheckpoint();
     }
