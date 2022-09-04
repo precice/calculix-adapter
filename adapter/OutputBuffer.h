@@ -20,7 +20,7 @@
 #endif
 
 
-struct outputBuffer;
+typedef struct outputBuffer outputBuffer;
 
 outputBuffer* BufferCreate();
 void BufferFree(outputBuffer* buffer);

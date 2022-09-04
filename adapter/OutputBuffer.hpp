@@ -24,7 +24,7 @@ struct State {
   std::map<std::string, std::vector<ITG>>    data_itg;
 };
 
-class Buffer {
+class outputBuffer {
 public:
   std::vector<State> states;
 
