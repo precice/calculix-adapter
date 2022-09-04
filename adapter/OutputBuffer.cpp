@@ -80,6 +80,9 @@ void BufferLoadITG(outputBuffer* buffer, const char * name, ITG * data, unsigned
 void BufferNextIter(outputBuffer* buffer) {
     buffer->readNext();
 }
+void BufferWriteNewStep(outputBuffer* buffer) {
+    buffer->writeNewStep();
+}
 void BufferClear(outputBuffer* buffer) {
     buffer->clear();
 }
