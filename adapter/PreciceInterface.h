@@ -149,6 +149,7 @@ typedef struct SimulationData {
   double *eigenDOFsDerivatives; // Called "bjp" (p for prime) or "cv" in CCX code
   int     stored_iinc;
   int     stored_jprint;
+  int     kode_value;
 
 } SimulationData;
 
