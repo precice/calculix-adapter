@@ -9,19 +9,17 @@
 
 #include "OutputBuffer.hpp"
 #include <cstring> // memcpy
+#include <cassert>
 
 void outputBuffer::clear() {
     this->states.clear();
-    currentReadIter = 0;
+    currentReadIter = -1;
 }
 
 void outputBuffer::writeNewStep() {
     this->states.push_back(State());
 }
 
-void outputBuffer::startRead(){
-    currentReadIter = 0;
-}
 
 bool outputBuffer::readNext() {
     ++currentReadIter;
@@ -29,11 +27,15 @@ bool outputBuffer::readNext() {
 }
 
 double* outputBuffer::getDoubleData(const std::string &name) {
-    return this->states[currentReadIter].data_double[name].data();
+    assert(states.size() > currentReadIter);
+    auto& data_vector = this->states[currentReadIter].data_double[name];
+    return data_vector.data();
 }
 
 ITG* outputBuffer::getITGData(const std::string &name) {
-    return this->states[currentReadIter].data_itg[name].data();
+    assert(states.size() > currentReadIter);
+    auto& data_vector = this->states[currentReadIter].data_itg[name];
+    return data_vector.data();
 }
 
 unsigned outputBuffer::getDoubleDataSize(const std::string &name) {
@@ -45,6 +47,7 @@ unsigned outputBuffer::getITGDataSize(const std::string &name) {
 }
 
 void outputBuffer::writeDoubleData(const std::string &name, double *data, unsigned n) {
+    assert(!states.empty());
     this->states.back().data_double[name] = std::vector<double> (data, data + n);
 }
 
@@ -77,12 +80,15 @@ void BufferLoadDouble(outputBuffer* buffer, const char * name, double * data, un
 void BufferLoadITG(outputBuffer* buffer, const char * name, ITG * data, unsigned length) {
     memcpy(data, buffer->getITGData(name), length); //Length from the buffer or from ptr ?
 }
-void BufferNextIter(outputBuffer* buffer) {
-    buffer->readNext();
+int BufferNextIter(outputBuffer* buffer) {
+    return buffer->readNext();
 }
 void BufferWriteNewStep(outputBuffer* buffer) {
     buffer->writeNewStep();
 }
 void BufferClear(outputBuffer* buffer) {
     buffer->clear();
+}
+unsigned BufferStoredStates(outputBuffer* buffer) {
+    return buffer->states.size();
 }

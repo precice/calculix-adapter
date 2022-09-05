@@ -30,8 +30,9 @@ unsigned BufferGetLengthDouble(outputBuffer* buffer, const char * name);
 unsigned BufferGetLengthITG(outputBuffer* buffer, const char * name);
 void BufferLoadDouble(outputBuffer* buffer, const char * name, double * data, unsigned length);
 void BufferLoadITG(outputBuffer* buffer, const char * name, ITG * data, unsigned length);
-void BufferNextIter(outputBuffer* buffer);
+int BufferNextIter(outputBuffer* buffer);
 void BufferWriteNewStep(outputBuffer* buffer);
 void BufferClear(outputBuffer* buffer);
+unsigned BufferStoredStates(outputBuffer* buffer);
 
 #endif

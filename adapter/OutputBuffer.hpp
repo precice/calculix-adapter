@@ -30,7 +30,6 @@ public:
 
   void clear();
   void writeNewStep();
-  void startRead();
   bool readNext();
 
   double  *getDoubleData(const std::string &name);
