@@ -36,8 +36,8 @@
 #endif
 
 /* Adapter: Add header */
-#include "adapter/PreciceInterface.h"
 #include "adapter/OutputBuffer.h"
+#include "adapter/PreciceInterface.h"
 
 void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp, ITG *ne,
                   ITG **nodebounp, ITG **ndirbounp, double **xbounp, ITG *nboun,
@@ -1422,7 +1422,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   /* Adapter: create an output buffer */
   printf("Creating a buffer to output correctly when subcycling is used.\n");
-  outputBuffer* out_buffer = BufferCreate();
+  outputBuffer *out_buffer = BufferCreate();
   /* Adapter: Give preCICE the control of the time stepping */
   while (Precice_IsCouplingOngoing()) {
     /* Adapter: Adjust solver time step */
@@ -2044,14 +2044,13 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
           prop, sti);
       /*/
-     
-    BufferSaveDouble(out_buffer, "ptime", &ptime, 1);
-    BufferSaveDouble(out_buffer, "veold", veold, mt **nk);
-    BufferSaveDouble(out_buffer, "vold", vold, mt **nk);
-    BufferSaveDouble(out_buffer, "v", v, mt **nk);
-    BufferSaveITG(out_buffer, "iinc", &iinc, 1);
-    BufferSaveITG(out_buffer, "kode", kode, 1);
 
+      BufferSaveDouble(out_buffer, "ptime", &ptime, 1);
+      BufferSaveDouble(out_buffer, "veold", veold, mt * *nk);
+      BufferSaveDouble(out_buffer, "vold", vold, mt * *nk);
+      BufferSaveDouble(out_buffer, "v", v, mt * *nk);
+      BufferSaveITG(out_buffer, "iinc", &iinc, 1);
+      BufferSaveITG(out_buffer, "kode", kode, 1);
 
       if (strcmp1(&filab[1044], "ZZS") == 0) {
         SFREE(ipneigh);
@@ -2063,31 +2062,29 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     Precice_WriteCouplingData(&simulationData);
     /* Adapter: Advance the coupling */
     Precice_Advance(&simulationData);
-     if (precicec_isTimeWindowComplete())
-      {
-        /* Write the stored outputs using FRD */
-        while (BufferCanRead(out_buffer)) {
-          BufferLoadDouble(out_buffer, "ptime", &ptime, 1);
-          BufferLoadDouble(out_buffer, "veold", veold, mt **nk);
-          BufferLoadDouble(out_buffer, "vold", vold, mt **nk);
-          BufferLoadDouble(out_buffer, "v", v, mt **nk);
-          BufferLoadITG(out_buffer, "iinc", &iinc, 1);
-          BufferLoadITG(out_buffer, "kode", kode, 1);
+    if (precicec_isTimeWindowComplete()) {
+      /* Write the stored outputs using FRD */
+      while (BufferCanRead(out_buffer)) {
+        BufferLoadDouble(out_buffer, "ptime", &ptime, 1);
+        BufferLoadDouble(out_buffer, "veold", veold, mt * *nk);
+        BufferLoadDouble(out_buffer, "vold", vold, mt * *nk);
+        BufferLoadDouble(out_buffer, "v", v, mt * *nk);
+        BufferLoadITG(out_buffer, "iinc", &iinc, 1);
+        BufferLoadITG(out_buffer, "kode", kode, 1);
 
-          frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
-          kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
-          nstate_, istep, &iinc, ithermal, qfn, &mode, &noddiam, trab, inotr,
-          ntrans, orab, ielorien, norien, description, ipneigh, neigh,
-          mi, stx, vr, vi, stnr, stni, vmax, stnmax, &ngraph, veold, ener, ne,
-          cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
-          thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
-          prop, sti);
+        frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
+            kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
+            nstate_, istep, &iinc, ithermal, qfn, &mode, &noddiam, trab, inotr,
+            ntrans, orab, ielorien, norien, description, ipneigh, neigh,
+            mi, stx, vr, vi, stnr, stni, vmax, stnmax, &ngraph, veold, ener, ne,
+            cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
+            thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
+            prop, sti);
 
-          BufferReadNext(out_buffer);
-
-        }
-        BufferClear(out_buffer);
+        BufferReadNext(out_buffer);
       }
+      BufferClear(out_buffer);
+    }
     /* Adapter: If the coupling does not converge, read the checkpoint */
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
