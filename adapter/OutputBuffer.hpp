@@ -28,10 +28,8 @@ public:
   void readNextStep();
   bool canRead();
 
-  double * getDoubleData(const std::string &name);
-  ITG *    getITGData(const std::string &name);
-  unsigned getDoubleDataSize(const std::string &name);
-  unsigned getITGDataSize(const std::string &name);
+  double *getDoubleData(const std::string &name);
+  ITG *   getITGData(const std::string &name);
 
   void writeDoubleData(const std::string &name, double *data, unsigned n);
   void writeITGData(const std::string &name, ITG *data, unsigned n);

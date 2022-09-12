@@ -36,16 +36,6 @@ ITG *outputBuffer::getITGData(const std::string &name)
   return data_vector.data();
 }
 
-unsigned outputBuffer::getDoubleDataSize(const std::string &name)
-{
-  return this->states[currentReadIter].data_double[name].size();
-}
-
-unsigned outputBuffer::getITGDataSize(const std::string &name)
-{
-  return this->states[currentReadIter].data_itg[name].size();
-}
-
 void outputBuffer::writeDoubleData(const std::string &name, double *data, unsigned n)
 {
   assert(!states.empty());
@@ -73,14 +63,6 @@ void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsi
 void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length)
 {
   buffer->writeITGData(name, data, length);
-}
-unsigned BufferGetLengthDouble(outputBuffer *buffer, const char *name)
-{
-  return buffer->getDoubleDataSize(name);
-}
-unsigned BufferGetLengthITG(outputBuffer *buffer, const char *name)
-{
-  return buffer->getITGDataSize(name);
 }
 void BufferLoadDouble(outputBuffer *buffer, const char *name, double *data, unsigned length)
 {
