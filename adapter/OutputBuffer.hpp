@@ -25,14 +25,14 @@ public:
 
   void clear();
   void writeNewStep();
-  void readNextStep();
+  void readNext();
   bool canRead();
 
-  double *getDoubleData(const std::string &name);
-  ITG *   getITGData(const std::string &name);
+  double *loadDouble(const std::string &name);
+  ITG *   loadITG(const std::string &name);
 
-  void writeDoubleData(const std::string &name, double *data, unsigned n);
-  void writeITGData(const std::string &name, ITG *data, unsigned n);
+  void saveDouble(const std::string &name, double *data, unsigned n);
+  void saveITG(const std::string &name, ITG *data, unsigned n);
 
 private:
   unsigned currentReadIter{0};
