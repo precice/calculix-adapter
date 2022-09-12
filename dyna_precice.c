@@ -2066,9 +2066,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
      if (precicec_isTimeWindowComplete())
       {
         /* Write the stored outputs using FRD */
-        printf("TW COMPLETE. Number of states is %u\n", BufferStoredStates(out_buffer));
         while (BufferNextIter(out_buffer)) {
-          printf("TW COMPLETE: LOADING.\n");
           BufferLoadDouble(out_buffer, "ptime", &ptime, 1);
           BufferLoadDouble(out_buffer, "veold", veold, mt **nk);
           BufferLoadDouble(out_buffer, "vold", vold, mt **nk);
