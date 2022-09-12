@@ -22,18 +22,20 @@ void outputBuffer::readNext()
   ++currentReadIter;
 }
 
-double *outputBuffer::loadDouble(const std::string &name)
+std::vector<double> &outputBuffer::loadDouble(const std::string &name)
 {
-  assert(states.size() > currentReadIter);
+  /*assert(states.size() > currentReadIter);
   auto &data_vector = this->states[currentReadIter].data_double[name];
-  return data_vector.data();
+  return data_vector.data();*/
+  return this->states[currentReadIter].data_double[name];
 }
 
-ITG *outputBuffer::loadITG(const std::string &name)
+std::vector<ITG> &outputBuffer::loadITG(const std::string &name)
 {
-  assert(states.size() > currentReadIter);
+  /*assert(states.size() > currentReadIter);
   auto &data_vector = this->states[currentReadIter].data_itg[name];
-  return data_vector.data();
+  return data_vector.data();*/
+  return this->states[currentReadIter].data_itg[name];
 }
 
 void outputBuffer::saveDouble(const std::string &name, double *data, unsigned n)
@@ -66,11 +68,15 @@ void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned l
 }
 void BufferLoadDouble(outputBuffer *buffer, const char *name, double *data, unsigned length)
 {
-  memcpy(data, buffer->loadDouble(name), length); //Length from the buffer or from ptr ?
+  //memcpy(data, buffer->loadDouble(name), length); //Length from the buffer or from ptr ?
+  const auto &vector = buffer->loadDouble(name);
+  memcpy(data, vector.data(), vector.size() * sizeof(double));
 }
 void BufferLoadITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length)
 {
-  memcpy(data, buffer->loadITG(name), length); //Length from the buffer or from ptr ?
+  //memcpy(data, buffer->loadITG(name), length * sizeof(double)); //Length from the buffer or from ptr ?
+  const auto &vector = buffer->loadITG(name);
+  memcpy(data, vector.data(), vector.size() * sizeof(ITG));
 }
 int BufferCanRead(outputBuffer *buffer)
 {
