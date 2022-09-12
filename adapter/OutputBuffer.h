@@ -32,8 +32,8 @@ void          BufferFree(outputBuffer *buffer);
 void          BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsigned length);
 void          BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length);
 
-void BufferLoadDouble(outputBuffer *buffer, const char *name, double *data, unsigned length);
-void BufferLoadITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length);
+void BufferLoadDouble(outputBuffer *buffer, const char *name, double *data);
+void BufferLoadITG(outputBuffer *buffer, const char *name, ITG *data);
 
 int      BufferCanRead(outputBuffer *buffer);
 void     BufferReadNext(outputBuffer *buffer);
