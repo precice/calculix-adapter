@@ -4,17 +4,18 @@
 
 void outputBuffer::clear() {
     this->states.clear();
-    currentReadIter = -1;
+    currentReadIter = 0;
 }
 
 void outputBuffer::writeNewStep() {
     this->states.push_back(State());
 }
 
-
-bool outputBuffer::readNext() {
-    ++currentReadIter;
+bool outputBuffer::canRead() {
     return currentReadIter < this->states.size();
+}
+void outputBuffer::readNextStep() {
+    ++currentReadIter;
 }
 
 double* outputBuffer::getDoubleData(const std::string &name) {
@@ -71,8 +72,11 @@ void BufferLoadDouble(outputBuffer* buffer, const char * name, double * data, un
 void BufferLoadITG(outputBuffer* buffer, const char * name, ITG * data, unsigned length) {
     memcpy(data, buffer->getITGData(name), length); //Length from the buffer or from ptr ?
 }
-int BufferNextIter(outputBuffer* buffer) {
-    return buffer->readNext();
+int BufferCanRead(outputBuffer* buffer) {
+    return buffer->canRead();
+}
+void BufferReadNext(outputBuffer* buffer) {
+    buffer->readNextStep();
 }
 void BufferWriteNewStep(outputBuffer* buffer) {
     buffer->writeNewStep();

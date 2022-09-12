@@ -29,11 +29,15 @@ outputBuffer* BufferCreate();
 void BufferFree(outputBuffer* buffer);
 void BufferSaveDouble(outputBuffer* buffer, const char * name, double * data, unsigned length);
 void BufferSaveITG(outputBuffer* buffer, const char * name, ITG * data, unsigned length);
+
 unsigned BufferGetLengthDouble(outputBuffer* buffer, const char * name);
 unsigned BufferGetLengthITG(outputBuffer* buffer, const char * name);
+
 void BufferLoadDouble(outputBuffer* buffer, const char * name, double * data, unsigned length);
 void BufferLoadITG(outputBuffer* buffer, const char * name, ITG * data, unsigned length);
-int BufferNextIter(outputBuffer* buffer);
+
+int BufferCanRead(outputBuffer* buffer);
+void BufferReadNext(outputBuffer* buffer);
 void BufferWriteNewStep(outputBuffer* buffer);
 void BufferClear(outputBuffer* buffer);
 unsigned BufferStoredStates(outputBuffer* buffer);

@@ -2066,7 +2066,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
      if (precicec_isTimeWindowComplete())
       {
         /* Write the stored outputs using FRD */
-        while (BufferNextIter(out_buffer)) {
+        while (BufferCanRead(out_buffer)) {
           BufferLoadDouble(out_buffer, "ptime", &ptime, 1);
           BufferLoadDouble(out_buffer, "veold", veold, mt **nk);
           BufferLoadDouble(out_buffer, "vold", vold, mt **nk);
@@ -2082,6 +2082,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
           thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
           prop, sti);
+
+          BufferReadNext(out_buffer);
 
         }
         BufferClear(out_buffer);

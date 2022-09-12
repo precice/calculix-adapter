@@ -25,7 +25,8 @@ public:
 
   void clear();
   void writeNewStep();
-  bool readNext();
+  void readNextStep();
+  bool canRead();
 
   double  *getDoubleData(const std::string &name);
   ITG     *getITGData(const std::string &name);
