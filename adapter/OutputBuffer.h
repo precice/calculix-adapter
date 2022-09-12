@@ -27,18 +27,93 @@
 
 typedef struct outputBuffer outputBuffer;
 
+/**
+ * @brief Get a handle to a buffer object, valid in C parts of the code
+ * 
+ * @return pointer to a buffer
+ */
 outputBuffer *BufferCreate();
-void          BufferFree(outputBuffer *buffer);
-void          BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsigned length);
-void          BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length);
 
+/**
+ * @brief Free the buffer object
+ * 
+ * @param buffer 
+ */
+void BufferFree(outputBuffer *buffer);
+
+/**
+ * @brief Saves an array of "double" at the current step, under a given name
+ * 
+ * @param buffer handle to the buffer 
+ * @param name name of the data to save
+ * @param data array of values
+ * @param length size of the array
+ */
+void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsigned length);
+
+/**
+ * @brief Saves an array of "ITG" at the current step, under a given name
+ * 
+ * @param buffer handle to the buffer 
+ * @param name name of the data to save
+ * @param data array of values
+ * @param length size of the array
+ */
+void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length);
+
+/**
+ * @brief Loads an array of "double" at the current step (modified through ReadNext and Clear) with a given name
+ * 
+ * @param buffer handle to the buffer 
+ * @param name name of the data to save
+ * @param data array of values
+ * 
+ * @pre data is long enough
+ */
 void BufferLoadDouble(outputBuffer *buffer, const char *name, double *data);
+
+/**
+ * @brief Loads an array of "ITG" at the current step (modified through ReadNext and Clear) with a given name
+ * 
+ * @param buffer handle to the buffer 
+ * @param name name of the data to save
+ * @param data array of values
+ * 
+ * @pre data is long enough
+ */
 void BufferLoadITG(outputBuffer *buffer, const char *name, ITG *data);
 
-int      BufferCanRead(outputBuffer *buffer);
-void     BufferReadNext(outputBuffer *buffer);
-void     BufferWriteNewStep(outputBuffer *buffer);
-void     BufferClear(outputBuffer *buffer);
+/**
+ * @brief Returns true (1) if BufferLoadX can be called (i.e. if there is still a step to read)
+ * 
+ */
+int BufferCanRead(outputBuffer *buffer);
+/**
+ * @brief Increment the step counter of data to read
+ * 
+ * @param buffer 
+ */
+void BufferReadNext(outputBuffer *buffer);
+/**
+ * @brief Start to store a new step
+ * 
+ * @param buffer 
+ */
+void BufferWriteNewStep(outputBuffer *buffer);
+
+/**
+ * @brief Clear the buffer and reset the reading counter
+ * 
+ * @param buffer 
+ */
+void BufferClear(outputBuffer *buffer);
+
+/**
+ * @brief Check how many states are stored
+ * 
+ * @param buffer 
+ * @return unsigned number of states that can be read
+ */
 unsigned BufferStoredStates(outputBuffer *buffer);
 
 #endif
