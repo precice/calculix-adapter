@@ -1,11 +1,14 @@
-/**********************************************************************************************
- *                                                                                            *
- *       CalculiX adapter for heat transfer coupling and mechanical FSI using preCICE         *
- *       Heat transfer adapter developed by Lucía Cheung with the support of SimScale GmbH    *
- *                                                                                            *
- *       Adapter extended to fluid-structure interaction by Alexander Rusch                   *
- *                                                                                            *
- *********************************************************************************************/
+/*
+    Code defining buffering mechanism for the output.
+
+    CalculiX outputs .frd file using the frd() function, which takes many parameters.
+    When doing implicit coupling with subcycling in preCICE, only the sub-steps of the final iteration of 
+    a time window must be outputted. Thus, it is necessary to store data until the end of the time window:
+    - If the window converged, the stored steps can be outputted all at once.
+    - If the window must be restarted, the buffer should be cleared.
+
+    All of this is necessary because CalculiX does not expect to go back by more than one step.
+*/
 
 #ifndef CCX_OUTPUTBUFFER_H
 #define CCX_OUTPUTBUFFER_H

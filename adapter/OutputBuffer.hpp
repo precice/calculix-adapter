@@ -1,11 +1,6 @@
-/**********************************************************************************************
- *                                                                                            *
- *       CalculiX adapter for heat transfer coupling and mechanical FSI using preCICE         *
- *       Heat transfer adapter developed by Lucía Cheung with the support of SimScale GmbH    *
- *                                                                                            *
- *       Adapter extended to fluid-structure interaction by Alexander Rusch                   *
- *                                                                                            *
- *********************************************************************************************/
+/*
+  Implementation of the API defined in OutputBuffer.h
+*/
 
 #ifndef CCX_OUTPUT_BUFFER_HPP
 #define CCX_OUTPUT_BUFFER_HPP
