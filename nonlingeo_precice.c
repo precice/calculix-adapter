@@ -1680,17 +1680,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         iinc++;
         jprint++;
 
-        // Save start-of-increment things.
-        isiz = mt * *nk;
-        cpypardou(vold_checkpoint, vold, &isiz, &num_cpus);
-
-        isiz = *nboun;
-        cpypardou(xbounact_checkpoint, xbounact, &isiz, &num_cpus);
 
         kode_backup = *kode;
-
-        isiz = neq[1];
-        cpypardou(fini_checkpoint, f, &isiz, &num_cpus);
 
         // TODO
         iinc_old = iinc;
@@ -3770,17 +3761,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         iinc = iinc_old;
         jprint = jprint_old;
 
-        isiz = *nboun;
-
-        cpypardou(xbounact, xbounact_checkpoint, &isiz, &num_cpus);
-        cpypardou(xbounini, xbounact_checkpoint, &isiz, &num_cpus);
         icutb++;
 
         *kode = kode_backup;
 
-        isiz = neq[1];
-        cpypardou(fini, fini_checkpoint, &isiz, &num_cpus);
-        cpypardou(f, fini_checkpoint, &isiz, &num_cpus);
 
       }
       Precice_FulfilledReadCheckpoint();
