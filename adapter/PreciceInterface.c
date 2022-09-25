@@ -443,6 +443,14 @@ void Precice_FreeData(SimulationData *sim)
     free(sim->coupling_init_v);
   }
 
+  if (sim->coupling_init_ve != NULL) {
+    free(sim->coupling_init_ve);
+  }
+
+  if (sim->coupling_init_acc != NULL) {
+    free(sim->coupling_init_acc);
+  }
+
   for (i = 0; i < sim->numPreciceInterfaces; i++) {
     PreciceInterface_FreeData(sim->preciceInterfaces[i]);
     free(sim->preciceInterfaces[i]);
