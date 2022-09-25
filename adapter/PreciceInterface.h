@@ -138,7 +138,6 @@ typedef struct SimulationData {
   double *coupling_init_v;
   double *coupling_init_ve;
   double *coupling_init_acc;
-  double *coupling_init_xboun;
   double  coupling_init_theta;
   double  coupling_init_dtheta;
   double  precice_dt;

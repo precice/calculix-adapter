@@ -1640,15 +1640,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   printf("Creating a buffer to output correctly when subcycling is used.\n");
   outputBuffer *out_buffer = BufferCreate();
 
-  double* vold_checkpoint, *xbounact_checkpoint, *fini_checkpoint, *veini_checkpoint, *accinit_checkpoint; //Value at the beginning of a time window
   ITG     kode_backup;
   int iinc_old, jprint_old;
-  NNEW(vold_checkpoint, double, mt **nk);
-  NNEW(veini_checkpoint, double, mt **nk);
-  NNEW(accinit_checkpoint, double, mt **nk);
 
-  NNEW(xbounact_checkpoint, double, *nboun);
-  NNEW(fini_checkpoint, double, neq[1]);
   while (Precice_IsCouplingOngoing()) {
 
     /* Adapter: Adjust solver time step */
@@ -1686,31 +1680,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         // TODO
         iinc_old = iinc;
         jprint_old = jprint;
-
-        if (*nmethod == 4) {
-          if (*iexpl <= 1) {
-            isiz = mt * *nk;
-            cpypardou(veini_checkpoint, veold, &isiz, &num_cpus);
-            cpypardou(accinit_checkpoint, accold, &isiz, &num_cpus);
-          }
-          isiz = mt * *nk;
-          cpypardou(fnextini, fnext, &isiz, &num_cpus);
-
-          isiz = neq[1];
-          cpypardou(fextini, fext, &isiz, &num_cpus);
-          cpypardou(cvini, cv, &isiz, &num_cpus);
-
-          if (*ithermal < 2) {
-            allwkini = allwk;
-            // MPADD start
-            if (idamping == 1)
-              dampwkini = dampwk;
-            for (k = 0; k < 4; k++) {
-              energyini[k] = energy[k];
-            }
-            // MPADD end
-          }
-        }
 
         //END TODO
         Precice_FulfilledWriteCheckpoint();

@@ -53,7 +53,6 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   NNEW(sim->coupling_init_v, double, sim->mt * sim->nk);
   NNEW(sim->coupling_init_ve, double, sim->mt * sim->nk);
   NNEW(sim->coupling_init_acc, double, sim->mt * sim->nk);
-  NNEW(sim->coupling_init_xboun, double, sim->nboun);
 
   // Initialize preCICE
   sim->precice_dt = precicec_initialize();
