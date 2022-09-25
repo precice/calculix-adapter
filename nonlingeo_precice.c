@@ -38,6 +38,7 @@
 
 /* Adapter: Add header */
 #include "adapter/PreciceInterface.h"
+#include "adapter/OutputBuffer.h"
 
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 
@@ -1635,6 +1636,19 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
+  /* Adapter: create an output buffer */
+  printf("Creating a buffer to output correctly when subcycling is used.\n");
+  outputBuffer *out_buffer = BufferCreate();
+
+  double* vold_checkpoint, *xbounact_checkpoint, *fini_checkpoint, *veini_checkpoint, *accinit_checkpoint; //Value at the beginning of a time window
+  ITG     kode_backup;
+  int iinc_old, jprint_old;
+  NNEW(vold_checkpoint, double, mt **nk);
+  NNEW(veini_checkpoint, double, mt **nk);
+  NNEW(accinit_checkpoint, double, mt **nk);
+
+  NNEW(xbounact_checkpoint, double, *nboun);
+  NNEW(fini_checkpoint, double, neq[1]);
   while (Precice_IsCouplingOngoing()) {
 
     /* Adapter: Adjust solver time step */
@@ -1646,9 +1660,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       /* previous increment converged: update the initial values */
 
-      iinc++;
-      jprint++;
-
+      
       /* store number of elements (important for implicit dynamic
    contact */
 
@@ -1659,13 +1671,60 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       isiz = mt * *nk;
       cpypardou(vini, vold, &isiz, &num_cpus);
 
+      isiz = *nboun;
+      cpypardou(xbounini, xbounact, &isiz, &num_cpus);
+
       if (Precice_IsWriteCheckpointRequired()) {
         Precice_WriteIterationCheckpoint(&simulationData, vini);
+
+        iinc++;
+        jprint++;
+
+        // Save start-of-increment things.
+        isiz = mt * *nk;
+        cpypardou(vold_checkpoint, vold, &isiz, &num_cpus);
+
+        isiz = *nboun;
+        cpypardou(xbounact_checkpoint, xbounact, &isiz, &num_cpus);
+
+        kode_backup = *kode;
+
+        isiz = neq[1];
+        cpypardou(fini_checkpoint, f, &isiz, &num_cpus);
+
+        // TODO
+        iinc_old = iinc;
+        jprint_old = jprint;
+
+        if (*nmethod == 4) {
+          if (*iexpl <= 1) {
+            isiz = mt * *nk;
+            cpypardou(veini_checkpoint, veold, &isiz, &num_cpus);
+            cpypardou(accinit_checkpoint, accold, &isiz, &num_cpus);
+          }
+          isiz = mt * *nk;
+          cpypardou(fnextini, fnext, &isiz, &num_cpus);
+
+          isiz = neq[1];
+          cpypardou(fextini, fext, &isiz, &num_cpus);
+          cpypardou(cvini, cv, &isiz, &num_cpus);
+
+          if (*ithermal < 2) {
+            allwkini = allwk;
+            // MPADD start
+            if (idamping == 1)
+              dampwkini = dampwk;
+            for (k = 0; k < 4; k++) {
+              energyini[k] = energy[k];
+            }
+            // MPADD end
+          }
+        }
+
+        //END TODO
         Precice_FulfilledWriteCheckpoint();
       }
 
-      isiz = *nboun;
-      cpypardou(xbounini, xbounact, &isiz, &num_cpus);
       if ((*ithermal == 1) || (*ithermal >= 3)) {
         isiz = *nk;
         cpypardou(t1ini, t1act, &isiz, &num_cpus);
@@ -3708,7 +3767,30 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vold);
+        iinc = iinc_old;
+        jprint = jprint_old;
+
+        isiz = mt * *nk;
+        cpypardou(vold, vold_checkpoint, &isiz, &num_cpus);
+        cpypardou(vini, vold_checkpoint, &isiz, &num_cpus);
+        isiz = *nboun;
+
+        cpypardou(xbounact, xbounact_checkpoint, &isiz, &num_cpus);
+        cpypardou(xbounini, xbounact_checkpoint, &isiz, &num_cpus);
         icutb++;
+
+        *kode = kode_backup;
+
+        isiz = neq[1];
+        cpypardou(fini, fini_checkpoint, &isiz, &num_cpus);
+        cpypardou(f, fini_checkpoint, &isiz, &num_cpus);
+
+        isiz = mt * *nk;
+        cpypardou(veini, veini_checkpoint, &isiz, &num_cpus);
+        cpypardou(veold, veini_checkpoint, &isiz, &num_cpus);
+
+        cpypardou(accini, accinit_checkpoint, &isiz, &num_cpus);
+        cpypardou(accold, accinit_checkpoint, &isiz, &num_cpus);
       }
       Precice_FulfilledReadCheckpoint();
     }
@@ -3906,7 +3988,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
     /* output */
 
-    if ((jout[0] == jprint) && (icutb == 0)) {
+    if ((jout[0] == jprint) && (icutb == 0) && precicec_isTimeWindowComplete()) {
 
       jprint = 0;
 
