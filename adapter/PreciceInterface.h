@@ -136,6 +136,9 @@ typedef struct SimulationData {
 
   // Coupling data
   double *coupling_init_v;
+  double *coupling_init_ve;
+  double *coupling_init_acc;
+  double *coupling_init_xboun;
   double  coupling_init_theta;
   double  coupling_init_dtheta;
   double  precice_dt;
@@ -213,15 +216,19 @@ void Precice_FulfilledWriteCheckpoint();
  * @brief Reads iteration checkpoint
  * @param sim: Structure with CalculiX data
  * @param v: CalculiX array with the temperature and displacement values
+ * @param ve: CalculiX array with the temperature and displacement derivatives
+ * @param acc: CalculiX array with the temperature and displacement acceleration
  */
-void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v);
+void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v, double *ve, double *acc);
 
 /**
  * @brief Writes iteration checkpoint
  * @param sim: Structure with CalculiX data
  * @param v: CalculiX array with the temperature and displacement values
+ * @param ve: CalculiX array with the temperature and displacement derivatives
+ * @param acc: CalculiX array with the temperature and displacement acceleration
  */
-void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v);
+void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v, double *ve, double *acc);
 
 /**
  * @brief Reads iteration checkpoint (in dyna_precice)

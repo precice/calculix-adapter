@@ -1675,7 +1675,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       cpypardou(xbounini, xbounact, &isiz, &num_cpus);
 
       if (Precice_IsWriteCheckpointRequired()) {
-        Precice_WriteIterationCheckpoint(&simulationData, vini);
+        Precice_WriteIterationCheckpoint(&simulationData, vini, veini, accini);
 
         iinc++;
         jprint++;
@@ -3766,13 +3766,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     /* Adapter: If the coupling does not converge, read the checkpoint */
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
-        Precice_ReadIterationCheckpoint(&simulationData, vold);
+        Precice_ReadIterationCheckpoint(&simulationData, vini, veini, accini);
         iinc = iinc_old;
         jprint = jprint_old;
 
         isiz = mt * *nk;
-        cpypardou(vold, vold_checkpoint, &isiz, &num_cpus);
-        cpypardou(vini, vold_checkpoint, &isiz, &num_cpus);
+        //cpypardou(vold, vold_checkpoint, &isiz, &num_cpus);
+        //cpypardou(vini, vold_checkpoint, &isiz, &num_cpus);
         isiz = *nboun;
 
         cpypardou(xbounact, xbounact_checkpoint, &isiz, &num_cpus);
@@ -3786,11 +3786,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         cpypardou(f, fini_checkpoint, &isiz, &num_cpus);
 
         isiz = mt * *nk;
-        cpypardou(veini, veini_checkpoint, &isiz, &num_cpus);
-        cpypardou(veold, veini_checkpoint, &isiz, &num_cpus);
+        //cpypardou(veini, veini_checkpoint, &isiz, &num_cpus);
+        //cpypardou(veold, veini_checkpoint, &isiz, &num_cpus);
 
-        cpypardou(accini, accinit_checkpoint, &isiz, &num_cpus);
-        cpypardou(accold, accinit_checkpoint, &isiz, &num_cpus);
+        //cpypardou(accini, accinit_checkpoint, &isiz, &num_cpus);
+        //cpypardou(accold, accinit_checkpoint, &isiz, &num_cpus);
       }
       Precice_FulfilledReadCheckpoint();
     }
