@@ -3770,9 +3770,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         iinc = iinc_old;
         jprint = jprint_old;
 
-        isiz = mt * *nk;
-        //cpypardou(vold, vold_checkpoint, &isiz, &num_cpus);
-        //cpypardou(vini, vold_checkpoint, &isiz, &num_cpus);
         isiz = *nboun;
 
         cpypardou(xbounact, xbounact_checkpoint, &isiz, &num_cpus);
@@ -3785,12 +3782,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         cpypardou(fini, fini_checkpoint, &isiz, &num_cpus);
         cpypardou(f, fini_checkpoint, &isiz, &num_cpus);
 
-        isiz = mt * *nk;
-        //cpypardou(veini, veini_checkpoint, &isiz, &num_cpus);
-        //cpypardou(veold, veini_checkpoint, &isiz, &num_cpus);
-
-        //cpypardou(accini, accinit_checkpoint, &isiz, &num_cpus);
-        //cpypardou(accold, accinit_checkpoint, &isiz, &num_cpus);
       }
       Precice_FulfilledReadCheckpoint();
     }
