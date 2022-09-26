@@ -38,7 +38,6 @@
 
 /* Adapter: Add header */
 #include "adapter/PreciceInterface.h"
-#include "adapter/OutputBuffer.h"
 
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 
