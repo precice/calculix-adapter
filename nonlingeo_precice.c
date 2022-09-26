@@ -1637,7 +1637,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
 
   ITG     kode_backup;
-  int iinc_old, jprint_old;
 
   while (Precice_IsCouplingOngoing()) {
 
@@ -1671,8 +1670,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         jprint++;
 
         kode_backup = *kode;
-        iinc_old = iinc;
-        jprint_old = jprint;
+        simulationData.stored_iinc = iinc;
+        simulationData.stored_jprint = jprint;
 
         Precice_FulfilledWriteCheckpoint();
       }
@@ -3719,14 +3718,12 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vini, veini, accini);
-        iinc = iinc_old;
-        jprint = jprint_old;
+        iinc = simulationData.stored_iinc;
+        jprint simulationData.stored_jprint;
 
         icutb++;
 
         *kode = kode_backup;
-
-
       }
       Precice_FulfilledReadCheckpoint();
     }
