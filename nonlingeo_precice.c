@@ -3719,7 +3719,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vini, veini, accini);
         iinc = simulationData.stored_iinc;
-        jprint simulationData.stored_jprint;
+        jprint = simulationData.stored_jprint;
 
         icutb++;
 
