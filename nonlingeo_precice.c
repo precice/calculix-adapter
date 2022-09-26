@@ -1635,9 +1635,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
-  /* Adapter: create an output buffer */
-  printf("Creating a buffer to output correctly when subcycling is used.\n");
-  outputBuffer *out_buffer = BufferCreate();
 
   ITG     kode_backup;
   int iinc_old, jprint_old;
