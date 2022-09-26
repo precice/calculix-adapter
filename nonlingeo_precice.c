@@ -1673,14 +1673,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         iinc++;
         jprint++;
 
-
         kode_backup = *kode;
-
-        // TODO
         iinc_old = iinc;
         jprint_old = jprint;
 
-        //END TODO
         Precice_FulfilledWriteCheckpoint();
       }
 
