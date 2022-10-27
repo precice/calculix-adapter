@@ -10,7 +10,7 @@ The CalculiX adapter for preCICE directly modifies the source code of CalculiX a
 [CalculiX](http://www.dhondt.de) consists of the solver, called "CCX" and a pre- and postprocessing software with graphical user interface "CGX".
 
 - The installation procedure of CCX is described in its `src/README.INSTALL` files, but we also give a summary here.
-- We don't modify CGX, so you can simply get a binary package (if needed, e.g. as a preprocessor in our FSI tutorials)
+- We don't modify CGX, so you can get a binary package (if needed, e.g. as a preprocessor in our FSI tutorials)
 
 You don't need to build the "vanilla" CalculiX before building the adapter. But you do need to get all the dependencies and the source code of CCX.
 

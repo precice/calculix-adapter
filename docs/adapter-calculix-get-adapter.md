@@ -11,7 +11,7 @@ There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), o
 
 ## Get a binary package
 
-You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, simply open it in your software center.
+You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, open it in your software center.
 
 Alternatively, download & install it from the command line. For Ubuntu 22.04 (jammy):
 
