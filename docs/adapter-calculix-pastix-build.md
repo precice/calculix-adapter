@@ -137,7 +137,7 @@ Before building the library, the following modifications are required:
 - If you extracted the archive on another folder than your home repository, update `home` in `ARmake.inc` accordingly.
 - In the file `UTIL/second.f`, comment with a star the line containing `EXTERNAL ETIME`.
 
-Once all of these are done, simply run `make lib` in the `ARPACK` folder.
+Once all of these are done, run `make lib` in the `ARPACK` folder.
 
 ## Building the adapter
 
