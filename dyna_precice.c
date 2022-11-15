@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CalculiX.h"
-
 #ifdef SPOOLES
 #include "spooles.h"
 #endif
@@ -37,6 +36,7 @@
 #endif
 
 /* Adapter: Add header */
+#include "adapter/OutputBuffer.h"
 #include "adapter/PreciceInterface.h"
 
 void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp, ITG *ne,
@@ -209,43 +209,48 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   /* Adapter: Put all the CalculiX data that is needed for the coupling into an array */
   struct SimulationData simulationData = {
-      .ialset         = ialset,
-      .ielmat         = ielmat,
-      .istartset      = istartset,
-      .iendset        = iendset,
-      .kon            = kon,
-      .ipkon          = ipkon,
-      .lakon          = lakon,
-      .co             = co,
-      .set            = set,
-      .nset           = *nset,
-      .ikboun         = ikboun,
-      .ikforc         = ikforc,
-      .ilboun         = ilboun,
-      .ilforc         = ilforc,
-      .nboun          = *nboun,
-      .nforc          = *nforc,
-      .nelemload      = nelemload,
-      .nload          = *nload,
-      .sideload       = sideload,
-      .mt             = mt,
-      .nk             = *nk,
-      .ne             = *ne,
-      .theta          = &theta,
-      .dtheta         = &dtheta,
-      .tper           = tper,
-      .nmethod        = nmethod,
-      .xload          = xload,
-      .xforc          = xforc,
-      .xboun          = xboun,
-      .ntmat_         = ntmat_,
-      .vold           = vold,
-      .veold          = veold,
-      .fn             = fn,
-      .cocon          = cocon,
-      .ncocon         = ncocon,
-      .mi             = mi,
-      .isModalDynamic = 1};
+      .ialset               = ialset,
+      .ielmat               = ielmat,
+      .istartset            = istartset,
+      .iendset              = iendset,
+      .kon                  = kon,
+      .ipkon                = ipkon,
+      .lakon                = lakon,
+      .co                   = co,
+      .set                  = set,
+      .nset                 = *nset,
+      .ikboun               = ikboun,
+      .ikforc               = ikforc,
+      .ilboun               = ilboun,
+      .ilforc               = ilforc,
+      .nboun                = *nboun,
+      .nforc                = *nforc,
+      .nelemload            = nelemload,
+      .nload                = *nload,
+      .sideload             = sideload,
+      .mt                   = mt,
+      .nk                   = *nk,
+      .ne                   = *ne,
+      .theta                = &theta,
+      .dtheta               = &dtheta,
+      .tper                 = tper,
+      .nmethod              = nmethod,
+      .xload                = xload,
+      .xforc                = xforc,
+      .xboun                = xboun,
+      .ntmat_               = ntmat_,
+      .vold                 = vold,
+      .veold                = veold,
+      .fn                   = fn,
+      .cocon                = cocon,
+      .ncocon               = ncocon,
+      .mi                   = mi,
+      .isModalDynamic       = 1,
+      .eigenDOFs            = NULL,
+      .eigenDOFsDerivatives = NULL,
+      .stored_iinc          = iinc,
+      .stored_jprint        = jprint,
+      .kode_value           = *kode};
 
   if (ithermal[0] <= 1) {
     kmin = 1;
@@ -1411,9 +1416,15 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
+  /* Adapter: allocate checkpointing buffers. Freed in Precice_FreeData */
+  simulationData.eigenDOFs            = malloc(sizeof(double) * nev);
+  simulationData.eigenDOFsDerivatives = malloc(sizeof(double) * nev);
+
+  /* Adapter: create an output buffer */
+  printf("Creating a buffer to output correctly when subcycling is used.\n");
+  outputBuffer *out_buffer = BufferCreate();
   /* Adapter: Give preCICE the control of the time stepping */
   while (Precice_IsCouplingOngoing()) {
-
     /* Adapter: Adjust solver time step */
     Precice_AdjustSolverTimestep(&simulationData);
     /* Adapter read coupling data if available */
@@ -1431,11 +1442,13 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       }
     }
     if (Precice_IsWriteCheckpointRequired()) {
-      Precice_WriteIterationCheckpoint(&simulationData, vini);
+      Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
       // Otherwise, each iteration in implicit coupling would be written as a new step
       iinc++;
       jprint++;
+      simulationData.kode_value = *kode;
       Precice_FulfilledWriteCheckpoint();
+      BufferClear(out_buffer);
     }
 
     if (dashpot)
@@ -2009,14 +2022,19 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         }
       }
     }
-    if (iout == 2) {
+    //if (iout == 2) {
+    /* Adatper: TODO, integrate configurable output frequency */
+    if (1) {
       (*kode)++;
       if (strcmp1(&filab[1044], "ZZS") == 0) {
         NNEW(neigh, ITG, 40 * *ne);
         NNEW(ipneigh, ITG, *nk);
       }
-
       ptime = *ttime + time;
+      BufferWriteNewStep(out_buffer);
+      /* preCICE adapter: memorize required calls then do them later, if converged */
+      /*
+      
       frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
           kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
           nstate_, istep, &iinc, ithermal, qfn, &mode, &noddiam, trab, inotr,
@@ -2025,6 +2043,14 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
           thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
           prop, sti);
+      /*/
+
+      BufferSaveDouble(out_buffer, "ptime", &ptime, 1);
+      BufferSaveDouble(out_buffer, "veold", veold, mt * *nk);
+      BufferSaveDouble(out_buffer, "vold", vold, mt * *nk);
+      BufferSaveDouble(out_buffer, "v", v, mt * *nk);
+      BufferSaveITG(out_buffer, "iinc", &iinc, 1);
+      BufferSaveITG(out_buffer, "kode", kode, 1);
 
       if (strcmp1(&filab[1044], "ZZS") == 0) {
         SFREE(ipneigh);
@@ -2036,13 +2062,36 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     Precice_WriteCouplingData(&simulationData);
     /* Adapter: Advance the coupling */
     Precice_Advance(&simulationData);
+    if (precicec_isTimeWindowComplete()) {
+      /* Write the stored outputs using FRD */
+      while (BufferCanRead(out_buffer)) {
+        BufferLoadDouble(out_buffer, "ptime", &ptime);
+        BufferLoadDouble(out_buffer, "veold", veold);
+        BufferLoadDouble(out_buffer, "vold", vold);
+        BufferLoadDouble(out_buffer, "v", v);
+        BufferLoadITG(out_buffer, "iinc", &iinc);
+        BufferLoadITG(out_buffer, "kode", kode);
+
+        frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
+            kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
+            nstate_, istep, &iinc, ithermal, qfn, &mode, &noddiam, trab, inotr,
+            ntrans, orab, ielorien, norien, description, ipneigh, neigh,
+            mi, stx, vr, vi, stnr, stni, vmax, stnmax, &ngraph, veold, ener, ne,
+            cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
+            thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
+            prop, sti);
+
+        BufferReadNext(out_buffer);
+      }
+      BufferClear(out_buffer);
+    }
     /* Adapter: If the coupling does not converge, read the checkpoint */
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
-        Precice_ReadIterationCheckpoint(&simulationData, vold);
-        memcpy(&bj[0], &cd[0], sizeof(double) * nev);
-        memcpy(&bjp[0], &cv[0], sizeof(double) * nev);
+        Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
+        *kode = simulationData.kode_value;
       }
+      BufferClear(out_buffer);
       Precice_FulfilledReadCheckpoint();
     }
 
@@ -2433,6 +2482,6 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   /* Adapter: Free the memory */
   Precice_FreeData(&simulationData);
-
+  BufferFree(out_buffer);
   return;
 }

@@ -160,6 +160,40 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
   memcpy(sim->coupling_init_v, v, sizeof(double) * sim->mt * sim->nk);
 }
 
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev)
+{
+
+  printf("Adapter reading checkpoint...\n");
+  fflush(stdout);
+
+  // Reload time
+  *(sim->theta) = sim->coupling_init_theta;
+
+  // Reload step size
+  *(sim->dtheta) = sim->coupling_init_dtheta;
+
+  // Reload DOFs in eigenmodes space & counters
+  memcpy(dofs, sim->eigenDOFs, sizeof(double) * nev);
+  memcpy(derivatives, sim->eigenDOFsDerivatives, sizeof(double) * nev);
+}
+
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev)
+{
+
+  printf("Adapter writing checkpoint...\n");
+  fflush(stdout);
+
+  // Save time
+  sim->coupling_init_theta = *(sim->theta);
+
+  // Save step size
+  sim->coupling_init_dtheta = *(sim->dtheta);
+
+  // Save DOFs in eigenmodes space & counters
+  memcpy(sim->eigenDOFs, dofs, sizeof(double) * nev);
+  memcpy(sim->eigenDOFsDerivatives, derivatives, sizeof(double) * nev);
+}
+
 void Precice_ReadCouplingData(SimulationData *sim)
 {
 
@@ -409,6 +443,15 @@ void Precice_FreeData(SimulationData *sim)
   }
 
   free(sim->preciceInterfaces);
+
+  // Clean up checkpointing buffers
+  if (sim->eigenDOFs != NULL) {
+    free(sim->eigenDOFs);
+  }
+  if (sim->eigenDOFsDerivatives != NULL) {
+    free(sim->eigenDOFsDerivatives);
+  }
+
   precicec_finalize();
 }
 
