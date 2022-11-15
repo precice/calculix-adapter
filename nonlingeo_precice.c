@@ -1635,8 +1635,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
-
-  ITG     kode_backup;
+  ITG kode_backup;
 
   while (Precice_IsCouplingOngoing()) {
 
@@ -1649,7 +1648,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       /* previous increment converged: update the initial values */
 
-      
       /* store number of elements (important for implicit dynamic
    contact */
 
@@ -1669,8 +1667,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         iinc++;
         jprint++;
 
-        kode_backup = *kode;
-        simulationData.stored_iinc = iinc;
+        kode_backup                  = *kode;
+        simulationData.stored_iinc   = iinc;
         simulationData.stored_jprint = jprint;
 
         Precice_FulfilledWriteCheckpoint();
@@ -3718,7 +3716,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     if (Precice_IsReadCheckpointRequired()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vini, veini, accini);
-        iinc = simulationData.stored_iinc;
+        iinc   = simulationData.stored_iinc;
         jprint = simulationData.stored_jprint;
 
         icutb++;

@@ -130,7 +130,7 @@ void Precice_FulfilledWriteCheckpoint()
   precicec_markActionFulfilled("write-iteration-checkpoint");
 }
 
-void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v, double *ve, double* acc)
+void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v, double *ve, double *acc)
 {
 
   printf("Adapter reading checkpoint...\n");
