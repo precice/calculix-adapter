@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                   */
-/*              Copyright (C) 1998-2021 Guido Dhondt                          */
+/*              Copyright (C) 1998-2022 Guido Dhondt                          */
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
 /*     published by the Free Software Foundation(version 2);    */
@@ -142,7 +142,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
          *shcon = NULL, *xmr = NULL, *xmi = NULL, *xnoels = NULL, *pslavsurf = NULL,
          *pmastsurf = NULL, *cdnr = NULL, *cdni = NULL, *tinc, *tper, *tmin, *tmax,
          *energyini = NULL, *energy = NULL, alea, *fext = NULL, *smscale = NULL,
-         *autloc = NULL, *xboun2 = NULL, *coefmpc2 = NULL;
+         *autloc = NULL, *xboun2 = NULL, *coefmpc2 = NULL, *fnext = NULL;
 
   FILE *f1;
 
@@ -154,17 +154,17 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   ITG token;
 #endif
 
-  /*    if iabsload=0: aamech is modified by the present incremental
-  contribution of fext
-  iabsload=1: the last incremental contribution is
-  subtracted before the new one is added to fext;
-  this latter incremental contribution is used
-  to update aamech
-  iabsload=2: aamech is determined by the absolute
-  contribution of fext (no incremental procedure
-  for the load; this is necessary if
-  - nonlinear MPC's are applied or
-  - user dloads are applied */
+  /*    if iabsload=0: aamech is modified by the present incremental 
+	contribution of fext
+	iabsload=1: the last incremental contribution is
+	subtracted before the new one is added to fext;
+	this latter incremental contribution is used
+	to update aamech
+	iabsload=2: aamech is determined by the absolute
+	contribution of fext (no incremental procedure
+	for the load; this is necessary if
+	- nonlinear MPC's are applied or
+	- user dloads are applied */
 
   co       = *cop;
   kon      = *konp;
@@ -350,7 +350,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   if (iperturb[0] == 1) {
     NNEW(vold, double, mt **nk);
     if (fread(vold, sizeof(double), mt * *nk, f1) != mt * *nk) {
-      printf("*ERROR in dyna reading the reference displacements in the eigenvalue file...");
+      printf(" *ERROR in dyna reading the reference displacements in the eigenvalue file...");
       printf(" *INFO  in dyna: if there are problems reading the .eig file this may be due to:\n");
       printf("        1) the nonexistence of the .eig file\n");
       printf("        2) other boundary conditions than in the input deck\n");
@@ -360,7 +360,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   }
 
   /* copying the displacements from the previous step as initial conditions in
-     vini (only if
+     vini (only if 
      - not cyclic symmetric; initial conditions for cyclic symmetric
        calculations are assumed to be zero
      - AND not perturbed: if this is a perturbation step the initial
@@ -393,7 +393,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                         nboun, nset, ntie, tieset, set, lakon, kon, ipkon, labmpc,
                         ilboun, filab, prlab, prset, nprint, ne, &cyclicsymmetry));
 
-  /* if results are requested in too many nodes, it is faster to
+  /* if results are requested in too many nodes, it is faster to 
      calculate the results in all nodes */
 
   if ((nmdnode > *nk / 2) && (!cyclicsymmetry)) {
@@ -445,7 +445,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     SFREE(inoel);
   }
 
-  /* if results are requested in too many nodes, it is faster to
+  /* if results are requested in too many nodes, it is faster to 
      calculate the results in all nodes */
 
   if ((nmdnode > *nk / 2) && (!cyclicsymmetry)) {
@@ -762,7 +762,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     for (i = 0; i < *ntie; i++) {
       if (tieset[i * (81 * 3) + 80] == 'C') {
 
-        // a contact constraint was found, so increase nalset
+        //a contact constraint was found, so increase nalset
 
         memcpy(tchar2, &tieset[i * (81 * 3) + 81], 81);
         tchar2[80] = '\0';
@@ -773,12 +773,12 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           tchar1[80] = '\0';
           if (strcmp(tchar1, tchar2) == 0) {
 
-            // dependent nodal surface was found
+            //dependent nodal surface was found
 
             (*nalset) += (iendset[j] - istartset[j] + 1) * (nsectors);
           } else if (strcmp(tchar1, tchar3) == 0) {
 
-            // independent element face surface was found
+            //independent element face surface was found
 
             (*nalset) += (iendset[j] - istartset[j] + 1) * (nsectors);
           }
@@ -891,7 +891,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   *tmax = *tmax / (*tper);
   theta = 0.;
 
-  /* check for rigid body modes
+  /* check for rigid body modes 
      if there is a jump of 1.e4 in two subsequent eigenvalues
      all eigenvalues preceding the jump are considered to
      be rigid body modes and their frequency is set to zero */
@@ -974,7 +974,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   /* contact conditions */
 
-  /* storing the element and topology information before introducing
+  /* storing the element and topology information before introducing 
      contact elements */
 
   ne0   = *ne;
@@ -990,17 +990,17 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       if (fabs(d[i]) > (1.e-10)) {
         zeta[i] = (alpham + betam * d[i] * d[i]) / (2. * d[i]);
       } else {
-        printf("*WARNING in dyna: one of the frequencies is zero\n");
+        printf(" *WARNING in dyna: one of the frequencies is zero\n");
         printf("         no Rayleigh mass damping allowed\n");
         zeta[i] = 0.;
       }
 
       /* if the nodal diameter exceeds half the number of sectors
-   the sign of the damping has to be reversed (omega is negative) */
+	 the sign of the damping has to be reversed (omega is negative) */
 
       /*	if(cyclicsymmetry){
-    if(nm[i]>nsectors/2) zeta[i]*=-1.;
-    }*/
+		if(nm[i]>nsectors/2) zeta[i]*=-1.;
+		}*/
     }
   }
   //  else{
@@ -1010,7 +1010,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
     if (nev < (ITG) xmodal[10]) {
       imax = nev;
-      printf("*WARNING in dyna: too many modal damping coefficients applied\n");
+      printf(" *WARNING in dyna: too many modal damping coefficients applied\n");
       printf("         damping coefficients corresponding to nonexisting eigenvalues are ignored\n");
     } else {
       imax = (ITG) xmodal[10];
@@ -1019,11 +1019,11 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       zeta[i] = xmodal[11 + i];
 
       /* if the nodal diameter exceeds half the number of sectors
-   the sign of the damping has to be reversed (omega is negative) */
+	 the sign of the damping has to be reversed (omega is negative) */
 
       /*   if(cyclicsymmetry){
-     if(nm[i]>nsectors/2) zeta[i]*=-1.;
-     }*/
+	   if(nm[i]>nsectors/2) zeta[i]*=-1.;
+	   }*/
     }
   }
 
@@ -1119,7 +1119,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     NNEW(ipobody,ITG,2**ne);
     for(k=1;k<=*nbody;k++){
       FORTRAN(bodyforce,(cbody,ibody,ipobody,nbody,set,istartset,
-       iendset,ialset,&inewton,nset,&ifreebody,&k));
+			 iendset,ialset,&inewton,nset,&ifreebody,&k));
       RENEW(ipobody,ITG,2*(*ne+ifreebody));
     }
     RENEW(ipobody,ITG,2*(ifreebody-1));
@@ -1193,9 +1193,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     }
   }
 
-  /*     calculating the instantaneous loads (forces, surface loading,
-   centrifugal and gravity loading or temperature) at time 0
-   setting iabsload to 2 if user subroutine dload is used */
+  /*     calculating the instantaneous loads (forces, surface loading, 
+	 centrifugal and gravity loading or temperature) at time 0 
+	 setting iabsload to 2 if user subroutine dload is used */
 
   /*  FORTRAN(tempload,(xforcold,xforc,xforcact,iamforc,nforc,xloadold,
       xload,xloadact,iamload,nload,ibody,xbody,nbody,xbodyold,
@@ -1235,7 +1235,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
           nplicon, plkcon, nplkcon, npmat_, ttime, &time0, istep, &iinc, &dtime,
           physcon, ibody, xbodyold, &reltime, veold, matname, mi, ikactmech,
           &nactmech, ielprop, prop, sti, xstateini, xstate, nstate_, ntrans,
-          inotr, trab);
+          inotr, trab, fnext);
 
   /*  correction for nonzero SPC's */
 
@@ -1281,7 +1281,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       pardiso_factor(ad, au, adb, aub, &sigma, icol, irow, &neq[1], &nzs[1],
                      &symmetryflag, &inputformat, jq, &nzs[2]);
 #else
-      printf("*ERROR in dyna: the PARDISO library is not linked\n\n");
+      printf(" *ERROR in dyna: the PARDISO library is not linked\n\n");
       FORTRAN(stop, ());
 #endif
     } else if (*isolver == 8) {
@@ -1289,7 +1289,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       pastix_factor_main(ad, au, adb, aub, &sigma, icol, irow, &neq[1], &nzs[1],
                          &symmetryflag, &inputformat, jq, &nzs[2]);
 #else
-      printf("*ERROR in arpack: the PASTIX library is not linked\n\n");
+      printf(" *ERROR in arpack: the PASTIX library is not linked\n\n");
       FORTRAN(stop, ());
 #endif
     }
@@ -1411,7 +1411,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   resultmaxprev = 0.;
   resultmax     = 0.;
 
-  //  while(1.-theta>1.e-6){
+  // while(1.-theta>1.e-6){
 
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
@@ -1474,9 +1474,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       dtheta    = dthetaref * dd;
 
       /* check increment length whether
-   - it does not exceed tmax
-   - the step length is not exceeded
-   - a time point is not exceeded  */
+	 - it does not exceed tmax
+	 - the step length is not exceeded
+	 - a time point is not exceeded  */
 
       dthetaref = dtheta;
       checkinclength(&time0, ttime, &theta, &dtheta, idrct, tper, tmax,
@@ -1488,7 +1488,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     time    = reltime * *tper;
     dtime   = dtheta * *tper;
 
-    /* calculating the instantaneous loads (forces, surface loading,
+    /* calculating the instantaneous loads (forces, surface loading, 
        centrifugal and gravity loading or temperature) */
 
     FORTRAN(temploaddiff, (xforcold, xforc, xforcact, iamforc, nforc,
@@ -1518,7 +1518,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
               npmat_, ttime, &time, istep, &iinc, &dtime, physcon, ibody,
               xbodyold, &reltime, veold, matname, mi, ikactmech, &nactmech,
               ielprop, prop, sti, xstateini, xstate, nstate_, ntrans, inotr,
-              trab);
+              trab, fnext);
     } else {
       rhsmain(co, nk, kon, ipkon, lakon, ne,
               ipompc, nodempc, coefmpc, nmpc, nodeforc, ndirforc, xforcact,
@@ -1531,7 +1531,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
               npmat_, ttime, &time, istep, &iinc, &dtime, physcon, ibody,
               xbodyold, &reltime, veold, matname, mi, ikactmech, &nactmech,
               ielprop, prop, sti, xstateini, xstate, nstate_, ntrans, inotr,
-              trab);
+              trab, fnext);
     }
 
     /* correction for nonzero SPC's */
@@ -1611,8 +1611,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         time    = reltime * *tper;
         dtime   = dtheta * *tper;
 
-        /* calculating the instantaneous loads (forces, surface loading,
-     centrifugal and gravity loading or temperature) */
+        /* calculating the instantaneous loads (forces, surface loading, 
+	   centrifugal and gravity loading or temperature) */
 
         FORTRAN(temploaddiff, (xforcold, xforc, xforcact, iamforc, nforc,
                                xloadold, xload, xloadact, iamload, nload, ibody, xbody,
@@ -1641,7 +1641,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   npmat_, ttime, &time, istep, &iinc, &dtime, physcon, ibody,
                   xbodyold, &reltime, veold, matname, mi, ikactmech, &nactmech,
                   ielprop, prop, sti, xstateini, xstate, nstate_, ntrans, inotr,
-                  trab);
+                  trab, fnext);
         } else {
           rhsmain(co, nk, kon, ipkon, lakon, ne,
                   ipompc, nodempc, coefmpc, nmpc, nodeforc, ndirforc, xforcact,
@@ -1654,7 +1654,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
                   npmat_, ttime, &time, istep, &iinc, &dtime, physcon, ibody,
                   xbodyold, &reltime, veold, matname, mi, ikactmech, &nactmech,
                   ielprop, prop, sti, xstateini, xstate, nstate_, ntrans, inotr,
-                  trab);
+                  trab, fnext);
         }
 
         /* correction for nonzero SPC's */
@@ -1959,7 +1959,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if ((iout == 2) || (iout == -2)) {
 
       /* deactivating the elements for which the stresses are not
-   needed */
+	 needed */
 
       if (nmdnode > 0) {
         if ((intpointvar == 1)) {
@@ -2132,7 +2132,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   if ((intpointvar == 1))
     SFREE(stx);
 
-  /* calculating the displacements and velocities in all nodes as
+  /* calculating the displacements and velocities in all nodes as 
      initial condition for the next step; only needed if
      - nonzero initial conditions are allowed (-> no cyclic symmetry)
      - the output was restricted (-> nmdnode nonzero) */
@@ -2195,7 +2195,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     SFREE(qfx);
   }
 
-  /* updating the loading at the end of the step;
+  /* updating the loading at the end of the step; 
      important in case the amplitude at the end of the step
      is not equal to one */
 
