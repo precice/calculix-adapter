@@ -718,23 +718,23 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   if (config->numReadData > 0)
     interface->readData = malloc(config->numReadData * sizeof(int));
   for (i = 0; i < config->numReadData; i++) {
-    if (isEqual(config->readDataNames[i], "Temperature")) {
+    if (startsWith(config->readDataNames[i], "Temperature")) {
       PreciceInterface_EnsureValidNodesMeshID(interface, "Temperature");
       PreciceInterface_EnsureValidRead(sim, TEMPERATURE);
       interface->readData[i]       = TEMPERATURE;
       interface->xbounIndices      = malloc(interface->numNodes * sizeof(int));
-      interface->temperatureDataID = precicec_getDataID("Temperature", interface->nodesMeshID);
+      interface->temperatureDataID = precicec_getDataID(config->readDataNames[i], interface->nodesMeshID);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, TEMPERATURE);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->temperatureDataID);
-    } else if (isEqual(config->readDataNames[i], "Heat-Flux")) {
+    } else if (startsWith(config->readDataNames[i], "Heat-Flux")) {
       interface->readData[i]  = HEAT_FLUX;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat-Flux");
       PreciceInterface_EnsureValidRead(sim, HEAT_FLUX);
-      interface->fluxDataID = precicec_getDataID("Heat-Flux", interface->faceCentersMeshID);
+      interface->fluxDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->fluxDataID);
-    } else if (startsWith(config->readDataNames[i], "Sink-Temperature-")) {
+    } else if (startsWith(config->readDataNames[i], "Sink-Temperature")) {
       interface->readData[i]  = SINK_TEMPERATURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("FILM", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
@@ -742,7 +742,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       PreciceInterface_EnsureValidRead(sim, SINK_TEMPERATURE);
       interface->kDeltaTemperatureReadDataID = precicec_getDataID(config->readDataNames[i], interface->faceCentersMeshID);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->kDeltaTemperatureReadDataID);
-    } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient-")) {
+    } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient")) {
       interface->readData[i] = HEAT_TRANSFER_COEFF;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Transfer Coefficient");
       PreciceInterface_EnsureValidRead(sim, HEAT_TRANSFER_COEFF);
@@ -772,7 +772,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found with ID # '%d'.\n", config->readDataNames[i], interface->displacementsDataID);
     } else {
-      printf("ERROR: Read data '%s' does not exist!\n", config->readDataNames[i]);
+      printf("ERROR: Read data '%s' is not of a known type for the CalculiX-preCICE adapter. Check the adapter configuration file.\n", config->readDataNames[i]);
       exit(EXIT_FAILURE);
     }
   }
@@ -782,22 +782,22 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
     interface->writeData = malloc(config->numWriteData * sizeof(int));
 
   for (i = 0; i < config->numWriteData; i++) {
-    if (isEqual(config->writeDataNames[i], "Temperature")) {
+    if (startsWith(config->writeDataNames[i], "Temperature")) {
       PreciceInterface_EnsureValidNodesMeshID(interface, "Temperature");
       interface->writeData[i]      = TEMPERATURE;
-      interface->temperatureDataID = precicec_getDataID("Temperature", interface->nodesMeshID);
+      interface->temperatureDataID = precicec_getDataID(config->writeDataNames[i], interface->nodesMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->temperatureDataID);
-    } else if (isEqual(config->writeDataNames[i], "Heat-Flux")) {
+    } else if (startsWith(config->writeDataNames[i], "Heat-Flux")) {
       interface->writeData[i] = HEAT_FLUX;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Flux");
-      interface->fluxDataID = precicec_getDataID("Heat-Flux", interface->faceCentersMeshID);
+      interface->fluxDataID = precicec_getDataID(config->writeDataNames[i], interface->faceCentersMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->fluxDataID);
-    } else if (startsWith(config->writeDataNames[i], "Sink-Temperature-")) {
+    } else if (startsWith(config->writeDataNames[i], "Sink-Temperature")) {
       interface->writeData[i] = SINK_TEMPERATURE;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Sink temperature");
       interface->kDeltaTemperatureWriteDataID = precicec_getDataID(config->writeDataNames[i], interface->faceCentersMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->kDeltaTemperatureWriteDataID);
-    } else if (startsWith(config->writeDataNames[i], "Heat-Transfer-Coefficient-")) {
+    } else if (startsWith(config->writeDataNames[i], "Heat-Transfer-Coefficient")) {
       interface->writeData[i] = HEAT_TRANSFER_COEFF;
       PreciceInterface_EnsureValidFacesMeshID(interface, "Heat Transfer Coefficient");
       interface->kDeltaWriteDataID = precicec_getDataID(config->writeDataNames[i], interface->faceCentersMeshID);
@@ -831,7 +831,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->forcesDataID = precicec_getDataID(config->writeDataNames[i], interface->nodesMeshID);
       printf("Write data '%s' found with ID # '%d'.\n", config->writeDataNames[i], interface->forcesDataID);
     } else {
-      printf("ERROR: Write data '%s' does not exist!\n", config->writeDataNames[i]);
+      printf("ERROR: Write data '%s' is not of a known type for the CalculiX-preCICE adapter. Check the adapter configuration file.\n", config->writeDataNames[i]);
       exit(EXIT_FAILURE);
     }
   }
