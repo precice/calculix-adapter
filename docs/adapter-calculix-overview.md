@@ -8,13 +8,10 @@ summary: "The CalculiX adapter can be used to couple CalculiX to CFD solvers for
 
 ## Start here
 
-1. [Get the adapter from a package](adapter-calculix-get-adapter.html)
-   - Alternatively, [Get CalculiX and the dependencies](adapter-calculix-get-calculix.html), and then [Build the Adapter](adapter-calculix-get-adapter.html).
-2. [Configure and run simulations](adapter-calculix-config.html)
-3. Follow a tutorial:
-   - [Heat exchanger](tutorials-heat-exchanger.html) (conjugate heat transfer)
-   - [Perpendicular flap](tutorials-perpendicular-flap.html) (fluid-structure interaction)
-   - [Partitioned elastic beam](tutorials-partitioned-elastic-beam.html) (structure-structure interaction)
+1. [Get CalculiX and the dependencies](adapter-calculix-get-calculix.html)
+2. [Build the Adapter](adapter-calculix-get-adapter.html)
+3. [Configure and run simulations](adapter-calculix-config.html)
+4. Follow a [tutorial](tutorials.html).
 
 Are you encountering an unexpected error? Have a look at our [Troubleshooting](adapter-calculix-troubleshooting.html) page.
 
