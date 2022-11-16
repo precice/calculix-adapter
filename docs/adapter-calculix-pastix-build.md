@@ -119,7 +119,7 @@ This library will be put in a subfolder of the PaStiX folder.
 
 ## Building ARPACK, a CalculiX dependency
 
-Calculix relies on ARPACK, and when built with PaStiX, we cannot rely on standard distributions of that library, because it doesn't feature 8-byte integers by default. We need to build the [ARPACK code](https://www.caam.rice.edu/software/ARPACK/) ourselves:
+Calculix relies on ARPACK, and when built with PaStiX, we cannot rely on standard distributions of that library, because it doesn't feature 8-byte integers by default. We need to build the [ARPACK code](https://en.wikipedia.org/wiki/ARPACK) (update: original page seems to be down) ourselves:
 
 ```bash
 cd ~

@@ -16,7 +16,7 @@ You don't need to build the "vanilla" CalculiX before building the adapter. But 
 
 ## Dependencies
 
-CalculiX itself depends on [SPOOLES2.2](http://www.netlib.org/linalg/spooles/spooles.2.2.html) and [ARPACK](https://www.caam.rice.edu/software/ARPACK/).
+CalculiX itself depends on [SPOOLES2.2](http://www.netlib.org/linalg/spooles/spooles.2.2.html) and [ARPACK](https://en.wikipedia.org/wiki/ARPACK).
 
 Additionally, our adapter also depends on [yaml-cpp](https://github.com/jbeder/yaml-cpp).
 
