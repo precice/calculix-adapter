@@ -11,6 +11,7 @@
 #define PRECICEINTERFACE_H
 
 #include <string.h>
+#include "2D3DCoupling.h"
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
 
@@ -25,16 +26,14 @@ typedef struct PreciceInterface {
   int   dimCCX; // Dimension as seen by CalculiX
 
   // Interface nodes
-  int     numNodes;
-  int     num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
-  int *   nodeIDs;
-  int *   mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
-  double *nodeCoordinates;
-  double *node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
-  int     nodeSetID;
-  int *   preciceNodeIDs;
-  int     nodesMeshID;
-  char *  nodesMeshName;
+  int          numNodes;
+  int *        nodeIDs;
+  Mapping2D3D *mappingQuasi2D3D;
+  double *     nodeCoordinates;
+  int          nodeSetID;
+  int *        preciceNodeIDs;
+  int          nodesMeshID;
+  char *       nodesMeshName;
 
   // Interface face elements
   int     numElements;
@@ -60,11 +59,12 @@ typedef struct PreciceInterface {
   int kDeltaTemperatureWriteDataID;
   int kDeltaReadDataID;
   int kDeltaTemperatureReadDataID;
-  int displacementsDataID;      //New data ID for displacements
-  int displacementDeltasDataID; //New data ID for displacementDeltas
-  int positionsDataID;          //New data ID for positions
-  int velocitiesDataID;         //New data ID for velocities
-  int forcesDataID;             //New data ID for forces
+  int displacementsDataID;      // New data ID for displacements
+  int displacementDeltasDataID; // New data ID for displacementDeltas
+  int positionsDataID;          // New data ID for positions
+  int velocitiesDataID;         // New data ID for velocities
+  int forcesDataID;             // New data ID for forces
+  int pressureDataID;           // New data ID for pressure
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -97,34 +97,35 @@ typedef struct SimulationData {
   ITG *   ielmat;
   ITG *   istartset;
   ITG *   iendset;
-  char ** lakon;
+  char *  lakon;
   ITG *   kon;
   ITG *   ipkon;
   ITG     nset;
   char *  set;
   double *co;
   ITG     nboun;
-  ITG     nforc; //total number of forces
+  ITG     nforc; // total number of forces
   ITG *   ikboun;
-  ITG *   ikforc; //the DoFs are all stored here in an array in numerical order
+  ITG *   ikforc; // the DoFs are all stored here in an array in numerical order
   ITG *   ilboun;
-  ITG *   ilforc; //number of the force is stored here
+  ITG *   ilforc; // number of the force is stored here
   ITG *   nelemload;
   int     nload;
   char *  sideload;
   double  nk;
+  ITG     ne;
   ITG     mt;
   double *theta;
   double *dtheta;
   double *tper;
   ITG *   nmethod;
   double *xload;
-  double *xforc; //scalar value of the force in one direction
+  double *xforc; // scalar value of the force in one direction
   double *xboun;
   ITG *   ntmat_;
   double *vold;
   double *veold;
-  double *fn; //values of forces read from calculix
+  double *fn; // values of forces read from calculix
   double *cocon;
   ITG *   ncocon;
   ITG *   mi;
@@ -140,6 +141,16 @@ typedef struct SimulationData {
   double  precice_dt;
   double  solver_dt;
 
+  // Configuration information
+  int isModalDynamic; // 0 for regular simulations, 1 for modal dynamic
+
+  // Modal dynamic simulation checkpointing buffers
+  double *eigenDOFs;            // Called "bj" or "cd" in CCX code
+  double *eigenDOFsDerivatives; // Called "bjp" (p for prime) or "cv" in CCX code
+  int     stored_iinc;
+  int     stored_jprint;
+  int     kode_value;
+
 } SimulationData;
 
 /**
@@ -147,8 +158,6 @@ typedef struct SimulationData {
  * @param configFilename: YAML config file
  * @param participantName
  * @param sim
- * @param preciceInterfaces
- * @param numPreciceInterfaces
  */
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
@@ -215,6 +224,24 @@ void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v);
 void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v);
 
 /**
+ * @brief Reads iteration checkpoint (in dyna_precice)
+ * @param sim: Structure with CalculiX data
+ * @param dofs: array containing the degrees of freedom in eigenspace
+ * @param derivatives: array containing the time derivatives (velocities) of the dofs
+ * @param nev: number of eigenvalues used (i.e. array size)
+ */
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev);
+
+/**
+ * @brief Writes iteration checkpoint
+ * @param sim: Structure with CalculiX data (in dyna_precice)
+ * @param dofs: array containing the degrees of freedom in eigenspace
+ * @param derivatives: array containing the time derivatives (velocities) of the dofs
+ * @param nev: number of eigenvalues used (i.e. array size)
+ */
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev);
+
+/**
  * @brief Reads the coupling data for all interfaces
  * @param sim
  * @param preciceInterfaces
@@ -247,11 +274,19 @@ void Precice_FreeData(SimulationData *sim);
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
 
 /**
- * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
+ * @brief Configures the face centers mesh and calls sendFaceCentersVertices,
+ * who is responsible for calling preCICE
  * @param interface
  * @param sim
  */
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim);
+
+/**
+ * @brief Send the faces centers to preCICE.
+ *
+ * @param interface
+ */
+void sendFaceCentersVertices(PreciceInterface *interface);
 
 /**
  * @brief Configures the nodes mesh
@@ -263,8 +298,23 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
 /**
  * @brief Terminate execution if the nodes mesh ID is not valid
  * @param interface
+ * @param type of data requiring mesh ID
  */
-void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface);
+void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char *type);
+
+/**
+ * @brief Terminate execution if the faces mesh ID is not valid
+ * @param interface
+ * @param type of data requiring mesh ID
+ */
+void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type);
+
+/**
+ * @brief Terminate execution if this kind of data can't be read
+ * @param sim
+ * @param type of data to check
+ */
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type);
 
 /**
  * @brief Configures the faces mesh (for tetrahedral elements only)

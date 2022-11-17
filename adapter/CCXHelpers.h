@@ -28,7 +28,8 @@
  */
 enum xloadVariable { DFLUX,
                      FILM_H,
-                     FILM_T };
+                     FILM_T,
+                     PRESSUREDLOAD };
 
 /**
  * @brief Type of coupling data
@@ -46,10 +47,22 @@ enum CouplingDataType { TEMPERATURE,
                         SINK_TEMPERATURE,
                         HEAT_TRANSFER_COEFF,
                         FORCES,
+                        PRESSURE,
                         DISPLACEMENTS,
                         DISPLACEMENTDELTAS,
                         VELOCITIES,
                         POSITIONS };
+
+/**
+ * @brief Type of element used for faces mesh, where we assume only one type of element is used.
+ *  TETRAHEDRA      - C3D4 or C3D10 element
+ *  HEXAHEDRA        - C3D8 or C3D20 elment
+ *  INVALID_ELEMENT - Anything else
+ */
+enum ElemType { TETRAHEDRA,
+                HEXAHEDRA,
+                INVALID_ELEMENT,
+};
 
 /**
  * @brief Returns node set name with internal CalculiX format
@@ -168,6 +181,18 @@ void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, dou
 void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters);
 
 /**
+ * @brief Computes the center of one of the faces of a hexahedral element
+ * @param elements: input list of hexahedral elements
+ * @param faces: input list of local face IDs
+ * @param numElements: number of input elements
+ * @param kon: CalculiX variable
+ * @param ipkon: CalculiX variable
+ * @param co: CalculiX array with the coordinates of all the nodes
+ * @param faceCenters: output array with the face centers of the input element faces
+ */
+void getHexaFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters);
+
+/**
  * @brief Gets a list of node IDs from a list of input element faces
  * @param elements: list of element IDs
  * @param faces: list of local face IDs
@@ -252,6 +277,15 @@ void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xl
  * @param xload: CalculiX array for the loads
  */
 void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload);
+
+/**
+ * @brief Calls setXload to update the pressure at the specified indices
+ * @param pressure: values for the pressure
+ * @param numFaces: number of faces
+ * @param xloadIndices: indices of the xload array where the values must be updated
+ * @param xload: CalculiX array for the loads
+ */
+void setFacePressure(double *pressure, int numFaces, int *xloadIndices, double *xload);
 
 /**
  * @brief Modifies the values of the temperature boundary condition
@@ -401,6 +435,11 @@ void missingTemperatureBCError();
 void missingForceError();
 
 /**
+ * @brief Terminate program if pressure faces are not defined (e.g. missing interface.dlo file)
+ */
+void missingPressureError();
+
+/**
  * @brief Terminate program if displacement Dirichlet BC are not defined for the interface in .inp file. (e.g. missing line under *BOUNDARY)
  */
 void missingDisplacementBCError();
@@ -419,5 +458,10 @@ void missingFilmBCError();
  * @brief Terminate program if the adapter reaches an unreachable state. This should never occur.
  */
 void unreachableError();
+
+/**
+ * @brief Terminate program if the CalculiX ELement Type is not supported for this type of analysis.
+ */
+void supportedElementError();
 
 #endif // CCXHELPERS_H

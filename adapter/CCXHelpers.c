@@ -75,7 +75,7 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
 
   for (i = 0; i < numNodes; i++) {
     int nodeIdx = nodes[i] - 1;
-    //The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
+    // The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
     for (j = 0; j < dim; j++) {
       coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
     }
@@ -114,7 +114,7 @@ void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, 
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
     }
@@ -129,7 +129,7 @@ void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, dou
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
     }
@@ -144,7 +144,7 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; //The node Id starts with 1, not with 0, therefore, decrement is necessary
+    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
     }
@@ -154,13 +154,13 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
 /*
    int getNodesPerFace(char * lakon, int elementIdx) {
 
-		int nodesPerFace;
-		if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
-				nodesPerFace = 3;
-		} else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
-				nodesPerFace = 6;
-		}
-		return nodesPerFace;
+    int nodesPerFace;
+    if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
+        nodesPerFace = 3;
+    } else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
+        nodesPerFace = 6;
+    }
+    return nodesPerFace;
 
    }
  */
@@ -196,6 +196,40 @@ void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, I
     faceCenters[i * 3 + 0] = x / 3;
     faceCenters[i * 3 + 1] = y / 3;
     faceCenters[i * 3 + 2] = z / 3;
+  }
+}
+
+void getHexaFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters)
+{
+
+  // Assume all hexa elements -- maybe implement checking later...
+
+  // Node numbering for faces of hexahedral elements (in the documentation the number is + 1)
+  // Numbering is the same for first and second order elements
+  int faceNodes[6][4] = {{0, 1, 2, 3}, {4, 7, 6, 5}, {0, 4, 5, 1}, {1, 5, 6, 2}, {2, 6, 7, 3}, {3, 7, 4, 0}};
+
+  ITG i, j;
+
+  for (i = 0; i < numElements; i++) {
+
+    ITG    faceIdx    = faces[i] - 1;
+    ITG    elementIdx = elements[i] - 1;
+    double x = 0, y = 0, z = 0;
+
+    for (j = 0; j < 4; j++) {
+
+      ITG nodeNum = faceNodes[faceIdx][j];
+      ITG nodeID  = kon[ipkon[elementIdx] + nodeNum];
+      ITG nodeIdx = (nodeID - 1) * 3;
+      // The nodeIdx is already multiplied by 3, therefore it must be divided by 3 ONLY when checking if coordinates match getNodeCoordinates
+
+      x += co[nodeIdx + 0];
+      y += co[nodeIdx + 1];
+      z += co[nodeIdx + 2];
+    }
+    faceCenters[i * 3 + 0] = x / 4;
+    faceCenters[i * 3 + 1] = y / 4;
+    faceCenters[i * 3 + 2] = z / 4;
   }
 }
 
@@ -245,11 +279,13 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
   char faceLabel[] = {'x', 'x', '\0'};
 
   /* Face number is prefixed with 'S' if it is DFLUX boundary condition
-	 * and with 'F' if it is a FILM boundary condition */
+   * and with 'F' if it is a FILM boundary condition */
   if (strcmp(loadType, "DFLUX") == 0) {
     faceLabel[0] = (char) 'S';
   } else if (strcmp(loadType, "FILM") == 0) {
     faceLabel[0] = (char) 'F';
+  } else if (strcmp(loadType, "PRESSUREDLOAD") == 0) {
+    faceLabel[0] = (char) 'P';
   }
 
   for (k = 0; k < numElements; k++) {
@@ -272,6 +308,8 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
       missingDfluxBCError();
     } else if (!found && strcmp(loadType, "FILM") == 0) {
       missingFilmBCError();
+    } else if (!found && strcmp(loadType, "PRESSUREDLOAD") == 0) {
+      missingPressureError();
     }
   }
 }
@@ -331,7 +369,7 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
-    //x-direction
+    // x-direction
     int idof = 8 * (nodes[i] - 1) + 1; // 1 for x force DOF
     int k;
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
@@ -339,14 +377,14 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
     int m               = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i] = m;
 
-    //y-direction
+    // y-direction
     idof = 8 * (nodes[i] - 1) + 2; // 2 for y force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
     m                       = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i + 1] = m;
 
-    //z-direction
+    // z-direction
     idof = 8 * (nodes[i] - 1) + 3; // 3 for z force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
@@ -365,11 +403,11 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
 int getXloadIndexOffset(enum xloadVariable xloadVar)
 {
   /*
-	 * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
-	 * the array has two components:
-	 * - the first component corresponds to the flux value and the heat transfer coefficient
-	 * - the second component corresponds to the sink temperature
-	 * */
+   * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
+   * the array has two components:
+   * - the first component corresponds to the flux value and the heat transfer coefficient
+   * - the second component corresponds to the sink temperature
+   * */
   switch (xloadVar) {
   case DFLUX:
     return 0;
@@ -377,6 +415,8 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
     return 0;
   case FILM_T:
     return 1;
+  case PRESSUREDLOAD:
+    return 0;
   default:
     unreachableError();
     return -1;
@@ -406,6 +446,11 @@ void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xl
 void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, sinkTemperatures, numFaces, FILM_T);
+}
+
+void setFacePressure(double *pressure, ITG numFaces, int *xloadIndices, double *xload)
+{
+  setXload(xload, xloadIndices, pressure, numFaces, PRESSUREDLOAD);
 }
 
 void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun)
@@ -481,73 +526,6 @@ bool isQuasi2D3D(const int quasi2D3D)
   return quasi2D3D == 1;
 }
 
-void setDoubleArrayZero(double *values, const int length, const int dim)
-{
-  ITG i, j;
-
-  for (i = 0; i < length; i++) {
-    for (j = 0; j < dim; j++) {
-      values[i * dim + j] = 0.0;
-    }
-  }
-}
-
-void printVectorData(const double *values, const int nv, const int dim)
-{
-  ITG i, j;
-
-  for (i = 0; i < nv; i++) {
-    printf("[");
-    for (j = 0; j < dim; j++) {
-      printf("%f, ", values[i * dim + j]);
-    }
-    printf("]\n");
-  }
-}
-
-void mapData2Dto3DVector(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D)
-{
-  ITG id, i;
-
-  for (i = 0; i < numNodes3D; i++) {
-    id                  = mapping2D3D[i];
-    values3D[i * 3]     = values2D[id * 2] * 0.5;
-    values3D[i * 3 + 1] = values2D[id * 2 + 1] * 0.5;
-    values3D[i * 3 + 2] = 0;
-  }
-}
-
-void mapData3Dto2DVector(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D)
-{
-  ITG id, i;
-
-  for (i = 0; i < numNodes3D; i++) {
-    id = mapping2D3D[i];
-    values2D[id * 2] += values3D[i * 3] * 0.5;
-    values2D[id * 2 + 1] += values3D[i * 3 + 1] * 0.5;
-  }
-}
-
-void mapData2Dto3DScalar(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D)
-{
-  ITG id, i;
-
-  for (i = 0; i < numNodes3D; i++) {
-    id          = mapping2D3D[i];
-    values3D[i] = values2D[id] * 0.5;
-  }
-}
-
-void mapData3Dto2DScalar(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D)
-{
-  ITG id, i;
-
-  for (i = 0; i < numNodes3D; i++) {
-    id = mapping2D3D[i];
-    values2D[id] += values3D[i] * 0.5;
-  }
-}
-
 /* Errors messages */
 
 void nodeSetNotFoundError(char const *setName)
@@ -594,8 +572,20 @@ void missingFilmBCError()
   exit(EXIT_FAILURE);
 }
 
+void missingPressureError()
+{
+  printf("ERROR: Cannot apply Pressure to one or more interface elements.  Please make sure that a .dlo file is provided for the interface, when using Pressure and DLOAD.\n");
+  exit(EXIT_FAILURE);
+}
+
 void unreachableError()
 {
   printf("ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n");
+  exit(EXIT_FAILURE);
+}
+
+void supportedElementError()
+{
+  printf("ERROR: Cannot use the given surface elements to configure a faces mesh!\n");
   exit(EXIT_FAILURE);
 }

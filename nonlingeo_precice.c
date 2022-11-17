@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                 */
-/*              Copyright (C) 1998-2021 Guido Dhondt                          */
+/*              Copyright (C) 1998-2022 Guido Dhondt                          */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -99,7 +99,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
        *sideloadref = NULL, *sideload = NULL, stiffmatrix[132] = "",
        *sideloadf = NULL;
 
-  ITG *inum = NULL, k, iout = 0, icntrl, iinc = 0, jprint = 0, iit = -1, jnz = 0,
+  ITG *inum = NULL, k, l, iout = 0, icntrl, iinc = 0, jprint = 0, iit = -1, jnz = 0,
       icutb = 0, istab = 0, uncoupled, n1, n2, itruecontact,
       iperturb_sav[2], ilin, *icol = NULL, *irow = NULL, ielas = 0, icmd = 0,
       memmpc_, mpcfree, icascade, maxlenmpc, *nodempc = NULL, *iaux = NULL,
@@ -123,7 +123,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       coriolis = 0, *ipneigh = NULL, *neigh = NULL, maxprevcontel, nslavs_prev_step,
       *nelemface = NULL, *ipoface = NULL, *nodface = NULL, *ifreestream = NULL,
       *isolidsurf = NULL, *neighsolidsurf = NULL, *iponoel = NULL, *inoel = NULL,
-      nface, nfreestream, nsolidsurf, i, icfd = 0, id,
+      nface, nfreestream, nsolidsurf, i, icfd = 0, id, mortarsav = 0,
       node, networknode, iflagact = 0, *nodorig = NULL, *ipivr = NULL, iglob = 0,
       *inomat = NULL, *ipnei = NULL, ntrimax, *nx = NULL, *ny = NULL, *nz = NULL,
       idampingwithoutcontact = 0, *nactdoh = NULL, *nactdohinv = NULL, *ipkonf = NULL,
@@ -140,7 +140,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       *nelemloadf = NULL, *ipobodyf = NULL, nkf, nkonf, memmpcf, nbounf, nloadf, nmpcf,
       *ikbounf = NULL, *ilbounf = NULL, *ikmpcf = NULL, *ilmpcf = NULL, *iambounf = NULL,
       *iamloadf = NULL, *inotrf = NULL, *jqtherm = NULL, *jqw = NULL, *iroww = NULL, nzsw,
-      *kslav = NULL, *lslav = NULL, *ktot = NULL, *ltot = NULL, nmasts, neqslav, neqtot;
+      *kslav = NULL, *lslav = NULL, *ktot = NULL, *ltot = NULL, nmasts, neqtot,
+      intpointvarm, calcul_fn, calcul_f, calcul_qa, calcul_cauchy, ikin,
+      intpointvart;
 
   double *stn = NULL, *v = NULL, *een = NULL, cam[5], *epn = NULL, *cg = NULL,
          *cdn = NULL, *pslavsurfold = NULL,
@@ -177,7 +179,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
          *smscale = NULL, dtset, energym = 0., energymold = 0., *voldf = NULL,
          *coefmpcf = NULL, *xbounf = NULL, *xloadf = NULL, *xbounoldf = NULL,
          *xbounactf = NULL, *xloadoldf = NULL, *xloadactf = NULL, *auw = NULL, *volddof = NULL,
-         *qb = NULL;
+         *qb = NULL, *aloc = NULL, dtmin, *fric = NULL;
 
   FILE *f1;
 
@@ -308,47 +310,61 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
   /* Adapter: Put all the CalculiX data that is needed for the coupling into an array */
   struct SimulationData simulationData = {
-      .ialset    = ialset,
-      .ielmat    = ielmat,
-      .istartset = istartset,
-      .iendset   = iendset,
-      .kon       = kon,
-      .ipkon     = ipkon,
-      .lakon     = &lakon,
-      .co        = co,
-      .set       = set,
-      .nset      = *nset,
-      .ikboun    = ikboun,
-      .ikforc    = ikforc,
-      .ilboun    = ilboun,
-      .ilforc    = ilforc,
-      .nboun     = *nboun,
-      .nforc     = *nforc,
-      .nelemload = nelemload,
-      .nload     = *nload,
-      .sideload  = sideload,
-      .mt        = mt,
-      .nk        = *nk,
-      .theta     = &theta,
-      .dtheta    = &dtheta,
-      .tper      = tper,
-      .nmethod   = nmethod,
-      .xload     = xload,
-      .xforc     = xforc,
-      .xboun     = xboun,
-      .ntmat_    = ntmat_,
-      .vold      = vold,
-      .veold     = veold,
-      .fn        = fn,
-      .cocon     = cocon,
-      .ncocon    = ncocon,
-      .mi        = mi};
+      .ialset               = ialset,
+      .ielmat               = ielmat,
+      .istartset            = istartset,
+      .iendset              = iendset,
+      .kon                  = kon,
+      .ipkon                = ipkon,
+      .lakon                = lakon,
+      .co                   = co,
+      .set                  = set,
+      .nset                 = *nset,
+      .ikboun               = ikboun,
+      .ikforc               = ikforc,
+      .ilboun               = ilboun,
+      .ilforc               = ilforc,
+      .nboun                = *nboun,
+      .nforc                = *nforc,
+      .nelemload            = nelemload,
+      .nload                = *nload,
+      .sideload             = sideload,
+      .mt                   = mt,
+      .nk                   = *nk,
+      .ne                   = *ne,
+      .theta                = &theta,
+      .dtheta               = &dtheta,
+      .tper                 = tper,
+      .nmethod              = nmethod,
+      .xload                = xload,
+      .xforc                = xforc,
+      .xboun                = xboun,
+      .ntmat_               = ntmat_,
+      .vold                 = vold,
+      .veold                = veold,
+      .fn                   = fn,
+      .cocon                = cocon,
+      .ncocon               = ncocon,
+      .mi                   = mi,
+      .isModalDynamic       = 0,
+      .eigenDOFs            = NULL,
+      .eigenDOFsDerivatives = NULL,
+      .stored_iinc          = iinc,
+      .stored_jprint        = jprint};
 
   if (*ithermal == 4) {
     uncoupled = 1;
     *ithermal = 3;
   } else {
     uncoupled = 0;
+  }
+
+  /* for massless explicit dynamics a static step in the same
+     calculation is performed with node-to-face contact */
+
+  if ((*nmethod == 1) && (*mortar == -1)) {
+    mortarsav = -1;
+    *mortar   = 0;
   }
 
   if (*mortar != 1) {
@@ -425,12 +441,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       /* explicit dynamics */
 
-      if (fabs(alpham) > 1.e-30) {
+      if ((fabs(alpham) > 1.e-30) || ((fabs(betam) > 1.e-30) && (*mortar == -1))) {
         idamping               = 1;
         idampingwithoutcontact = 1;
       }
-      if (fabs(betam) > 1.e-30) { // TODO cmt adapt to massless: we can take BETA
-        printf(" *ERROR: in explicit dynamic calculations the damping is only\n");
+      if ((fabs(betam) > 1.e-30) && (*mortar != -1)) {
+        printf(" *ERROR in nonlingeo: in explicit dynamic calculations\n");
+        printf("         without massless contact the damping is only\n");
         printf("         allowed to be mass proportional: the coefficient beta\n");
         printf("         of the stiffness proportional term must be zero\n");
         FORTRAN(stop, ());
@@ -480,11 +497,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
   /* invert nactdof */
 
-  NNEW(nactdofinv, ITG, mt * *nk);
-  MNEW(nodorig, ITG, *nk);
-  FORTRAN(gennactdofinv, (nactdof, nactdofinv, nk, mi, nodorig,
-                          ipkon, lakon, kon, ne));
-  SFREE(nodorig);
+  /*  NNEW(nactdofinv,ITG,mt**nk);
+  MNEW(nodorig,ITG,*nk);
+  FORTRAN(gennactdofinv,(nactdof,nactdofinv,nk,mi,nodorig,
+			 ipkon,lakon,kon,ne));
+			 SFREE(nodorig);*/
 
   /* allocating a field for the stiffness matrix */
 
@@ -560,7 +577,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                       nodeboun, nacteq, nboun, ielprop, prop, &nteq,
                       v, network, physcon, shcon, ntmat_, co,
                       vold, set, nshcon, rhcon, nrhcon, mi, nmpc, nodempc,
-                      ipompc, labmpc, ikboun, &nasym, ttime, &time, iaxial));
+                      ipompc, labmpc, ikboun, &nasym, ttime, &time,
+                      iaxial));
     SFREE(v);
 
     if ((*mcs > 0) && (ntr > 0)) {
@@ -593,6 +611,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       if (*network > 0) {
         FORTRAN(networkelementpernode, (iponoel, inoel, lakon, ipkon, kon,
                                         &inoelsize, nflow, ieg, ne, network));
+        FORTRAN(checkforhomnet, (ieg, nflow, lakon, ipkon, kon, itg, &ntg,
+                                 iponoel, inoel));
       }
       RENEW(inoel, ITG, 2 * inoelsize);
     }
@@ -762,11 +782,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     NNEW(inoelf, ITG, 2 * 8 * *nef);
     NNEW(inomat, ITG, nkftot);
     FORTRAN(topocfdfem, (nelemface, sideface, &nface, ipoface, nodface, nef, ipkonf,
-                         konf, lakonf, &nkf,
-                         isolidsurf, &nsolidsurf, ifreestream, &nfreestream,
-                         neighsolidsurf, iponoelf, inoelf, &inoelfree, cof,
-                         set, istartset, iendset,
-                         ialset, nset, &iturbulent, inomat, ielmatf, ipface));
+                         konf, lakonf, &nkf, isolidsurf, &nsolidsurf, ifreestream,
+                         &nfreestream, neighsolidsurf, iponoelf, inoelf,
+                         &inoelfree, cof, set, istartset, iendset, ialset, nset,
+                         &iturbulent, inomat, ielmatf, ipface, nknew));
     RENEW(sideface, char, nface);
     RENEW(nelemface, ITG, nface);
     SFREE(ipoface);
@@ -1005,7 +1024,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
     /* initialization of the energy */
 
-    if (ithermal[0] <= 1) {
+    if ((ithermal[0] <= 1) && (*nener == 1)) {
       isiz = mi[0] * ne0;
       cpypardou(enerini, ener, &isiz, &num_cpus);
     }
@@ -1083,7 +1102,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
     /* invert nactdof */
 
-    SFREE(nactdofinv);
+    //   SFREE(nactdofinv);
     NNEW(nactdofinv, ITG, 1);
 
     iout  = -1;
@@ -1161,10 +1180,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                                      nplicon, plkcon, nplkcon, npmat_, mi, &dtime,
                                      xstiff, ncmat_, vold, ielmat, t0, t1, matname,
                                      lakon, wavespeed, nmat, ipkon, co, kon, &dtvol,
-                                     alpha, smscale, &dtset, &mscalmethod));
+                                     alpha, smscale, &dtset, &mscalmethod, mortar,
+                                     jobnamef));
 
       //printf("\033[1;33m"); // yellow
-      printf("Explicit time integration: Volumetric COURANT initial stable time increment:%e\n\n", dtvol);
+      printf(" Explicit time integration: Volumetric COURANT initial stable time increment:%e\n\n", dtvol);
       //printf("\033[0m"); // reset color
 
       if (dtvol > (*tmax * (*tper))) {
@@ -1178,7 +1198,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       dtheta    = (*tinc) / (*tper);
       dthetaref = dtheta;
       //printf("\033[1;33m"); // yellow
-      printf("SELECTED time increment:%e\n\n", *tinc);
+      printf(" SELECTED time increment:%e\n\n", *tinc);
       //printf("\033[0m"); // reset color
     }
 
@@ -1258,14 +1278,18 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       NNEW(lslav, ITG, 3 * *nslavs);
       NNEW(ktot, ITG, 3 * *nslavs + 3 * nmasts);
       NNEW(ltot, ITG, 3 * *nslavs + 3 * nmasts);
+      NNEW(fric, double, *nslavs);
 
-      /*  Create set of slave and slave+master contact DOFS (sorted) */
+      /*  Create set of slave and slave+master contact DOFS (sorted);
+          assign a friction coefficient to each slave node */
 
       FORTRAN(create_contactdofs, (kslav, lslav, ktot, ltot, nslavs, islavnode,
-                                   &nmasts, imastnode, nactdof, mi, &neqslav, &neqtot));
+                                   &nmasts, imastnode, nactdof, mi, &neqtot,
+                                   nslavnode, fric, tieset, tietol, ntie, elcon,
+                                   ncmat_, ntmat_));
 
-      RENEW(kslav, ITG, neqslav);
-      RENEW(lslav, ITG, neqslav);
+      RENEW(kslav, ITG, 3 * *nslavs);
+      RENEW(lslav, ITG, 3 * *nslavs);
       RENEW(ktot, ITG, neqtot);
       RENEW(ltot, ITG, neqtot);
 
@@ -1341,6 +1365,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
         FORTRAN(stop, ());
 #endif
       }
+
+      // Storing contact force vector initial solution
+
+      NNEW(aloc, double, 3 * *nslavs);
 
     } //endif massless
 
@@ -1439,7 +1467,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                          &symmetryflag, &inputformat, &nzs[2]);
           spooles_solve(b, &neq[0]);
 #else
-          printf("*ERROR in arpack: the SPOOLES library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the SPOOLES library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         } else if (*isolver == 4) {
@@ -1448,7 +1476,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
           sgi_factor(adb, aub, adb, aub, &sigma, icol, irow, &neq[0], &nzs[0], token);
           sgi_solve(b, token);
 #else
-          printf("*ERROR in arpack: the SGI library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the SGI library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         } else if (*isolver == 5) {
@@ -1456,7 +1484,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
           tau_factor(adb, &aub, adb, aub, &sigma, icol, &irow, &neq[0], &nzs[0]);
           tau_solve(b, &neq[0]);
 #else
-          printf("*ERROR in arpack: the TAUCS library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the TAUCS library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         } else if (*isolver == 7) {
@@ -1466,7 +1494,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
           pardiso_solve(b, &neq[0], &symmetryflag, &inputformat, &nrhs);
 #else
-          printf("*ERROR in arpack: the PARDISO library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the PARDISO library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         } else if (*isolver == 8) {
@@ -1476,7 +1504,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
           pastix_solve(b, &neq[0], &symmetryflag, &nrhs);
 #else
-          printf("*ERROR in arpack: the PASTIX library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the PASTIX library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         }
@@ -1728,7 +1756,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     /* check for max. # of increments */
 
     if (iinc > jmax[0]) {
-      printf(" *ERROR: max. # of increments reached\n\n");
+      printf(" *ERROR in nonlingeo: max. # of increments reached\n\n");
       FORTRAN(stop, ());
     }
 
@@ -1802,7 +1830,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   iamload,
                   jqrad, irowrad, &nzsrad, icolrad, ne, iaxial, qa, cocon, ncocon,
                   iponoel,
-                  inoel, nprop, amname, namta, amta);
+                  inoel, nprop, amname, namta, amta, iexpl);
 
       /* check whether network iterations converged */
 
@@ -1994,7 +2022,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       contact(&ncont, ntie, tieset, nset, set, istartset, iendset,
               ialset, itietri, lakon, ipkon, kon, koncont, ne, cg, straight, nkon,
               co, vold, ielmat, cs, elcon, istep, &iinc, &iit, ncmat_, ntmat_,
-              &ne0, vini, nmethod,
+              &ne0, nmethod,
               iperturb, ikboun, nboun, mi, imastop, nslavnode, islavnode,
               islavsurf,
               itiefac, areaslav, iponoels, inoels, springarea, tietol, &reltime,
@@ -2036,7 +2064,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       /* dynamic time step estimation for explicit dynamics under penalty 
 	 contact(CMT) start */
 
-      if ((*iexpl > 1)) {
+      if ((*iexpl > 1) && (*mortar != -1)) {
 
         if ((*ne - ne0) < ncontacts) {
 
@@ -2054,14 +2082,20 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                                           mortar, adb, alpha, nactdof, springarea,
                                           &ne0, ntmat_, ncmat_, &dtcont, smscale,
                                           &dtset, &mscalmethod));
+          if (dtcont < dtvol) {
+            dtmin = dtcont;
+          } else {
+            dtmin = dtvol;
+          }
 
-          if (dtcont > (*tmax * (*tper))) {
+          if (dtmin > (*tmax * (*tper))) {
             *tinc = *tmax * (*tper);
-          } else if (dtcont < dtset) {
+          } else if (dtmin < dtset) {
             *tinc = dtset;
           } else {
-            *tinc = dtcont;
+            *tinc = dtmin;
           }
+
           dtheta    = (*tinc) / (*tper);
           dthetaref = dtheta;
 
@@ -2105,9 +2139,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       cpypardou(coefmpcref, coefmpc, &isiz, &num_cpus);
     }
 
-    /* recalculating the matrix structure */
+    /* recalculating the matrix structure; only needed if:
+       1) MPC's are cascaded
+       2) contact occurs in an implicit calculation 
+          (in penalty explicit no matrices are needed, in massless
+           explicit no contact elements are generated) */
 
-    if ((icascade > 0) || (ncont != 0))
+    if ((icascade > 0) || ((ncont != 0) && (*iexpl <= 1)))
       remastruct(ipompc, &coefmpc, &nodempc, nmpc,
                  &mpcfree, nodeboun, ndirboun, nboun, ikmpc, ilmpc, ikboun, ilboun,
                  labmpc, nk, &memmpc_, &icascade, &maxlenmpc,
@@ -2117,14 +2155,16 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                  typeboun, &cv, &cvini, &iit, network, itiefac, &ne0, &nkon0,
                  nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus);
 
-    /* invert nactdof */
+    /* invert nactdof (not for dynamic explicit calculations) */
 
-    SFREE(nactdofinv);
-    NNEW(nactdofinv, ITG, mt * *nk);
-    MNEW(nodorig, ITG, *nk);
-    FORTRAN(gennactdofinv, (nactdof, nactdofinv, nk, mi, nodorig,
-                            ipkon, lakon, kon, ne));
-    SFREE(nodorig);
+    if (*iexpl <= 1) {
+      SFREE(nactdofinv);
+      NNEW(nactdofinv, ITG, mt * *nk);
+      MNEW(nodorig, ITG, *nk);
+      FORTRAN(gennactdofinv, (nactdof, nactdofinv, nk, mi, nodorig,
+                              ipkon, lakon, kon, ne));
+      SFREE(nodorig);
+    }
 
     /* check whether the forced displacements changed; if so, and
        if the procedure is static, the first iteration has to be
@@ -2383,7 +2423,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                       set, mi, istartset, iendset, ialset, nset, ineighe, nmpc,
                       nodempc, ipompc, coefmpc, labmpc, &iemchange, nam, iamload,
                       jqrad, irowrad, &nzsrad, icolrad, ne, iaxial, qa, cocon, ncocon,
-                      iponoel, inoel, nprop, amname, namta, amta);
+                      iponoel, inoel, nprop, amname, namta, amta, iexpl);
 
           /* check whether network iterations converged */
 
@@ -2435,7 +2475,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   ialset, itietri, lakon, ipkon, kon, koncont, ne, cg,
                   straight, nkon, co, vold, ielmat, cs, elcon, istep,
                   &iinc, &iit, ncmat_, ntmat_, &ne0,
-                  vini, nmethod, iperturb,
+                  nmethod, iperturb,
                   ikboun, nboun, mi, imastop, nslavnode, islavnode, islavsurf,
                   itiefac, areaslav, iponoels, inoels, springarea, tietol,
                   &reltime, imastnode, nmastnode, xmastnor,
@@ -2695,10 +2735,10 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                 npmat_, ttime, &time, istep, &iinc, &dtime, physcon, ibody,
                 xbodyold, &reltime, veold, matname, mi, ikactmech,
                 &nactmech, ielprop, prop, sti, xstateini, xstate, nstate_,
-                ntrans, inotr, trab);
+                ntrans, inotr, trab, fnext);
       }
 
-      /*      for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}
+      /*    for(k=0;k<neq[1];++k){printf("f=%" ITGFORMAT ",%f\n",k,f[k]);}
 	      for(k=0;k<neq[1];++k){printf("fext=%" ITGFORMAT ",%f\n",k,fext[k]);}
 	      for(k=0;k<neq[1];++k){printf("ad=%" ITGFORMAT ",%f\n",k,ad[k]);}
 	      for(k=0;k<nzs[1];++k){printf("au=%" ITGFORMAT ",%f\n",k,au[k]);}*/
@@ -2764,7 +2804,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                  jq, irow, neq, nzs, auw, jqw, iroww, &nzsw,
                  islavnode, nslavnode, nslavs, imastnode, nmastnode, ntie, nactdof,
                  mi, vold, volddof, veold, nk, fext, isolver, iperturb, co, springarea,
-                 &neqslav, &neqtot, qb, b);
+                 &neqtot, qb, b, tinc, aloc, fric, iexpl);
         SFREE(ad);
         SFREE(au);
       }
@@ -2815,7 +2855,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   adb, aub, &nodeforc2, &ndirforc2, &xforc2, &nforc2,
                   itietri, cg, straight, koncont, energyini, energy, &kscale,
                   iponoel, inoel, nener, orname, network, typeboun, &num_cpus,
-                  t0g, t1g, smscale, &mscalmethod);
+                  t0g, t1g, smscale, &mscalmethod, jobnamef);
 
         /* calculating coupling matrices and embedding weak 
 	   contact conditions */
@@ -3077,14 +3117,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
           strcpy(fneig, jobnamec);
           strcat(fneig, ".frd");
           if ((f1 = fopen(fneig, "ab")) == NULL) {
-            printf("*ERROR in frd: cannot open frd file for writing...");
+            printf(" *ERROR in nonlingeo: cannot open frd file for writing...");
             exit(0);
           }
           fprintf(f1, " 9999\n");
           fclose(f1);
           FORTRAN(stopwithout201, ());
 #else
-          printf("*ERROR in arpack: the MATRIXSTORAGE library is not linked\n\n");
+          printf(" *ERROR in nonlingeo: the MATRIXSTORAGE library is not linked\n\n");
           FORTRAN(stop, ());
 #endif
         } else if (*isolver == 7) {
@@ -3190,11 +3230,19 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 #endif
             }
             if (*mortar == -1) {
+              if (iinc == 1) {
+                for (i = 0; i < neqtot; i++) {
+                  k              = floor(ltot[i] / 10);
+                  l              = ltot[i] - 10 * k;
+                  b[ktot[i] - 1] = veold[mt * (k - 1) + l];
+                }
+              } else {
 
-              /* determine the velocity in the contact nodes */
+                /* determine the velocity in the contact nodes */
 
-              for (i = 0; i < neqtot; ++i) {
-                b[ktot[i] - 1] = (qb[i] - volddof[ktot[i] - 1]) / (*tinc);
+                for (i = 0; i < neqtot; ++i) {
+                  b[ktot[i] - 1] = (qb[i] - volddof[ktot[i] - 1]) / (*tinc);
+                }
               }
               SFREE(qb);
               SFREE(volddof);
@@ -3295,6 +3343,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       NNEW(stx, double, 6 * mi[0] * *ne);
       MNEW(fn, double, mt **nk);
 
+      /*      if((*nmethod==4)&&(*iexpl>1)&&(*nener==0)){
+	resultsini(nk,v,ithermal,filab,iperturb,f,fn,
+		   nactdof,&iout,qa,vold,b,nodeboun,ndirboun,
+		   xboun,nboun,ipompc,nodempc,coefmpc,labmpc,nmpc,nmethod,cam,
+		   &neq[1],veold,accold,&bet,&gam,&dtime,mi,vini,nprint,prlab,
+		   &intpointvarm,&calcul_fn,&calcul_f,&calcul_qa,&calcul_cauchy,
+		   &ikin,&intpointvart,typeboun,&num_cpus,mortar,nener);
+		   }else{*/
       if (ne1d2d == 1)
         NNEW(inum, ITG, *nk);
       results(co, nk, kon, ipkon, lakon, ne, v, stn, inum, stx,
@@ -3322,6 +3378,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               &intscheme);
       if (ne1d2d == 1)
         SFREE(inum);
+      //   }
 
       /* implicit dynamics (Matteo Pacher) */
 
@@ -3333,7 +3390,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       /* updating the external work (only for dynamic calculations) */
 
-      if ((*nmethod == 4) && (*ithermal < 2)) {
+      if ((*nmethod == 4) && (*ithermal < 2) && (*nener == 1)) {
         allwk = allwkini;
         worparll(&allwk, fnext, &mt, fnextini, v, vini, nk, &num_cpus);
 
@@ -3430,11 +3487,14 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       /* calculating the residual */
 
-      calcresidual(nmethod, neq, b, fext, f, iexpl, nactdof, aux2, vold,
-                   vini, &dtime, accold, nk, adb, aub, jq, irow, nzl, alpha, fextini, fini,
-                   islavnode, nslavnode, mortar, ntie, f_cm, f_cs, mi,
-                   nzs, &nasym, &idamping, veold, adc, auc, cvini, cv, &alpham,
-                   &num_cpus);
+      // next line: change on 19072022
+      if ((*iexpl <= 1) || (*nener == 1)) {
+        calcresidual(nmethod, neq, b, fext, f, iexpl, nactdof, aux2, vold, vini, &dtime,
+                     accold, nk, adb, aub, jq, irow, nzl, alpha, fextini, fini,
+                     islavnode, nslavnode, mortar, ntie, f_cm, f_cs, mi,
+                     nzs, &nasym, &idamping, veold, adc, auc, cvini, cv, &alpham,
+                     &num_cpus);
+      }
 
       /* fix residuals for mortar contact, add contact forces */
 
@@ -3446,7 +3506,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
       isiz = mt * *nk;
       cpypardou(vold, v, &isiz, &num_cpus);
-      if (*ithermal != 2) {
+      //      if(*ithermal!=2){
+      // next line: change on 19072022
+      if ((*ithermal != 2) && ((*iexpl <= 1) || (*nener == 1))) {
         for (k = 0; k < 6 * mi[0] * ne0; ++k) {
           sti[k] = stx[k];
         }
@@ -3693,7 +3755,6 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
 
     /* Adapter: Copy necessary data for coupling */
     simulationData.fn = fn;
-    memcpy(&vold[0], &v[0], sizeof(double) * mt * *nk);
 
     Precice_WriteCouplingData(&simulationData);
     /* Adapter: Advance the coupling */
@@ -3708,7 +3769,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     }
     /* printing the energies (only for dynamic calculations) */
 
-    if ((icutb == 0) && (*nmethod == 4) && (*ithermal < 2) && (jout[0] == jprint)) {
+    if ((icutb == 0) && (*nmethod == 4) && (*ithermal < 2) && (jout[0] == jprint) &&
+        (*nener == 1)) {
 
       if (*iexpl > 1) {
         printf(" actual total time=%e\n\n", *ttime + theta * *tper);
@@ -4198,7 +4260,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     strcat(stiffmatrix, ".stm");
 
     if ((f1 = fopen(stiffmatrix, "wb")) == NULL) {
-      printf("*ERROR in linstatic: cannot open stiffness matrix file for writing...");
+      printf(" *ERROR in nonlingeo: cannot open stiffness matrix file for writing...");
       exit(0);
     }
 
@@ -4211,31 +4273,31 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     */
 
     if (fwrite(&nasym, sizeof(ITG), 1, f1) != 1) {
-      printf("*ERROR saving the symmetry flag to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving the symmetry flag to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(nzs, sizeof(ITG), 3, f1) != 3) {
-      printf("*ERROR saving the number of subdiagonal nonzeros to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving the number of subdiagonal nonzeros to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(irow, sizeof(ITG), nzs[2], f1) != nzs[2]) {
-      printf("*ERROR saving irow to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving irow to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(jq, sizeof(ITG), neq[1] + 1, f1) != neq[1] + 1) {
-      printf("*ERROR saving jq to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving jq to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(icol, sizeof(ITG), neq[1], f1) != neq[1]) {
-      printf("*ERROR saving icol to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving icol to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(adcpy, sizeof(double), neq[1], f1) != neq[1]) {
-      printf("*ERROR saving the diagonal of the stiffness matrix to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving the diagonal of the stiffness matrix to the stiffness matrix file...");
       exit(0);
     }
     if (fwrite(aucpy, sizeof(double), (nasym + 1) * nzs[2], f1) != (nasym + 1) * nzs[2]) {
-      printf("*ERROR saving the off-diagonal terms of the stiffness matrix to the stiffness matrix file...");
+      printf(" *ERROR in nonlingeo saving the off-diagonal terms of the stiffness matrix to the stiffness matrix file...");
       exit(0);
     }
     fclose(f1);
@@ -4569,9 +4631,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       SFREE(lslav);
       SFREE(ktot);
       SFREE(ltot);
+      SFREE(aloc);
       SFREE(adc);
       SFREE(auc);
       SFREE(areaslav);
+      SFREE(fric);
     } else if (*mortar == 0) {
       SFREE(areaslav);
     } else if (*mortar == 1) {
@@ -4720,6 +4784,13 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     SFREE(adblump);
   }
   // MPADD end
+
+  /* restore node-to-face contact to massless contact for massless
+     explicit dynamic calculations */
+
+  if ((*nmethod == 1) && (mortarsav == -1)) {
+    *mortar = -1;
+  }
 
   (*ttime) += (*tper);
 

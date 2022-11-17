@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                 */
-/*              Copyright (C) 1998-2021 Guido Dhondt                     */
+/*              Copyright (C) 1998-2022 Guido Dhondt                     */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         break;
       }
       if (strcmp1(argv[i], "-v") == 0) {
-        printf("\nThis is Version 2.19\n\n");
+        printf("\nThis is Version 2.20\n\n");
         FORTRAN(stop, ());
       }
     }
@@ -178,12 +178,12 @@ int main(int argc, char *argv[])
   FORTRAN(openfile, (jobnamef));
 
   printf("\n************************************************************\n\n");
-  printf("CalculiX Version 2.19, Copyright(C) 1998-2021 Guido Dhondt\n");
+  printf("CalculiX Version 2.20, Copyright(C) 1998-2022 Guido Dhondt\n");
   printf("CalculiX comes with ABSOLUTELY NO WARRANTY. This is free\n");
   printf("software, and you are welcome to redistribute it under\n");
   printf("certain conditions, see gpl.htm\n\n");
   printf("************************************************************\n\n");
-  printf("You are using an executable made on Fri Dec 17 13:15:26 CET 2021\n");
+  printf("You are using an executable made on Sun Jul 31 18:08:37 CEST 2022\n");
   fflush(stdout);
 
   NNEW(ipoinp, ITG, 2 * nentries);
@@ -648,7 +648,7 @@ int main(int argc, char *argv[])
     cyclicsymmetry = 0;
     if ((f1 = fopen(fneig, "rb")) != NULL) {
       if (fread(&cyclicsymmetry, sizeof(ITG), 1, f1) != 1) {
-        printf("*ERROR reading the information whether cyclic symmetry is involved in the eigenvalue file");
+        printf(" *ERROR reading the information whether cyclic symmetry is involved in the eigenvalue file");
         exit(0);
       }
       fclose(f1);
@@ -765,7 +765,7 @@ int main(int argc, char *argv[])
                   lakon, ipkon, kon, tietol, &nmpc, &mpcfree, &memmpc_,
                   &ipompc, &labmpc, &ikmpc, &ilmpc, &fmpc, &nodempc, &coefmpc,
                   ithermal, co, vold, &nef, &nmpc_, mi, &nk, &istep, ikboun, &nboun,
-                  kind1, kind2);
+                  kind1, kind2, jobnamef);
 
       /* reallocating space in the first step */
 
@@ -1308,9 +1308,11 @@ int main(int argc, char *argv[])
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
     if (preciceUsed) {
-      int isStaticOrDynamic = (nmethod == 1) || (nmethod == 4);
-      int isDynamic         = nmethod == 4;
+      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) && (iperturb[0] > 1);
+      int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
+      int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
+      int isStaticNLGEOM    = ((nmethod == 1) && (iperturb[0] > 1));
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
@@ -1321,32 +1323,27 @@ int main(int argc, char *argv[])
         mpcinfo[2] = icascade;
         mpcinfo[3] = maxlenmpc;
 
-        nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun, &nboun,
-                          &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
-                          &nforc, &nelemload, &sideload, xload, &nload,
-                          nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc,
-                          &ilmpc, ikboun, ilboun, elcon, nelcon, rhcon, nrhcon,
-                          alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_,
-                          t0, t1, t1old, ithermal, prestr, &iprestr,
-                          &vold, iperturb, sti, nzs, &kode, filab, &idrct, jmax,
-                          jout, timepar, eme, xbounold, xforcold, xloadold,
-                          veold, accold, amname, amta, namta,
-                          &nam, iamforc, &iamload, iamt1, alpha,
-                          &iexpl, iamboun, plicon, nplicon, plkcon, nplkcon,
-                          &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
+        nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
+                          &nboun, &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc,
+                          ndirforc, xforc, &nforc, &nelemload, &sideload, xload, &nload,
+                          nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc, &ilmpc,
+                          ikboun, ilboun, elcon, nelcon, rhcon, nrhcon, alcon, nalcon,
+                          alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, t0, t1, t1old,
+                          ithermal, prestr, &iprestr, &vold, iperturb, sti, nzs, &kode,
+                          filab, &idrct, jmax, jout, timepar, eme, xbounold, xforcold,
+                          xloadold, veold, accold, amname, amta, namta, &nam, iamforc,
+                          &iamload, iamt1, alpha, &iexpl, iamboun, plicon, nplicon, plkcon,
+                          nplkcon, &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
                           &isolver, &ncmat_, &nstate_, &iumat, cs, &mcs, &nkon, &ener,
-                          mpcinfo, output,
-                          shcon, nshcon, cocon, ncocon, physcon, &nflow, ctrl,
-                          set, &nset, istartset, iendset, ialset, &nprint, prlab,
-                          prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc,
-                          cbody, ibody, xbody, &nbody, xbodyold, ielprop, prop,
-                          &ntie, tieset, &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke,
-                          ics, &nintpoint, &mortar,
-                          &ifacecount, typeboun, &islavsurf, &pslavsurf, &clearini, &nmat,
-                          xmodal, &iaxial, &inext, &nprop, &network, orname, vel, &nef,
-                          velo, veloo, energy, itempuser,
-                          /* New args from 2.19 */
-                          &ipobody, &inewton, &t0g, &t1g, &ifreebody,
+                          mpcinfo, output, shcon, nshcon, cocon, ncocon, physcon, &nflow,
+                          ctrl, set, &nset, istartset, iendset, ialset, &nprint, prlab,
+                          prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc, cbody,
+                          ibody, xbody, &nbody, xbodyold, ielprop, prop, &ntie, tieset,
+                          &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke, ics,
+                          &nintpoint, &mortar, &ifacecount, typeboun, &islavsurf,
+                          &pslavsurf, &clearini, &nmat, xmodal, &iaxial, &inext, &nprop,
+                          &network, orname, vel, &nef, velo, veloo, energy, itempuser,
+                          ipobody, &inewton, t0g, t1g, &ifreebody,
                           /* PreCICE args */
                           preciceParticipantName, configFilename);
 
@@ -1367,32 +1364,27 @@ int main(int argc, char *argv[])
           mpcinfo[2] = icascade;
           mpcinfo[3] = maxlenmpc;
 
-          nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun, &nboun,
-                            &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
-                            &nforc, &nelemload, &sideload, xload, &nload,
-                            nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc,
-                            &ilmpc, ikboun, ilboun, elcon, nelcon, rhcon, nrhcon,
-                            alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_,
-                            t0, t1, t1old, ithermal, prestr, &iprestr,
-                            &vold, iperturb, sti, nzs, &kode, filab, &idrct, jmax,
-                            jout, timepar, eme, xbounold, xforcold, xloadold,
-                            veold, accold, amname, amta, namta,
-                            &nam, iamforc, &iamload, iamt1, alpha,
-                            &iexpl, iamboun, plicon, nplicon, plkcon, nplkcon,
-                            &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
+          nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
+                            &nboun, &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc,
+                            ndirforc, xforc, &nforc, &nelemload, &sideload, xload, &nload,
+                            nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc, &ilmpc,
+                            ikboun, ilboun, elcon, nelcon, rhcon, nrhcon, alcon, nalcon,
+                            alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, t0, t1, t1old,
+                            ithermal, prestr, &iprestr, &vold, iperturb, sti, nzs, &kode,
+                            filab, &idrct, jmax, jout, timepar, eme, xbounold, xforcold,
+                            xloadold, veold, accold, amname, amta, namta, &nam, iamforc,
+                            &iamload, iamt1, alpha, &iexpl, iamboun, plicon, nplicon, plkcon,
+                            nplkcon, &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
                             &isolver, &ncmat_, &nstate_, &iumat, cs, &mcs, &nkon, &ener,
-                            mpcinfo, output,
-                            shcon, nshcon, cocon, ncocon, physcon, &nflow, ctrl,
-                            set, &nset, istartset, iendset, ialset, &nprint, prlab,
-                            prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc,
-                            cbody, ibody, xbody, &nbody, xbodyold, ielprop, prop,
-                            &ntie, tieset, &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke,
-                            ics, &nintpoint, &mortar,
-                            &ifacecount, typeboun, &islavsurf, &pslavsurf, &clearini, &nmat,
-                            xmodal, &iaxial, &inext, &nprop, &network, orname, vel, &nef,
-                            velo, veloo, energy, itempuser,
-                            /* New args from 2.19 */
-                            &ipobody, &inewton, &t0g, &t1g, &ifreebody,
+                            mpcinfo, output, shcon, nshcon, cocon, ncocon, physcon, &nflow,
+                            ctrl, set, &nset, istartset, iendset, ialset, &nprint, prlab,
+                            prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc, cbody,
+                            ibody, xbody, &nbody, xbodyold, ielprop, prop, &ntie, tieset,
+                            &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke, ics,
+                            &nintpoint, &mortar, &ifacecount, typeboun, &islavsurf,
+                            &pslavsurf, &clearini, &nmat, xmodal, &iaxial, &inext, &nprop,
+                            &network, orname, vel, &nef, velo, veloo, energy, itempuser,
+                            ipobody, &inewton, t0g, t1g, &ifreebody,
                             /* PreCICE args */
                             preciceParticipantName, configFilename);
 
@@ -1408,32 +1400,27 @@ int main(int argc, char *argv[])
           mpcinfo[2] = icascade;
           mpcinfo[3] = maxlenmpc;
 
-          nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun, &nboun,
-                            &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
-                            &nforc, &nelemload, &sideload, xload, &nload,
-                            nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc,
-                            &ilmpc, ikboun, ilboun, elcon, nelcon, rhcon, nrhcon,
-                            alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_,
-                            t0, t1, t1old, ithermal, prestr, &iprestr,
-                            &vold, iperturb, sti, nzs, &kode, filab, &idrct, jmax,
-                            jout, timepar, eme, xbounold, xforcold, xloadold,
-                            veold, accold, amname, amta, namta,
-                            &nam, iamforc, &iamload, iamt1, alpha,
-                            &iexpl, iamboun, plicon, nplicon, plkcon, nplkcon,
-                            &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
+          nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
+                            &nboun, &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc,
+                            ndirforc, xforc, &nforc, &nelemload, &sideload, xload, &nload,
+                            nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc, &ilmpc,
+                            ikboun, ilboun, elcon, nelcon, rhcon, nrhcon, alcon, nalcon,
+                            alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, t0, t1, t1old,
+                            ithermal, prestr, &iprestr, &vold, iperturb, sti, nzs, &kode,
+                            filab, &idrct, jmax, jout, timepar, eme, xbounold, xforcold,
+                            xloadold, veold, accold, amname, amta, namta, &nam, iamforc,
+                            &iamload, iamt1, alpha, &iexpl, iamboun, plicon, nplicon, plkcon,
+                            nplkcon, &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
                             &isolver, &ncmat_, &nstate_, &iumat, cs, &mcs, &nkon, &ener,
-                            mpcinfo, output,
-                            shcon, nshcon, cocon, ncocon, physcon, &nflow, ctrl,
-                            set, &nset, istartset, iendset, ialset, &nprint, prlab,
-                            prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc,
-                            cbody, ibody, xbody, &nbody, xbodyold, ielprop, prop,
-                            &ntie, tieset, &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke,
-                            ics, &nintpoint, &mortar,
-                            &ifacecount, typeboun, &islavsurf, &pslavsurf, &clearini, &nmat,
-                            xmodal, &iaxial, &inext, &nprop, &network, orname, vel, &nef,
-                            velo, veloo, energy, itempuser,
-                            /* New args from 2.19 */
-                            &ipobody, &inewton, &t0g, &t1g, &ifreebody,
+                            mpcinfo, output, shcon, nshcon, cocon, ncocon, physcon, &nflow,
+                            ctrl, set, &nset, istartset, iendset, ialset, &nprint, prlab,
+                            prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc, cbody,
+                            ibody, xbody, &nbody, xbodyold, ielprop, prop, &ntie, tieset,
+                            &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke, ics,
+                            &nintpoint, &mortar, &ifacecount, typeboun, &islavsurf,
+                            &pslavsurf, &clearini, &nmat, xmodal, &iaxial, &inext, &nprop,
+                            &network, orname, vel, &nef, velo, veloo, energy, itempuser,
+                            ipobody, &inewton, t0g, t1g, &ifreebody,
                             /* PreCICE args */
                             preciceParticipantName, configFilename);
 
@@ -1445,9 +1432,80 @@ int main(int argc, char *argv[])
           printf("ERROR: This simulation type is not available with preCICE");
           exit(0);
         }
-      }
+      } else if (isStaticNLGEOM) {
 
-      else {
+        printf("Starting STATIC analysis via preCICE...\n");
+
+        mpcinfo[0] = memmpc_;
+        mpcinfo[1] = mpcfree;
+        mpcinfo[2] = icascade;
+        mpcinfo[3] = maxlenmpc;
+
+        nonlingeo_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
+                          &nboun, &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc,
+                          ndirforc, xforc, &nforc, &nelemload, &sideload, xload, &nload,
+                          nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, &ikmpc, &ilmpc,
+                          ikboun, ilboun, elcon, nelcon, rhcon, nrhcon, alcon, nalcon,
+                          alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, t0, t1, t1old,
+                          ithermal, prestr, &iprestr, &vold, iperturb, sti, nzs, &kode,
+                          filab, &idrct, jmax, jout, timepar, eme, xbounold, xforcold,
+                          xloadold, veold, accold, amname, amta, namta, &nam, iamforc,
+                          &iamload, iamt1, alpha, &iexpl, iamboun, plicon, nplicon, plkcon,
+                          nplkcon, &xstate, &npmat_, &istep, &ttime, matname, qaold, mi,
+                          &isolver, &ncmat_, &nstate_, &iumat, cs, &mcs, &nkon, &ener,
+                          mpcinfo, output, shcon, nshcon, cocon, ncocon, physcon, &nflow,
+                          ctrl, set, &nset, istartset, iendset, ialset, &nprint, prlab,
+                          prset, &nener, ikforc, ilforc, trab, inotr, &ntrans, &fmpc, cbody,
+                          ibody, xbody, &nbody, xbodyold, ielprop, prop, &ntie, tieset,
+                          &itpamp, &iviewfile, jobnamec, tietol, &nslavs, thicke, ics,
+                          &nintpoint, &mortar, &ifacecount, typeboun, &islavsurf,
+                          &pslavsurf, &clearini, &nmat, xmodal, &iaxial, &inext, &nprop,
+                          &network, orname, vel, &nef, velo, veloo, energy, itempuser,
+                          ipobody, &inewton, t0g, t1g, &ifreebody,
+                          /* PreCICE args */
+                          preciceParticipantName, configFilename);
+
+        memmpc_   = mpcinfo[0];
+        mpcfree   = mpcinfo[1];
+        icascade  = mpcinfo[2];
+        maxlenmpc = mpcinfo[3];
+
+      } else if (isModalDynamic) {
+
+        printf("Starting FSI analysis via preCICE\n");
+
+        if ((ne1d != 0) || (ne2d != 0)) {
+          printf(" *WARNING: 1-D or 2-D elements may cause problems in modal dynamic calculations\n");
+          printf("           ensure that point loads defined in a *MODAL DYNAMIC step\n");
+          printf("           and applied to nodes belonging to 1-D or 2-D elements have been\n");
+          printf("           applied to the same nodes in the preceding FREQUENCY step with\n");
+          printf("           magnitude zero; look at example shellf.inp for a guideline.\n\n");
+        }
+
+        printf(" Composing the dynamic response from the eigenmodes\n\n");
+
+        dyna_precice(&co, &nk, &kon, &ipkon, &lakon, &ne, &nodeboun, &ndirboun, &xboun, &nboun,
+                     &ipompc, &nodempc, &coefmpc, &labmpc, &nmpc, nodeforc, ndirforc, xforc,
+                     &nforc,
+                     nelemload, sideload, xload, &nload,
+                     &nactdof, neq, &nzl, icol, irow, &nmethod, &ikmpc, &ilmpc, &ikboun, &ilboun,
+                     elcon, nelcon, rhcon, nrhcon, cocon, ncocon,
+                     alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_, &t0,
+                     &t1, ithermal, prestr, &iprestr, &vold, iperturb, &sti, nzs,
+                     timepar, xmodal, &veold, amname, amta,
+                     namta, &nam, iamforc, iamload, &iamt1,
+                     jout, &kode, filab, &eme, xforcold, xloadold,
+                     &t1old, &iamboun, &xbounold, &iexpl, plicon,
+                     nplicon, plkcon, nplkcon, &xstate, &npmat_, matname,
+                     mi, &ncmat_, &nstate_, &ener, jobnamec, &ttime, set, &nset,
+                     istartset, iendset, &ialset, &nprint, prlab,
+                     prset, &nener, trab, &inotr, &ntrans, &fmpc, ipobody, ibody, xbody, &nbody,
+                     xbodyold, &istep, &isolver, jq, output, &mcs, &nkon, &mpcend, ics, cs,
+                     &ntie, tieset, &idrct, jmax, ctrl, &itpamp, tietol, &nalset,
+                     ikforc, ilforc, thicke, &nslavs, &nmat, typeboun, ielprop, prop, orname,
+                     t0g, t1g,
+                     preciceParticipantName, configFilename);
+      } else {
         printf("ERROR: Only thermal coupling or FSI is available with preCICE");
         exit(0);
       }
@@ -1576,7 +1634,7 @@ int main(int argc, char *argv[])
         }
 
 #else
-        printf("*ERROR in CalculiX: the ARPACK library is not linked\n\n");
+        printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
         FORTRAN(stop, ());
 #endif
 
@@ -1618,7 +1676,7 @@ int main(int argc, char *argv[])
         }
 
 #else
-        printf("*ERROR in CalculiX: the ARPACK library is not linked\n\n");
+        printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
         FORTRAN(stop, ());
 #endif
       }
@@ -1641,7 +1699,7 @@ int main(int argc, char *argv[])
                ibody, xbody, &nbody, thicke, jobnamec, &nmat, ielprop, prop,
                orname, typeboun, t0g, t1g);
 #else
-      printf("*ERROR in CalculiX: the ARPACK library is not linked\n\n");
+      printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
       FORTRAN(stop, ());
 #endif
     } else if (nmethod == 4) {
@@ -1854,10 +1912,14 @@ int main(int argc, char *argv[])
     else if (nmethod == 15) {
 
       crackpropagation(&ipkon, &kon, &lakon, &ne, &nk, jobnamec, &nboun, iamboun, xboun,
-                       &nload, sideload, iamload, &nforc, iamforc, xforc, ithermal, t1,
-                       iamt1, &co, &nkon, mi, &ielmat, matname, output, &nmat, set,
+                       &nload, sideload, iamload, &nforc, iamforc, xforc, ithermal,
+                       &t1, &iamt1, &co, &nkon, mi, &ielmat, matname, output, &nmat, set,
                        &nset, istartset, iendset, ialset, jmax, timepar, nelcon,
-                       elcon, &ncmat_, &ntmat_, &istep, filab, &nmethod, mei);
+                       elcon, &ncmat_, &ntmat_, &istep, filab, &nmethod, mei, &ntrans,
+                       &inotr, &t0, &ne1d, &ne2d, &t0g, &t1g, &nam, &t1old, &vold,
+                       iperturb, &iprestr, &prestr, &norien, &ielorien, &nprop,
+                       &ielprop, &offset, &sti, &eme, &nener, &ener, &nstate_,
+                       &mortar, &nslavs, &nintpoint, &xstate, &iponor, &thicke);
     }
 
     else if (nmethod == 16) {
@@ -2113,7 +2175,7 @@ int main(int argc, char *argv[])
   strcpy(fneig, jobnamec);
   strcat(fneig, ".frd");
   if ((f1 = fopen(fneig, "ab")) == NULL) {
-    printf("*ERROR in frd: cannot open frd file for writing...");
+    printf(" *ERROR in frd: cannot open frd file for writing...");
     exit(0);
   }
   fprintf(f1, " 9999\n");
