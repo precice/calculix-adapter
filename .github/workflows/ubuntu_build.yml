@@ -14,6 +14,9 @@ jobs:
           - os: ubuntu-22.04
             name: jammy
             flags: -fallow-argument-mismatch
+          - os: ubuntu-latest
+            name: kinetic
+            flags: -fallow-argument-mismatch
 
     runs-on: ${{matrix.os}}
     continue-on-error: true
