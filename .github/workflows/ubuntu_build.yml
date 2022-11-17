@@ -7,14 +7,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-22.10]
         include:
           - os: ubuntu-20.04
             name: focal
           - os: ubuntu-22.04
             name: jammy
             flags: -fallow-argument-mismatch
-          - os: ubuntu-latest
+          - os: ubuntu-22.10
             name: kinetic
 
     runs-on: ${{matrix.os}}
