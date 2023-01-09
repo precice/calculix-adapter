@@ -2,7 +2,7 @@
 title: Get CalculiX
 permalink: adapter-calculix-get-calculix.html
 keywords: adapter, calculix, building, spooles, arpack, yaml-cpp
-summary: "Building CalculiX itself can already be quite a challenges. That's why we collected here some recipe."
+summary: "Building CalculiX itself can already be quite a challenge. That's why we collected here some recipe."
 ---
 
 The CalculiX adapter for preCICE directly modifies the source code of CalculiX and produces an alternative executable `ccx_preCICE`. Therefore, we first need to get and (optionally) build CalculiX from source.
@@ -140,7 +140,7 @@ Once the libraries are installed, you can finally install Calculix with preCICE 
 ```bash
 cd ~
 wget http://www.dhondt.de/ccx_{{site.calculix_version}}.src.tar.bz2
-tar xvjf ccx_{{site.calculix_version}}.src.tar.bz2 
+tar xvjf ccx_{{site.calculix_version}}.src.tar.bz2
 ```
 
 The source code is now in the `~/CalculiX/ccx_{{site.calculix_version}}/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
