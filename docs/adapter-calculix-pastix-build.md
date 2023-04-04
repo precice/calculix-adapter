@@ -123,8 +123,8 @@ Calculix relies on ARPACK, and when built with PaStiX, we cannot rely on standar
 
 ```bash
 cd ~
-wget https://www.caam.rice.edu/software/ARPACK/SRC/arpack96.tar.gz
-wget https://www.caam.rice.edu/software/ARPACK/SRC/patch.tar.gz
+wget https://web.archive.org/web/20220526222500fw_/https://www.caam.rice.edu/software/ARPACK/SRC/arpack96.tar.gz
+wget https://web.archive.org/web/20220526222500fw_/https://www.caam.rice.edu/software/ARPACK/SRC/patch.tar.gz
 zcat arpack96.tar.gz | tar -xvf -
 zcat patch.tar.gz    | tar -xvf -
 
