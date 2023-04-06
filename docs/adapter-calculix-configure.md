@@ -186,7 +186,95 @@ Note that an error will only occur if nodes-mesh-with-connectivity is specified 
 
 ### Modal dynamic simulations
 
-The adapter supports modal dynamic simulations, where eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a linear combination of osicllating eigenmodes. This can be faster but slightly less accurate. It can be particularly useful if you need many runs of the simulation, as frequency analysis can be run only once. Run the frequency analysis without preCICE (`ccx_preCICE -i [CalculiX input file]`), then run a regular coupled simulation (configured as modal dynamic in the input file). Note that reading displacements is not supported in these simulations.
+The adapter supports modal dynamic simulations. In this type of simulation, eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a time dependent linear combination of these eigenmodes; this reduces the number of degrees of freedom of the sytem. Therefore, the simulation is faster, although its accuracy is dependent on the nonlinearity of the response. This method is very attractive in cases in which the solid dynamics is linear since, if you need many runs of the simulation, the `*FREQUENCY*` extraction step needs to be run only once.
+
+To run a case with a `*MODAL DYNAMIC` analysis, the adapter has a special requirement. The `*FREQUENCY` step and the `*MODAL DYNAMIC` step must be run in different input files, as it is a requirement of the adapter to extract the frequency and modal data with a dedicated `.inp` file and then run the modal dynamic analysis without adding the frequency extraction step. The first run creates a `.eig` file with the modal information needed for the second run.
+
+To run the frequency analysis without preCICE, create an input file like the following example:
+
+```text
+*INCLUDE, INPUT=all.msh
+*INCLUDE, INPUT=fix1.nam
+*INCLUDE, INPUT=fix2.nam
+*INCLUDE, INPUT=fix3.nam
+*INCLUDE, INPUT=interface.nam
+*INCLUDE, INPUT=interface.sur
+**===============================================================
+*MATERIAL, Name=EL
+*ELASTIC
+ 100000000, 0.3
+*DENSITY
+ 10000.0
+*BOUNDARY
+ Nfix1, 3, 3, 0
+ Nfix2, 1, 1, 0
+ Nfix2, 3, 3, 0
+ Nfix3, 1, 3, 0
+**===============================================================
+*STEP
+*FREQUENCY, STORAGE=YES
+4
+*CLOAD
+ Ninterface, 1, 0.0
+ Ninterface, 2, 0.0
+ Ninterface, 3, 0.0
+*NODE FILE
+ U
+*EL FILE
+ S, E
+*END STEP
+**===============================================================
+```
+
+Run the frequency analysis with:
+
+```bash
+ccx_preCICE -i [CalculiX input file]
+```
+
+Now the modal information should be stored in the `.eig` file. For the regular coupled simulation, delete the `*FREQUENCY` step and add the `*MODAL DYNAMIC` step as shown in the following example:
+
+```text
+*INCLUDE, INPUT=all.msh
+*INCLUDE, INPUT=fix1.nam
+*INCLUDE, INPUT=fix2.nam
+*INCLUDE, INPUT=fix3.nam
+*INCLUDE, INPUT=interface.nam
+*INCLUDE, INPUT=interface.sur
+**===============================================================
+*MATERIAL, Name=EL
+*ELASTIC
+ 100000000, 0.3
+*DENSITY
+ 10000.0
+*BOUNDARY
+ Nfix1, 3, 3, 0
+ Nfix2, 1, 1, 0
+ Nfix2, 3, 3, 0
+ Nfix3, 1, 3, 0
+**===============================================================
+*STEP, INC=1000000000
+*MODAL DYNAMIC
+1.E-4, 1
+*CLOAD
+ Ninterface, 1, 0.0
+ Ninterface, 2, 0.0
+ Ninterface, 3, 0.0
+*NODE FILE
+ U
+*EL FILE
+ S, E
+*END STEP
+**===============================================================
+```
+
+Run the standard coupled simulation with:
+
+```bash
+ccx_preCICE -i [CalculiX input file] -precice-participant [CalculiX participant name]
+```
+
+Make sure to replace `[CalculiX input file]` and `[CalculiX participant name]` with the appropriate file and name for your case.
 
 ### Parallelization
 
