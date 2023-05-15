@@ -51,6 +51,8 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
 
   // Initialize variables needed for the coupling
   NNEW(sim->coupling_init_v, double, sim->mt * sim->nk);
+  NNEW(sim->coupling_init_ve, double, sim->mt * sim->nk);
+  NNEW(sim->coupling_init_acc, double, sim->mt * sim->nk);
 
   // Initialize preCICE
   sim->precice_dt = precicec_initialize();
@@ -128,7 +130,7 @@ void Precice_FulfilledWriteCheckpoint()
   precicec_markActionFulfilled("write-iteration-checkpoint");
 }
 
-void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v)
+void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v, double *ve, double *acc)
 {
 
   printf("Adapter reading checkpoint...\n");
@@ -142,9 +144,11 @@ void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v)
 
   // Reload solution vector v
   memcpy(v, sim->coupling_init_v, sizeof(double) * sim->mt * sim->nk);
+  memcpy(ve, sim->coupling_init_ve, sizeof(double) * sim->mt * sim->nk);
+  memcpy(acc, sim->coupling_init_acc, sizeof(double) * sim->mt * sim->nk);
 }
 
-void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
+void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v, double *ve, double *acc)
 {
 
   printf("Adapter writing checkpoint...\n");
@@ -158,6 +162,8 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
 
   // Save solution vector v
   memcpy(sim->coupling_init_v, v, sizeof(double) * sim->mt * sim->nk);
+  memcpy(sim->coupling_init_ve, ve, sizeof(double) * sim->mt * sim->nk);
+  memcpy(sim->coupling_init_acc, acc, sizeof(double) * sim->mt * sim->nk);
 }
 
 void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev)
@@ -435,6 +441,14 @@ void Precice_FreeData(SimulationData *sim)
 
   if (sim->coupling_init_v != NULL) {
     free(sim->coupling_init_v);
+  }
+
+  if (sim->coupling_init_ve != NULL) {
+    free(sim->coupling_init_ve);
+  }
+
+  if (sim->coupling_init_acc != NULL) {
+    free(sim->coupling_init_acc);
   }
 
   for (i = 0; i < sim->numPreciceInterfaces; i++) {
