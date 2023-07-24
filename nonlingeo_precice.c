@@ -1681,9 +1681,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       isiz = mt * *nk;
       cpypardou(vini, vold, &isiz, &num_cpus);
 
-      if (Precice_IsWriteCheckpointRequired()) {
+      if (Precice_requiresWritingCheckpoint()) {
         Precice_WriteIterationCheckpoint(&simulationData, vini);
-        Precice_FulfilledWriteCheckpoint();
       }
 
       isiz = *nboun;

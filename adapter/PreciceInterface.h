@@ -189,12 +189,7 @@ bool Precice_requiresReadingCheckpoint();
  * @brief Returns true if checkpoint must be written
  * @return
  */
-bool Precice_IsWriteCheckpointRequired();
-
-/**
- * @brief Tells preCICE that the checkpoint has been written
- */
-void Precice_FulfilledWriteCheckpoint();
+bool Precice_requiresWritingCheckpoint();
 
 /**
  * @brief Reads iteration checkpoint
