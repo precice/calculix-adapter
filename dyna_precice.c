@@ -2086,13 +2086,12 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       BufferClear(out_buffer);
     }
     /* Adapter: If the coupling does not converge, read the checkpoint */
-    if (Precice_IsReadCheckpointRequired()) {
+    if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
         *kode = simulationData.kode_value;
       }
       BufferClear(out_buffer);
-      Precice_FulfilledReadCheckpoint();
     }
 
     if (isteadystate == 1) {

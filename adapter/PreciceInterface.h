@@ -183,18 +183,13 @@ bool Precice_IsCouplingOngoing();
  * @brief Returns true if checkpoint must be read
  * @return
  */
-bool Precice_IsReadCheckpointRequired();
+bool Precice_requiresReadingCheckpoint();
 
 /**
  * @brief Returns true if checkpoint must be written
  * @return
  */
 bool Precice_IsWriteCheckpointRequired();
-
-/**
- * @brief Tells preCICE that the checkpoint has been read
- */
-void Precice_FulfilledReadCheckpoint();
 
 /**
  * @brief Tells preCICE that the checkpoint has been written

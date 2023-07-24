@@ -101,19 +101,14 @@ bool Precice_IsCouplingOngoing()
   return precicec_isCouplingOngoing();
 }
 
-bool Precice_IsReadCheckpointRequired()
+bool Precice_requiresReadingCheckpoint()
 {
-  return precicec_isActionRequired("read-iteration-checkpoint");
+  return precicec_requiresReadingCheckpoint();
 }
 
 bool Precice_IsWriteCheckpointRequired()
 {
   return precicec_isActionRequired("write-iteration-checkpoint");
-}
-
-void Precice_FulfilledReadCheckpoint()
-{
-  precicec_markActionFulfilled("read-iteration-checkpoint");
 }
 
 void Precice_FulfilledWriteCheckpoint()
