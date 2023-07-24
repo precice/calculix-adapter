@@ -51,7 +51,9 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
 
   // Initialize variables needed for the coupling
   NNEW(sim->coupling_init_v, double, sim->mt * sim->nk);
-  Precice_WriteCouplingData(sim);
+  if (precicec_requiresInitialData()) {
+    Precice_WriteCouplingData(sim);
+  }
 
   // Initialize preCICE
   sim->precice_dt = precicec_initialize();
@@ -402,9 +404,6 @@ void Precice_WriteCouplingData(SimulationData *sim)
     // Cleanup data
     free(T);
     free(KDelta);
-  }
-  if (precicec_isActionRequired("write-initial-data")) {
-    precicec_markActionFulfilled("write-initial-data");
   }
 }
 
