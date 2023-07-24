@@ -51,21 +51,14 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
 
   // Initialize variables needed for the coupling
   NNEW(sim->coupling_init_v, double, sim->mt * sim->nk);
+  Precice_WriteCouplingData(sim);
 
   // Initialize preCICE
   sim->precice_dt = precicec_initialize();
 
   // Initialize coupling data
-  Precice_InitializeData(sim);
-}
-
-void Precice_InitializeData(SimulationData *sim)
-{
   printf("Initializing coupling data\n");
   fflush(stdout);
-
-  Precice_WriteCouplingData(sim);
-  precicec_initialize_data();
   Precice_ReadCouplingData(sim);
 }
 

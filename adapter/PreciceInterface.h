@@ -162,14 +162,6 @@ typedef struct SimulationData {
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
 /**
- * @brief Initializes the coupling data (does an initial exchange) if necessary
- * @param sim
- * @param preciceInterfaces
- * @param numInterfaces
- */
-void Precice_InitializeData(SimulationData *sim);
-
-/**
  * @brief Adjusts the solver time step based on the coupling time step and the solver time step
  * @param sim
  */
