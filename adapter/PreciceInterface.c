@@ -56,7 +56,8 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   }
 
   // Initialize preCICE
-  sim->precice_dt = precicec_initialize();
+  precicec_initialize();
+  sim->precice_dt = precicec_getMaxTimeStepSize();
 
   // Initialize coupling data
   printf("Initializing coupling data\n");
@@ -95,7 +96,8 @@ void Precice_Advance(SimulationData *sim)
   printf("Adapter calling advance()...\n");
   fflush(stdout);
 
-  sim->precice_dt = precicec_advance(sim->solver_dt);
+  precicec_advance(sim->solver_dt);
+  sim->precice_dt = precicec_getMaxTimeStepSize();
 }
 
 bool Precice_IsCouplingOngoing()
