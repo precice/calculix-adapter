@@ -108,7 +108,7 @@ bool Precice_requiresReadingCheckpoint()
 
 bool Precice_requiresWritingCheckpoint()
 {
-  return precicec_isActionRequired("write-iteration-checkpoint");
+  return precicec_requiresWritingCheckpoint();
 }
 
 void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v)
