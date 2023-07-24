@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
-#include "precice/SolverInterfaceC.h"
+#include "precice/preciceC.h"
 
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim)
 {
@@ -34,7 +34,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   sim->numPreciceInterfaces = adapterConfig.numInterfaces;
 
   // Create the solver interface and configure it - Alex: Calculix is always a serial participant (MPI size 1, rank 0)
-  precicec_createSolverInterface(participantName, adapterConfig.preciceConfigFilename, 0, 1);
+  precicec_createParticipant(participantName, adapterConfig.preciceConfigFilename, 0, 1);
 
   // Create interfaces as specified in the config file
   sim->preciceInterfaces = (struct PreciceInterface **) calloc(adapterConfig.numInterfaces, sizeof(PreciceInterface *));

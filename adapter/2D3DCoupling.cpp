@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
-#include "precice/SolverInterfaceC.h"
+#include "precice/preciceC.h"
 
 namespace MappingHelper {
 
