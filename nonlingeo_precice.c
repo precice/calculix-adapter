@@ -100,7 +100,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
        *sideloadf = NULL;
 
   ITG *inum = NULL, k, l, iout = 0, icntrl, iinc = 0, jprint = 0, iit = -1, jnz = 0,
-      icutb = 0, istab = 0, uncoupled, n1, n2, itruecontact,
+      icutb = 0, istab = 0, uncoupled, n1, n2, itruecontact, iclean = 0,
       iperturb_sav[2], ilin, *icol = NULL, *irow = NULL, ielas = 0, icmd = 0,
       memmpc_, mpcfree, icascade, maxlenmpc, *nodempc = NULL, *iaux = NULL,
       *nodempcref = NULL, memmpcref_, mpcfreeref, *itg = NULL, *ineighe = NULL,
@@ -142,7 +142,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       *iamloadf = NULL, *inotrf = NULL, *jqtherm = NULL, *jqw = NULL, *iroww = NULL, nzsw,
       *kslav = NULL, *lslav = NULL, *ktot = NULL, *ltot = NULL, nmasts, neqtot,
       intpointvarm, calcul_fn, calcul_f, calcul_qa, calcul_cauchy, ikin,
-      intpointvart;
+      intpointvart, *jqbi=NULL, *irowbi=NULL, *jqib=NULL, *irowib=NULL;
 
   double *stn = NULL, *v = NULL, *een = NULL, cam[5], *epn = NULL, *cg = NULL,
          *cdn = NULL, *pslavsurfold = NULL,
@@ -179,7 +179,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
          *smscale = NULL, dtset, energym = 0., energymold = 0., *voldf = NULL,
          *coefmpcf = NULL, *xbounf = NULL, *xloadf = NULL, *xbounoldf = NULL,
          *xbounactf = NULL, *xloadoldf = NULL, *xloadactf = NULL, *auw = NULL, *volddof = NULL,
-         *qb = NULL, *aloc = NULL, dtmin, *fric = NULL;
+         *qb = NULL, *aloc = NULL, dtmin, *fric = NULL, *aubi=NULL, *auib=NULL;
 
   FILE *f1;
 
@@ -1097,7 +1097,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                  neq, nzs, nmethod, &f, &fext, &b, &aux2, &fini, &fextini,
                  &adb, &aub, ithermal, iperturb, mass, mi, iexpl, mortar,
                  typeboun, &cv, &cvini, &iit, network, itiefac, &ne0, &nkon0,
-                 nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus);
+                 nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus, ielmat, matname);
     }
 
     /* invert nactdof */
@@ -1139,7 +1139,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             islavelinv, autloc, irowtloc, jqtloc, &nboun2,
             ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
             labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-            &intscheme);
+            &intscheme, physcon);
 
     SFREE(fn);
     SFREE(stx);
@@ -1556,7 +1556,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               islavelinv, autloc, irowtloc, jqtloc, &nboun2,
               ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
               labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-              &intscheme);
+              &intscheme, physcon);
       if (ne1d2d == 1)
         SFREE(inum);
       dtime = 0.;
@@ -2153,7 +2153,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                  neq, nzs, nmethod, &f, &fext, &b, &aux2, &fini, &fextini,
                  &adb, &aub, ithermal, iperturb, mass, mi, iexpl, mortar,
                  typeboun, &cv, &cvini, &iit, network, itiefac, &ne0, &nkon0,
-                 nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus);
+                 nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus, ielmat, matname);
 
     /* invert nactdof (not for dynamic explicit calculations) */
 
@@ -2275,7 +2275,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               islavelinv, autloc, irowtloc, jqtloc, &nboun2,
               ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
               labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-              &intscheme);
+              &intscheme, physcon);
       iperturb[0] = 0;
       if (ne1d2d == 1)
         SFREE(inum);
@@ -2313,7 +2313,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               islavelinv, autloc, irowtloc, jqtloc, &nboun2,
               ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
               labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-              &intscheme);
+              &intscheme, physcon);
       if (ne1d2d == 1)
         SFREE(inum);
 
@@ -2556,7 +2556,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                        neq, nzs, nmethod, &f, &fext, &b, &aux2, &fini, &fextini,
                        &adb, &aub, ithermal, iperturb, mass, mi, iexpl, mortar,
                        typeboun, &cv, &cvini, &iit, network, itiefac, &ne0, &nkon0,
-                       nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus);
+                       nintpoint, islavsurf, pmastsurf, tieset, ntie, &num_cpus, ielmat, matname);
           }
 
           /* invert nactdof */
@@ -2600,7 +2600,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                   islavelinv, autloc, irowtloc, jqtloc, &nboun2,
                   ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
                   labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-                  &intscheme);
+                  &intscheme, physcon);
 
           isiz = mt * *nk;
           cpypardou(vold, v, &isiz, &num_cpus);
@@ -2804,7 +2804,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                  jq, irow, neq, nzs, auw, jqw, iroww, &nzsw,
                  islavnode, nslavnode, nslavs, imastnode, nmastnode, ntie, nactdof,
                  mi, vold, volddof, veold, nk, fext, isolver, iperturb, co, springarea,
-                 &neqtot, qb, b, tinc, aloc, fric, iexpl);
+                 &neqtot, qb, b, tinc, aloc, fric, iexpl, nener, ener, ne, &jqbi, &aubi, &irowbi, &jqib, &auib, &irowib, &iclean, &iinc);
         SFREE(ad);
         SFREE(au);
       }
@@ -3375,7 +3375,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               islavelinv, autloc, irowtloc, jqtloc, &nboun2,
               ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
               labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-              &intscheme);
+              &intscheme, physcon);
       if (ne1d2d == 1)
         SFREE(inum);
       //   }
@@ -3480,7 +3480,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
                 islavelinv, autloc, irowtloc, jqtloc, &nboun2,
                 ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
                 labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-                &intscheme);
+                &intscheme, physcon);
         if (ne1d2d == 1)
           SFREE(inum);
       }
@@ -4023,7 +4023,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
               islavelinv, autloc, irowtloc, jqtloc, &nboun2,
               ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
               labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-              &intscheme);
+              &intscheme, physcon);
 
       isiz = mt * *nk;
       cpypardou(vold, v, &isiz, &num_cpus);
@@ -4169,7 +4169,7 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
             islavelinv, autloc, irowtloc, jqtloc, &nboun2,
             ndirboun2, nodeboun2, xboun2, &nmpc2, ipompc2, nodempc2, coefmpc2,
             labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
-            &intscheme);
+            &intscheme, physcon);
 
     isiz = mt * *nk;
     cpypardou(vold, v, &isiz, &num_cpus);
