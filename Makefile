@@ -2,24 +2,33 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
-CCX_VERSION			= 2.20
-CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
+CCX_VERSION	= 2.21
+CCX_HOME        = /opt/src
+CCX             = $(CCX_HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
-SPOOLES_INCLUDE   = -I/usr/include/spooles/
-# SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
-SPOOLES_LIBS      = -lspooles
+# SPOOLES_INCLUDE   = -I$(CCX_HOME)/SPOOLES.2.2
+SPOOLES_INCLUDE = -I/usr/include/spooles
+# SPOOLES library flags (e.g. -L$(HOME)/SPOOLES.2.2/spooles.a)
+# SPOOLES_LIBS      = -L$(CCX_HOME)/SPOOLES.2.2 -l:spooles -L$(CCX_HOME)/SPOOLES.2.2/MT/src/spoolesMT -l:spoolesMT
+# SPOOLES_LIBS      = $(CCX_HOME)/SPOOLES.2.2/MT/src/spoolesMT.a $(CCX_HOME)/SPOOLES.2.2/spooles.a
+SPOOLES_LIBS    = -lspooles
 #
 # ARPACK include flags (e.g. -I$(HOME)/ARPACK)
-ARPACK_INCLUDE    =
+ARPACK_INCLUDE    = -I/usr/include/arpack
+# ARPACK_INCLUDE  = -I$(CCX_HOME)/ARPACK/SRC
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
-ARPACK_LIBS       = -larpack -llapack -lblas
+# ARPACK_LIBS     = -L$(CCX_HOME)/ARPACK -l:arpack_INTEL -llapack -lblas
+# ARPACK_LIBS       = $(CCX_HOME)/ARPACK/libarpack_INTEL.a -llapack -lblas
+ARPACK_LIBS     = -larpack -llapack -lblas
 #
 # yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
-YAML_INCLUDE      = -I/usr/include/
+# YAML_INCLUDE    = -I/usr/share/yaml-cpp/head/include
+YAML_INCLUDE    = -I/usr/include/
 # yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
-YAML_LIBS         = -lyaml-cpp
+# YAML_LIBS         = -L/usr/share/yaml-cpp/head/lib -lyaml-cpp
+YAML_LIBS       = -lyaml-cpp
 
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
@@ -42,7 +51,7 @@ INCLUDES = \
 
 LIBS = \
 	$(SPOOLES_LIBS) \
-	$(PKGCONF_LIBS) \
+        $(PKGCONF_LIBS) \
 	-lstdc++ \
 	$(YAML_LIBS) \
 	$(ARPACK_LIBS) \
@@ -53,6 +62,7 @@ LIBS = \
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
 CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS =  -w  -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
@@ -63,6 +73,7 @@ else
 endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
+FFLAGS =  -w   -fallow-argument-mismatch  -O3 -fopenmp $(INCLUDES) $(ADDITIONAL_FFLAGS)
 # Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90
@@ -86,8 +97,9 @@ $(OBJDIR)/%.o : %.f
 $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(YAML_INCLUDE) -c $< -o $@ $(LIBS)
-	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	$(CC) -std=c++11 $(INCLUDES) -c $< -o $@ $(LIBS)
+	# g++ -std=c++11 $(YAML_INCLUDE) -c $< -o $@ $(LIBS)
+	# $(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
@@ -102,9 +114,11 @@ OCCXMAIN = $(SCCXMAIN:%.c=$(OBJDIR)/%.o)
 OCCXC += $(OBJDIR)/ConfigReader.o $(OBJDIR)/2D3DCoupling.o $(OBJDIR)/OutputBuffer.o
 
 
-
 $(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a
 	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
+#	$(FC) -fopenmp -Wall -O3 $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS) -o $@
+
+# $(LIBS)
 
 $(OBJDIR)/ccx_$(CCX_VERSION).a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
