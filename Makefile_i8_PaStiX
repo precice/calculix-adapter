@@ -2,7 +2,8 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.20/src )
-CCX             = $(HOME)/CalculiX/ccx_2.20/src
+CCX_HOME        = /opt/src
+CCX             = $(CCX_HOME)/CalculiX/ccx_2.21/src
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
@@ -11,10 +12,10 @@ SPOOLES_INCLUDE   = -I/usr/include/spooles/
 SPOOLES_LIBS      = -lspooles
 #
 # ARPACK include flags (e.g. -I$(HOME)/ARPACK)
-ARPACK_INCLUDE    =
+ARPACK_INCLUDE    = -I/usr/include/arpack/
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
-ARPACK_LIBS       = $(HOME)/ARPACK/libarpack_INTEL.a 
-#ARPACK_LIBS       = -larpack -llapack -lblas
+# ARPACK_LIBS       = $(HOME)/ARPACK/libarpack_INTEL.a 
+ARPACK_LIBS       = -larpack -llapack -lblas
 #
 # yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
 YAML_INCLUDE      = -I/usr/include/
@@ -35,10 +36,10 @@ OBJDIR = bin
 
 PASTIX_INCLUDE = $(shell pkg-config --cflags pastix)
 PASTIX_LIBS = $(shell pkg-config --libs pastix hwloc parsec) $(HOME)/OpenBLAS_i8/libopenblas.a \
-$(HOME)/PaStiX/pastix_i8/lib/libpastix_kernels.a \
-   /usr/lib/x86_64-linux-gnu/libcublas_static.a \
+  $(CCX_HOME)/PaStiX/pastix_i8/lib/libpastix_kernels.a \
+  /usr/lib/x86_64-linux-gnu/libcublas_static.a \
   /usr/lib/x86_64-linux-gnu/libculibos.a /usr/lib/x86_64-linux-gnu/libcublasLt_static.a \
-  $(HOME)/PaStiX/scotch_i8/lib/libscotch.a $(HOME)/PaStiX/scotch_i8/lib/libscotcherrexit.a 
+  $(CCX_HOME)/PaStiX/scotch_i8/lib/libscotch.a $(CCX_HOME)/PaStiX/scotch_i8/lib/libscotcherrexit.a 
 
 
 # Includes and libs
