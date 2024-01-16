@@ -4,6 +4,7 @@ repos:
   rev: 'v8.0.1'
   hooks:
   - id: clang-format
+    files: "^adapter"
 # Official repo for default hooks
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: 'v4.3.0'
