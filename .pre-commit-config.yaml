@@ -11,9 +11,6 @@ repos:
   - id: check-xml
   - id: check-merge-conflict
   - id: mixed-line-ending
-    exclude: "^thirdparty"
   - id: trailing-whitespace
     args: [--markdown-linebreak-ext=md]
-    exclude: "^thirdparty"
   - id: end-of-file-fixer
-    exclude: "^thirdparty"
