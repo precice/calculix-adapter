@@ -243,7 +243,7 @@ void conservativeScalarWrite(Mapping2D3D *map, int dataID)
                                 map->bufferScalar2D);
 }
 
-void consservativeVectorWrite(Mapping2D3D *map, int dataID)
+void conservativeVectorWrite(Mapping2D3D *map, int dataID)
 {
   // For each 2D point, write the sum of the relevant 3D points,
   setDoubleArrayZero(map->bufferVector2D, map->num2DNodes, 2);
