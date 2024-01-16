@@ -53,21 +53,21 @@ typedef struct PreciceInterface {
   double *faceCenterData;
 
   // preCICE mesh name
-  char * couplingMeshName;
+  char *couplingMeshName;
 
   // preCICE data names
-  char * temperature;
-  char * flux;
-  char * kDeltaWrite;
-  char * kDeltaTemperatureWrite;
-  char * kDeltaRead;
-  char * kDeltaTemperatureRead;
-  char * displacements;
-  char * displacementDeltas;
-  char * positions;
-  char * velocities;
-  char * forces;
-  char * pressure;
+  char *temperature;
+  char *flux;
+  char *kDeltaWrite;
+  char *kDeltaTemperatureWrite;
+  char *kDeltaRead;
+  char *kDeltaTemperatureRead;
+  char *displacements;
+  char *displacementDeltas;
+  char *positions;
+  char *velocities;
+  char *forces;
+  char *pressure;
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;

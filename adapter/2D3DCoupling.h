@@ -42,6 +42,6 @@ void         conservativeVectorRead(Mapping2D3D *map, const char *meshName, cons
 void         consistentScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
 void         consistentVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
 void         conservativeScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
-void         conservativeVectorWrite(Mapping2D3D *map, const char*meshName, const char *dataName);
+void         conservativeVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
 
 #endif
