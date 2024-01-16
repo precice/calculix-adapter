@@ -23,7 +23,9 @@ jobs:
 
     steps:
     - name: Update system
-      run: sudo apt update && sudo apt upgrade -y
+      run: |
+        apt-get -qq install sudo
+        sudo apt update && sudo apt upgrade -y
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
