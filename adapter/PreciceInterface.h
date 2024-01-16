@@ -52,7 +52,10 @@ typedef struct PreciceInterface {
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
 
-  // preCICE Data names
+  // preCICE mesh name
+  char * couplingMeshName;
+
+  // preCICE data names
   char * temperature;
   char * flux;
   char * kDeltaWrite;

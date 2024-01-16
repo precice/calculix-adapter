@@ -127,12 +127,9 @@ void freeMapping(Mapping2D3D *map)
   free(map);
 }
 
-void consistentScalarRead(Mapping2D3D *map, char *dataName)
+void consistentScalarRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt)
 {
-  precicec_readBlockScalarData(dataName,
-                               map->num2DNodes,
-                               map->preciceNodesIDs,
-                               map->bufferScalar2D);
+  precicec_readData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, dt, map->bufferScalar2D);
 
   // For each 3D point, copy the 2D counterpart
   for (int i = 0; i < map->num3DNodes; ++i) {
@@ -140,12 +137,9 @@ void consistentScalarRead(Mapping2D3D *map, char *dataName)
   }
 }
 
-void consistentVectorRead(Mapping2D3D *map, char *dataName)
+void consistentVectorRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt)
 {
-  precicec_readBlockVectorData(dataName,
-                               map->num2DNodes,
-                               map->preciceNodesIDs,
-                               map->bufferVector2D);
+  precicec_readData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, dt, map->bufferVector2D);
 
   // For each 3D point, copy the 2D counterpart, component-wise
   for (int i = 0; i < map->num3DNodes; ++i) {
@@ -154,12 +148,9 @@ void consistentVectorRead(Mapping2D3D *map, char *dataName)
   }
 }
 
-void conservativeScalarRead(Mapping2D3D *map, char *dataName)
+void conservativeScalarRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt)
 {
-  precicec_readBlockScalarData(dataName,
-                               map->num2DNodes,
-                               map->preciceNodesIDs,
-                               map->bufferScalar2D);
+  precicec_readData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, dt, map->bufferScalar2D);
 
   // For each 3D point, take a fraction of the value in 2D
   for (int i = 0; i < map->num3DNodes; ++i) {
@@ -167,12 +158,9 @@ void conservativeScalarRead(Mapping2D3D *map, char *dataName)
   }
 }
 
-void conservativeVectorRead(Mapping2D3D *map, char *dataName)
+void conservativeVectorRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt)
 {
-  precicec_readBlockVectorData(dataName,
-                               map->num2DNodes,
-                               map->preciceNodesIDs,
-                               map->bufferVector2D);
+  precicec_readData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, dt, map->bufferVector2D);
 
   // For each 3D point, take a fraction of the value in 2D
   for (int i = 0; i < map->num3DNodes; ++i) {
@@ -181,7 +169,7 @@ void conservativeVectorRead(Mapping2D3D *map, char *dataName)
   }
 }
 
-void consistentScalarWrite(Mapping2D3D *map, char *dataName)
+void consistentScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName)
 {
   // For each 2D point, write the average of the relevant 3D points,
   // in two steps: sum then divide
@@ -197,13 +185,10 @@ void consistentScalarWrite(Mapping2D3D *map, char *dataName)
     map->bufferScalar2D[i2d] /= map->numParentNodes[i2d];
   }
 
-  precicec_writeBlockScalarData(dataName,
-                                map->num2DNodes,
-                                map->preciceNodesIDs,
-                                map->bufferScalar2D);
+  precicec_writeData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, map->bufferScalar2D);
 }
 
-void consistentVectorWrite(Mapping2D3D *map, char *dataName)
+void consistentVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName)
 {
   // For each 2D point, write the average of the relevant 3D points,
   // in two steps: sum then divide
@@ -220,13 +205,10 @@ void consistentVectorWrite(Mapping2D3D *map, char *dataName)
     map->bufferVector2D[2 * i2d + 1] /= map->numParentNodes[i2d];
   }
 
-  precicec_writeBlockVectorData(dataName,
-                                map->num2DNodes,
-                                map->preciceNodesIDs,
-                                map->bufferVector2D);
+  precicec_writeData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, map->bufferVector2D);
 }
 
-void conservativeScalarWrite(Mapping2D3D *map, char *dataName)
+void conservativeScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName)
 {
   // For each 2D point, write the sum of the relevant 3D points,
   setDoubleArrayZero(map->bufferScalar2D, map->num2DNodes, 1);
@@ -237,13 +219,10 @@ void conservativeScalarWrite(Mapping2D3D *map, char *dataName)
     map->bufferScalar2D[map->mapping3D2D[i]] += map->bufferScalar3D[i];
   }
 
-  precicec_writeBlockScalarData(dataName,
-                                map->num2DNodes,
-                                map->preciceNodesIDs,
-                                map->bufferScalar2D);
+  precicec_writeData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, map->bufferScalar2D);
 }
 
-void consservativeVectorWrite(Mapping2D3D *map, char *dataName)
+void consservativeVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName)
 {
   // For each 2D point, write the sum of the relevant 3D points,
   setDoubleArrayZero(map->bufferVector2D, map->num2DNodes, 2);
@@ -254,8 +233,5 @@ void consservativeVectorWrite(Mapping2D3D *map, char *dataName)
     map->bufferVector2D[2 * map->mapping3D2D[i] + 1] += map->bufferVector3D[3 * i + 1];
   }
 
-  precicec_writeBlockVectorData(dataName,
-                                map->num2DNodes,
-                                map->preciceNodesIDs,
-                                map->bufferVector2D);
+  precicec_writeData(meshName, dataName, map->num2DNodes, map->preciceNodesIDs, map->bufferVector2D);
 }
