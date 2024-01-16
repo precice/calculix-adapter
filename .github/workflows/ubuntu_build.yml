@@ -24,6 +24,7 @@ jobs:
     steps:
     - name: Update system
       run: |
+        apt-get -qq update
         apt-get -qq install sudo
         sudo apt update && sudo apt upgrade -y
     - uses: actions/checkout@v2
