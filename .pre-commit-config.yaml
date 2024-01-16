@@ -1,0 +1,19 @@
+repos:
+# Official repo for the clang-format hook
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: 'v8.0.1'
+  hooks:
+  - id: clang-format
+# Official repo for default hooks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 'v4.3.0'
+  hooks:
+  - id: check-xml
+  - id: check-merge-conflict
+  - id: mixed-line-ending
+    exclude: "^thirdparty"
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+    exclude: "^thirdparty"
+  - id: end-of-file-fixer
+    exclude: "^thirdparty"
