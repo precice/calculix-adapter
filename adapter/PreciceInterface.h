@@ -52,19 +52,19 @@ typedef struct PreciceInterface {
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
 
-  // preCICE Data IDs
-  int temperatureDataID;
-  int fluxDataID;
-  int kDeltaWriteDataID;
-  int kDeltaTemperatureWriteDataID;
-  int kDeltaReadDataID;
-  int kDeltaTemperatureReadDataID;
-  int displacementsDataID;      // New data ID for displacements
-  int displacementDeltasDataID; // New data ID for displacementDeltas
-  int positionsDataID;          // New data ID for positions
-  int velocitiesDataID;         // New data ID for velocities
-  int forcesDataID;             // New data ID for forces
-  int pressureDataID;           // New data ID for pressure
+  // preCICE Data names
+  char * temperature;
+  char * flux;
+  char * kDeltaWrite;
+  char * kDeltaTemperatureWrite;
+  char * kDeltaRead;
+  char * kDeltaTemperatureRead;
+  char * displacements;
+  char * displacementDeltas;
+  char * positions;
+  char * velocities;
+  char * forces;
+  char * pressure;
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
