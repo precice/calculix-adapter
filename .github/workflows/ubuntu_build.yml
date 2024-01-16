@@ -16,6 +16,7 @@ jobs:
             flags: -fallow-argument-mismatch
 
     runs-on: ${{matrix.os}}
+    container: precice/precice:develop
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
       PACKAGE_NAME: "calculix-precice2_2.20.0-1_amd64"
@@ -26,9 +27,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
-    - name: Get preCICE v2.5.0
-      run: wget https://github.com/precice/precice/releases/download/v2.5.0/libprecice2_2.5.0_${{matrix.name}}.deb &&
-        sudo apt install ./libprecice2_2.5.0_${{matrix.name}}.deb -y
     - name: install dependencies
       run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
     - name: Download CalculiX
