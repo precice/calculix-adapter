@@ -32,7 +32,6 @@ typedef struct PreciceInterface {
   double *     nodeCoordinates;
   int          nodeSetID;
   int *        preciceNodeIDs;
-  int          nodesMeshID;
   char *       nodesMeshName;
 
   // Interface face elements
@@ -41,7 +40,6 @@ typedef struct PreciceInterface {
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
-  int     faceCentersMeshID;
   char *  faceCentersMeshName;
   int *   preciceFaceCenterIDs;
 
