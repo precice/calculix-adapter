@@ -777,73 +777,24 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
 
 void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
 {
-  if (preciceInterface->readData != NULL) {
-    free(preciceInterface->readData);
-  }
+  free(preciceInterface->readData);
+  free(preciceInterface->writeData);
+  free(preciceInterface->elementIDs);
+  free(preciceInterface->faceIDs);
+  free(preciceInterface->preciceFaceCenterIDs);
+  free(preciceInterface->faceCenterCoordinates);
+  free(preciceInterface->nodeCoordinates);
+  free(preciceInterface->preciceNodeIDs);
+  free(preciceInterface->nodeScalarData);
+  free(preciceInterface->node2DScalarData);
+  free(preciceInterface->nodeVectorData);
+  free(preciceInterface->node2DVectorData);
+  free(preciceInterface->faceCenterData);
+  free(preciceInterface->xbounIndices);
+  free(preciceInterface->xloadIndices);
+  free(preciceInterface->xforcIndices);
 
-  if (preciceInterface->writeData != NULL) {
-    free(preciceInterface->writeData);
-  }
-
-  if (preciceInterface->elementIDs != NULL) {
-    free(preciceInterface->elementIDs);
-  }
-
-  if (preciceInterface->faceIDs != NULL) {
-    free(preciceInterface->faceIDs);
-  }
-
-  if (preciceInterface->faceCenterCoordinates != NULL) {
-    free(preciceInterface->faceCenterCoordinates);
-  }
-
-  if (preciceInterface->preciceFaceCenterIDs != NULL) {
-    free(preciceInterface->preciceFaceCenterIDs);
-  }
-
-  if (preciceInterface->nodeCoordinates != NULL) {
-    free(preciceInterface->nodeCoordinates);
-  }
-
-  if (preciceInterface->preciceNodeIDs != NULL) {
-    free(preciceInterface->preciceNodeIDs);
-  }
-
-  if (preciceInterface->nodeScalarData != NULL) {
-    free(preciceInterface->nodeScalarData);
-  }
-
-  if (preciceInterface->node2DScalarData != NULL) {
-    free(preciceInterface->node2DScalarData);
-  }
-
-  if (preciceInterface->nodeVectorData != NULL) {
-    free(preciceInterface->nodeVectorData);
-  }
-
-  if (preciceInterface->node2DVectorData != NULL) {
-    free(preciceInterface->node2DVectorData);
-  }
-
-  if (preciceInterface->faceCenterData != NULL) {
-    free(preciceInterface->faceCenterData);
-  }
-
-  if (preciceInterface->xbounIndices != NULL) {
-    free(preciceInterface->xbounIndices);
-  }
-
-  if (preciceInterface->xloadIndices != NULL) {
-    free(preciceInterface->xloadIndices);
-  }
-
-  if (preciceInterface->xforcIndices != NULL) {
-    free(preciceInterface->xforcIndices);
-  }
-
-  if (preciceInterface->mappingQuasi2D3D != NULL) {
-    freeMapping(preciceInterface->mappingQuasi2D3D);
-  }
+  freeMapping(preciceInterface->mappingQuasi2D3D);
 
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
