@@ -437,7 +437,16 @@ void Precice_FreeData(SimulationData *sim)
 
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config)
 {
-  interface->dim = precicec_getDimensions();
+  if (config->nodesMeshName) {
+    interface->dim = precicec_getMeshDimensions(config->nodesMeshName);
+  } else {
+    if (config->facesMeshName) {
+      interface->dim = precicec_getMeshDimensions(config->facesMeshName);
+    } else {
+      printf("ERROR: You need to define either a face or a nodes mesh. Check the adapter configuration file.\n");
+      exit(EXIT_FAILURE);
+    }
+  }
 
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
