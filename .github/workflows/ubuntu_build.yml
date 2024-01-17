@@ -11,6 +11,7 @@ jobs:
         include:
           - os: ubuntu-20.04
             name: focal
+            flags: -fallow-argument-mismatch
           - os: ubuntu-22.04
             name: jammy
             flags: -fallow-argument-mismatch
