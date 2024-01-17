@@ -79,15 +79,23 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     sim->solver_dt = precicec_getMaxTimeStepSize();
   } else {
     double precice_dt = precicec_getMaxTimeStepSize();
+
+    // Compute the time step size of CalculiX
+    double solver_dt = (*sim->dtheta) * (*sim->tper);
+
+    // Synchronize CalculiX time step with preCICE time window end
+    double dt = fmin(precice_dt, solver_dt);
+
+    // Normalize the agreed-on time step size
+    double new_dtheta = dt / (*sim->tper);
+
     printf("Adjusting time step for transient step\n");
-    printf("precice_dt dtheta = %f, dtheta = %f, solver_dt = %f\n", precice_dt / *sim->tper, *sim->dtheta, fmin(precice_dt, *sim->dtheta * *sim->tper));
+    printf("precice_dt = %f, ccx_dt = %f (dtheta = %f, tper = %f) -> dt = %f (dtheta = %f)\n", precice_dt, solver_dt, *sim->dtheta, *sim->tper, dt, new_dtheta);
     fflush(stdout);
 
-    // Compute the normalized time step used by CalculiX
-    *sim->dtheta = fmin(precice_dt / *sim->tper, *sim->dtheta);
-
-    // Compute the non-normalized time step used by preCICE
-    sim->solver_dt = (*sim->dtheta) * (*sim->tper);
+    // Update dt and dtheta
+    *sim->dtheta   = new_dtheta;
+    sim->solver_dt = dt;
   }
 }
 
