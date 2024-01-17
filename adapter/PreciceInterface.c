@@ -66,6 +66,8 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
 {
+  double precice_dt = precicec_getMaxTimeStepSize();
+
   if (isSteadyStateSimulation(sim->nmethod)) {
     printf("Adjusting time step for steady-state step\n");
     fflush(stdout);
@@ -76,10 +78,8 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     *sim->dtheta = 1;
 
     // Set the solver time step to be the same as the coupling time step
-    sim->solver_dt = precicec_getMaxTimeStepSize();
+    sim->solver_dt = precice_dt;
   } else {
-    double precice_dt = precicec_getMaxTimeStepSize();
-
     // Compute the time step size of CalculiX
     double solver_dt = (*sim->dtheta) * (*sim->tper);
 
