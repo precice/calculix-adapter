@@ -4,16 +4,16 @@ The adapter was initially developed for conjugate heat transfer (CHT) simulation
 
 The latest version of the adapter is based on **CalculiX version 2.20.**
 Legacy versions of the adapter for older versions of CalculiX are supported on various branches. Branches for CalculiX version older than 2.15 require **preCICE v1.x**, whereas newer versions rely on **preCICE v2.x**.
- 
+
 ## Start here
 
-Go to the [adapter documentation](https://precice.org/adapter-calculix-overview.html) 
+Go to the [adapter documentation](https://precice.org/adapter-calculix-overview.html)
 
 ## References
 
 [1] Lucia Cheung Yau. Conjugate heat transfer with the multiphysics coupling library precice. Master’s thesis, Department of Informatics, Technical University of Munich, 2016.
 
-[2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017. 
+[2] Benjamin Uekermann, Hans-Joachim Bungartz, Lucia Cheung Yau, Gerasimos Chourdakis and Alexander Rusch. Official preCICE Adapters for Standard Open-Source Solvers. In Proceedings of the _7th GACM Colloquium on Computational Mechanics for Young Scientists from Academia_, 2017.
 
 ## License
 
