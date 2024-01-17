@@ -57,7 +57,6 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
 
   // Initialize preCICE
   precicec_initialize();
-  sim->precice_dt = precicec_getMaxTimeStepSize();
 
   // Initialize coupling data
   printf("Initializing coupling data\n");
@@ -77,14 +76,15 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     *sim->dtheta = 1;
 
     // Set the solver time step to be the same as the coupling time step
-    sim->solver_dt = sim->precice_dt;
+    sim->solver_dt = precicec_getMaxTimeStepSize();
   } else {
+    double precice_dt = precicec_getMaxTimeStepSize();
     printf("Adjusting time step for transient step\n");
-    printf("precice_dt dtheta = %f, dtheta = %f, solver_dt = %f\n", sim->precice_dt / *sim->tper, *sim->dtheta, fmin(sim->precice_dt, *sim->dtheta * *sim->tper));
+    printf("precice_dt dtheta = %f, dtheta = %f, solver_dt = %f\n", precice_dt / *sim->tper, *sim->dtheta, fmin(precice_dt, *sim->dtheta * *sim->tper));
     fflush(stdout);
 
     // Compute the normalized time step used by CalculiX
-    *sim->dtheta = fmin(sim->precice_dt / *sim->tper, *sim->dtheta);
+    *sim->dtheta = fmin(precice_dt / *sim->tper, *sim->dtheta);
 
     // Compute the non-normalized time step used by preCICE
     sim->solver_dt = (*sim->dtheta) * (*sim->tper);
@@ -97,7 +97,6 @@ void Precice_Advance(SimulationData *sim)
   fflush(stdout);
 
   precicec_advance(sim->solver_dt);
-  sim->precice_dt = precicec_getMaxTimeStepSize();
 }
 
 bool Precice_IsCouplingOngoing()
