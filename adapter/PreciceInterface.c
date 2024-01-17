@@ -716,7 +716,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       PreciceInterface_EnsureValidRead(sim, DISPLACEMENTS);
       interface->readData[i]   = DISPLACEMENTS;
       interface->xbounIndices  = malloc(interface->numNodes * 3 * sizeof(int));
-      interface->displacements =  strdup(config->readDataNames[i]);
+      interface->displacements = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found.\n", interface->displacements);
     } else {
@@ -736,15 +736,15 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       printf("Write data '%s' found.\n", interface->temperature);
     } else if (startsWith(config->writeDataNames[i], "Heat-Flux")) {
       interface->writeData[i] = HEAT_FLUX;
-      interface->flux = strdup(config->writeDataNames[i]);
+      interface->flux         = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found'.\n", interface->flux);
     } else if (startsWith(config->writeDataNames[i], "Sink-Temperature")) {
-      interface->writeData[i] = SINK_TEMPERATURE;
+      interface->writeData[i]           = SINK_TEMPERATURE;
       interface->kDeltaTemperatureWrite = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", interface->kDeltaTemperatureWrite);
     } else if (startsWith(config->writeDataNames[i], "Heat-Transfer-Coefficient")) {
       interface->writeData[i] = HEAT_TRANSFER_COEFF;
-      interface->kDeltaWrite = strdup(config->writeDataNames[i]);
+      interface->kDeltaWrite  = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", interface->kDeltaWrite);
     } else if (startsWith(config->writeDataNames[i], "DisplacementDelta")) {
       interface->writeData[i]       = DISPLACEMENTDELTAS;
