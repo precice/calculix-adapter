@@ -661,9 +661,7 @@ void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, Simulatio
     int *triangles = malloc(interface->numElements * 3 * sizeof(ITG));
     getTetraFaceNodes(interface->elementIDs, interface->faceIDs, interface->nodeIDs, interface->numElements, interface->numNodes, sim->kon, sim->ipkon, triangles);
 
-    for (i = 0; i < interface->numElements; i++) {
-      precicec_setMeshTriangleWithEdges(interface->nodesMeshID, triangles[3 * i], triangles[3 * i + 1], triangles[3 * i + 2]);
-    }
+    precicec_setMeshTriangles(interface->nodesMeshName, interface->numElements, triangles);
     free(triangles);
   }
 }
