@@ -817,7 +817,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
-  free(preciceInterface->couplingMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);
