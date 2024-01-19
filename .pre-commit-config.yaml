@@ -12,6 +12,9 @@ repos:
   - id: check-xml
   - id: check-merge-conflict
   - id: mixed-line-ending
+    files: "^(adapter|README.md)"
   - id: trailing-whitespace
     args: [--markdown-linebreak-ext=md]
+    files: "^(adapter|README.md)"
   - id: end-of-file-fixer
+    files: "^(adapter|README.md)"
