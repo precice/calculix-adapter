@@ -84,9 +84,9 @@ $(OBJDIR)/%.o : %.c
 $(OBJDIR)/%.o : %.f
 	$(FC) $(FFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(YAML_INCLUDE) -c $< -o $@ $(LIBS)
+	g++ -std=c++11 $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
