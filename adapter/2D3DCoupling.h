@@ -33,15 +33,15 @@ typedef struct {
 
 } Mapping2D3D;
 
-Mapping2D3D *createMapping(const double *nodeCoordinates, int num3Dnodes, int nodesMeshID);
+Mapping2D3D *createMapping(const double *nodeCoordinates, int num3Dnodes, char *nodesMeshName);
 void         freeMapping(Mapping2D3D *);
-void         consistentScalarRead(Mapping2D3D *map, int dataID);
-void         consistentVectorRead(Mapping2D3D *map, int dataID);
-void         conservativeScalarRead(Mapping2D3D *map, int dataID);
-void         conservativeVectorRead(Mapping2D3D *map, int dataID);
-void         consistentScalarWrite(Mapping2D3D *map, int dataID);
-void         consistentVectorWrite(Mapping2D3D *map, int dataID);
-void         conservativeScalarWrite(Mapping2D3D *map, int dataID);
-void         conservativeVectorWrite(Mapping2D3D *map, int dataID);
+void         consistentScalarRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt);
+void         consistentVectorRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt);
+void         conservativeScalarRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt);
+void         conservativeVectorRead(Mapping2D3D *map, const char *meshName, const char *dataName, const double dt);
+void         consistentScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
+void         consistentVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
+void         conservativeScalarWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
+void         conservativeVectorWrite(Mapping2D3D *map, const char *meshName, const char *dataName);
 
 #endif

@@ -32,7 +32,6 @@ typedef struct PreciceInterface {
   double *     nodeCoordinates;
   int          nodeSetID;
   int *        preciceNodeIDs;
-  int          nodesMeshID;
   char *       nodesMeshName;
 
   // Interface face elements
@@ -41,7 +40,6 @@ typedef struct PreciceInterface {
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
-  int     faceCentersMeshID;
   char *  faceCentersMeshName;
   int *   preciceFaceCenterIDs;
 
@@ -52,19 +50,22 @@ typedef struct PreciceInterface {
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
 
-  // preCICE Data IDs
-  int temperatureDataID;
-  int fluxDataID;
-  int kDeltaWriteDataID;
-  int kDeltaTemperatureWriteDataID;
-  int kDeltaReadDataID;
-  int kDeltaTemperatureReadDataID;
-  int displacementsDataID;      // New data ID for displacements
-  int displacementDeltasDataID; // New data ID for displacementDeltas
-  int positionsDataID;          // New data ID for positions
-  int velocitiesDataID;         // New data ID for velocities
-  int forcesDataID;             // New data ID for forces
-  int pressureDataID;           // New data ID for pressure
+  // preCICE mesh name
+  char *couplingMeshName;
+
+  // preCICE data names
+  char *temperature;
+  char *flux;
+  char *kDeltaWrite;
+  char *kDeltaTemperatureWrite;
+  char *kDeltaRead;
+  char *kDeltaTemperatureRead;
+  char *displacements;
+  char *displacementDeltas;
+  char *positions;
+  char *velocities;
+  char *forces;
+  char *pressure;
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -138,7 +139,6 @@ typedef struct SimulationData {
   double *coupling_init_v;
   double  coupling_init_theta;
   double  coupling_init_dtheta;
-  double  precice_dt;
   double  solver_dt;
 
   // Configuration information
@@ -162,14 +162,6 @@ typedef struct SimulationData {
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
 /**
- * @brief Initializes the coupling data (does an initial exchange) if necessary
- * @param sim
- * @param preciceInterfaces
- * @param numInterfaces
- */
-void Precice_InitializeData(SimulationData *sim);
-
-/**
  * @brief Adjusts the solver time step based on the coupling time step and the solver time step
  * @param sim
  */
@@ -191,23 +183,13 @@ bool Precice_IsCouplingOngoing();
  * @brief Returns true if checkpoint must be read
  * @return
  */
-bool Precice_IsReadCheckpointRequired();
+bool Precice_requiresReadingCheckpoint();
 
 /**
  * @brief Returns true if checkpoint must be written
  * @return
  */
-bool Precice_IsWriteCheckpointRequired();
-
-/**
- * @brief Tells preCICE that the checkpoint has been read
- */
-void Precice_FulfilledReadCheckpoint();
-
-/**
- * @brief Tells preCICE that the checkpoint has been written
- */
-void Precice_FulfilledWriteCheckpoint();
+bool Precice_requiresWritingCheckpoint();
 
 /**
  * @brief Reads iteration checkpoint

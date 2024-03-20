@@ -1,15 +1,15 @@
 #!/usr/bin/bash
 
 DISTRIBUTION="_$1"
-ADAPTER_VERSION="2.20.0"
+ADAPTER_VERSION="2.20.1"
 PACKAGE_VERSION="1"
 
-PACKAGE_FOLDER="calculix-precice2_$ADAPTER_VERSION-${PACKAGE_VERSION}_amd64"
+PACKAGE_FOLDER="calculix-precice3_$ADAPTER_VERSION-${PACKAGE_VERSION}_amd64"
 
 # Compress the changelog, strip the binaries
-cp changelog.Debian $PACKAGE_FOLDER/usr/share/doc/calculix-precice2/changelog.Debian
+cp changelog.Debian $PACKAGE_FOLDER/usr/share/doc/calculix-precice3/changelog.Debian
 # Options : --best for best compression, -f for removing file if it was there, -n for no time stamp
-gzip --best -f -n $PACKAGE_FOLDER/usr/share/doc/calculix-precice2/changelog.Debian
+gzip --best -f -n $PACKAGE_FOLDER/usr/share/doc/calculix-precice3/changelog.Debian
 strip --strip-unneeded $PACKAGE_FOLDER/usr/bin/ccx_preCICE
 
 #Compile and compress the manual

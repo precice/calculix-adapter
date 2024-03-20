@@ -11,24 +11,26 @@ jobs:
         include:
           - os: ubuntu-20.04
             name: focal
+            flags: -fallow-argument-mismatch
           - os: ubuntu-22.04
             name: jammy
             flags: -fallow-argument-mismatch
 
     runs-on: ${{matrix.os}}
+    container: precice/precice:develop
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
-      PACKAGE_NAME: "calculix-precice2_2.20.0-1_amd64"
+      PACKAGE_NAME: "calculix-precice3_2.20.1-1_amd64"
 
     steps:
     - name: Update system
-      run: sudo apt update && sudo apt upgrade -y
+      run: |
+        apt-get -qq update
+        apt-get -qq install sudo
+        sudo apt update && sudo apt upgrade -y
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
-    - name: Get preCICE v2.4.0
-      run: wget https://github.com/precice/precice/releases/download/v2.4.0/libprecice2_2.4.0_${{matrix.name}}.deb &&
-        sudo apt install ./libprecice2_2.4.0_${{matrix.name}}.deb -y
     - name: install dependencies
       run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
     - name: Download CalculiX
@@ -43,8 +45,8 @@ jobs:
       run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
       run: |
-        mkdir -p "packaging/calculix-precice2_2.20.0-1_amd64/usr/bin" &&
-        cp ./bin/ccx_preCICE ./packaging/calculix-precice2_2.20.0-1_amd64/usr/bin/ccx_preCICE &&
+        mkdir -p "packaging/calculix-precice3_2.20.1-1_amd64/usr/bin" &&
+        cp ./bin/ccx_preCICE ./packaging/calculix-precice3_2.20.1-1_amd64/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v2
