@@ -1441,13 +1441,12 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         memcpy(&emeini[0], &eme[0], sizeof(double) * 6 * mi[0] * ne0);
       }
     }
-    if (Precice_IsWriteCheckpointRequired()) {
+    if (Precice_requiresWritingCheckpoint()) {
       Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
       // Otherwise, each iteration in implicit coupling would be written as a new step
       iinc++;
       jprint++;
       simulationData.kode_value = *kode;
-      Precice_FulfilledWriteCheckpoint();
       BufferClear(out_buffer);
     }
 
@@ -2086,13 +2085,12 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
       BufferClear(out_buffer);
     }
     /* Adapter: If the coupling does not converge, read the checkpoint */
-    if (Precice_IsReadCheckpointRequired()) {
+    if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
         *kode = simulationData.kode_value;
       }
       BufferClear(out_buffer);
-      Precice_FulfilledReadCheckpoint();
     }
 
     if (isteadystate == 1) {

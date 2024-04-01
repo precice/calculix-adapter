@@ -25,16 +25,13 @@ typedef struct PreciceInterface {
   int   dimCCX; // Dimension as seen by CalculiX
 
   // Interface nodes
-  int     numNodes;
-  int     num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
-  int *   nodeIDs;
-  int *   mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
-  double *nodeCoordinates;
-  double *node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
-  int     nodeSetID;
-  int *   preciceNodeIDs;
-  int     nodesMeshID;
-  char *  nodesMeshName;
+  int          numNodes;
+  int *        nodeIDs;
+  Mapping2D3D *mappingQuasi2D3D;
+  double *     nodeCoordinates;
+  int          nodeSetID;
+  int *        preciceNodeIDs;
+  char *       nodesMeshName;
 
   // Interface face elements
   int     numElements;
@@ -42,20 +39,16 @@ typedef struct PreciceInterface {
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
-  int     faceCentersMeshID;
   char *  faceCentersMeshName;
   int *   preciceFaceCenterIDs;
 
   // Interface volumetric elements
   int     elementMeshID;
-  char   *elementMeshName;
+  char *  elementMeshName;
   int     elementSetID;
   int     numGPTotal;
   double *elemGPCoordinates;
-  int    *elemGPID;
-
-
-
+  int *   elemGPID;
 
   // Arrays to store the coupling data
   double *nodeScalarData;
@@ -67,30 +60,34 @@ typedef struct PreciceInterface {
   double *strainGPData;
   double *rveGPData;
 
-  // preCICE Data IDs
-  int temperatureDataID;
-  int fluxDataID;
-  int kDeltaWriteDataID;
-  int kDeltaTemperatureWriteDataID;
-  int kDeltaReadDataID;
-  int kDeltaTemperatureReadDataID;
-  int displacementsDataID;      //New data ID for displacements
-  int displacementDeltasDataID; //New data ID for displacementDeltas
-  int positionsDataID;          //New data ID for positions
-  int velocitiesDataID;         //New data ID for velocities
-  int forcesDataID;             //New data ID for forces
-  int rveIdDataID;              //New data ID for RVE ID
-  int strainNormDataID;         //New data ID for strain norm
-  int strainShearDataID;        //New data ID for strain shear
-  int stressNormDataID;         //New data ID for stress normal
-  int stressShearDataID;        //New data ID for stress shear
-  int materialTangent1DataID;    //New data ID for material tangent
-  int materialTangent2DataID;    //New data ID for material tangent
-  int materialTangent3DataID;    //New data ID for material tangent
-  int materialTangent4DataID;    //New data ID for material tangent
-  int materialTangent5DataID;    //New data ID for material tangent
-  int materialTangent6DataID;    //New data ID for material tangent
-  int materialTangent7DataID;    //New data ID for material tangent
+  // preCICE mesh name
+  char *couplingMeshName;
+
+  // preCICE data names
+  char *temperature;
+  char *flux;
+  char *kDeltaWrite;
+  char *kDeltaTemperatureWrite;
+  char *kDeltaRead;
+  char *kDeltaTemperatureRead;
+  char *displacements;
+  char *displacementDeltas;
+  char *positions;
+  char *velocities;
+  char *forces;
+  char *pressure;
+  char *rveIdData;
+  char *strainNormData;
+  char *strainShearData;
+  char *stressNormData;
+  char *stressShearData;
+  char *materialTangent1Data;
+  char *materialTangent2Data;
+  char *materialTangent3Data;
+  char *materialTangent4Data;
+  char *materialTangent5Data;
+  char *materialTangent6Data;
+  char *materialTangent7Data;
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -154,9 +151,9 @@ typedef struct SimulationData {
   double *cocon;
   ITG *   ncocon;
   ITG *   mi;
-  ITG *nea; // element bounds in each thread - start
-  ITG *neb; // element bounds in each thread - end
-  double *eei; // Strain values
+  ITG *   nea;    // element bounds in each thread - start
+  ITG *   neb;    // element bounds in each thread - end
+  double *eei;    // Strain values
   double *xstiff; // Strain values
 
   // Interfaces
@@ -167,7 +164,6 @@ typedef struct SimulationData {
   double *coupling_init_v;
   double  coupling_init_theta;
   double  coupling_init_dtheta;
-  double  precice_dt;
   double  solver_dt;
 
 } SimulationData;
@@ -181,14 +177,6 @@ typedef struct SimulationData {
  * @param numPreciceInterfaces
  */
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
-
-/**
- * @brief Initializes the coupling data (does an initial exchange) if necessary
- * @param sim
- * @param preciceInterfaces
- * @param numInterfaces
- */
-void Precice_InitializeData(SimulationData *sim);
 
 /**
  * @brief Adjusts the solver time step based on the coupling time step and the solver time step
@@ -212,23 +200,13 @@ bool Precice_IsCouplingOngoing();
  * @brief Returns true if checkpoint must be read
  * @return
  */
-bool Precice_IsReadCheckpointRequired();
+bool Precice_requiresReadingCheckpoint();
 
 /**
  * @brief Returns true if checkpoint must be written
  * @return
  */
-bool Precice_IsWriteCheckpointRequired();
-
-/**
- * @brief Tells preCICE that the checkpoint has been read
- */
-void Precice_FulfilledReadCheckpoint();
-
-/**
- * @brief Tells preCICE that the checkpoint has been written
- */
-void Precice_FulfilledWriteCheckpoint();
+bool Precice_requiresWritingCheckpoint();
 
 /**
  * @brief Reads iteration checkpoint

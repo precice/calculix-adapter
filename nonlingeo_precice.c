@@ -1655,9 +1655,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       isiz = mt * *nk;
       cpypardou(vini, vold, &isiz, &num_cpus);
 
-      if (Precice_IsWriteCheckpointRequired()) {
+      if (Precice_requiresWritingCheckpoint()) {
         Precice_WriteIterationCheckpoint(&simulationData, vini);
-        Precice_FulfilledWriteCheckpoint();
       }
 
       isiz = *nboun;
@@ -3701,12 +3700,11 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
     /* Adapter: Advance the coupling */
     Precice_Advance(&simulationData);
     /* Adapter: If the coupling does not converge, read the checkpoint */
-    if (Precice_IsReadCheckpointRequired()) {
+    if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpoint(&simulationData, vold);
         icutb++;
       }
-      Precice_FulfilledReadCheckpoint();
     }
     /* printing the energies (only for dynamic calculations) */
 
