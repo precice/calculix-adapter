@@ -11,6 +11,7 @@
 #define PRECICEINTERFACE_H
 
 #include <string.h>
+#include "2D3DCoupling.h"
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
 
@@ -166,6 +167,16 @@ typedef struct SimulationData {
   double  coupling_init_dtheta;
   double  solver_dt;
 
+  // Configuration information
+  int isModalDynamic; // 0 for regular simulations, 1 for modal dynamic
+
+  // Modal dynamic simulation checkpointing buffers
+  double *eigenDOFs;            // Called "bj" or "cd" in CCX code
+  double *eigenDOFsDerivatives; // Called "bjp" (p for prime) or "cv" in CCX code
+  int     stored_iinc;
+  int     stored_jprint;
+  int     kode_value;
+
 } SimulationData;
 
 /**
@@ -173,8 +184,6 @@ typedef struct SimulationData {
  * @param configFilename: YAML config file
  * @param participantName
  * @param sim
- * @param preciceInterfaces
- * @param numPreciceInterfaces
  */
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim);
 
