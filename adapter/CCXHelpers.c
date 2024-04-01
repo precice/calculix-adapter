@@ -40,8 +40,6 @@ ITG getSetID(char const *setName, char const *set, ITG nset)
   }
   // Set not found:
 
-
-
   if (setName[0] == (char) 'N') {
     printf("Set ID NOT Found \n");
     nodeSetNotFoundError(setName);
@@ -96,10 +94,9 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
 }
 
 //, d
-void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord) 
+void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord)
 {
-  FORTRAN(getelementgausspointcoords,(&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
-
+  FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
 }
 
 void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *temperatures)
@@ -126,61 +123,59 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
   }
 }
 
-void getStrainNorm(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData){
+void getStrainNorm(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData)
+{
 
-  int i,j, numGPPerElement, count, idx;
-  
+  int i, j, numGPPerElement, count, idx;
+
   count = 0;
 
-  for (i=0; i<numElements; i++){
+  for (i = 0; i < numElements; i++) {
     numGPPerElement = 8;
-    for (j=0; j<numGPPerElement; j++){
-      idx = (i*numGPPerElement*6)+(j*6);
-      strainData[count] = count; // eei[idx]; //EPS_11
-      strainData[count+1] = count+1; //eei[idx+1]; //EPS_22
-      strainData[count+2] = count+2 ; // eei[idx+2]; //EPS_33
+    for (j = 0; j < numGPPerElement; j++) {
+      idx                   = (i * numGPPerElement * 6) + (j * 6);
+      strainData[count]     = count;     // eei[idx]; //EPS_11
+      strainData[count + 1] = count + 1; //eei[idx+1]; //EPS_22
+      strainData[count + 2] = count + 2; // eei[idx+2]; //EPS_33
       // strainData[count+5] = eei[idx+3]; //EPS_12
       // strainData[count+6] = eei[idx+4]; //EPS_13
       // strainData[count+7] = eei[idx+5]; //EPS_23
-      count = count+3;
+      count = count + 3;
     }
   }
-
 }
 
-void getStrainShear(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData){
+void getStrainShear(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData)
+{
 
-  int i,j, numGPPerElement, count, idx;
-  
+  int i, j, numGPPerElement, count, idx;
+
   count = 0;
 
-  for (i=0; i<numElements; i++){
+  for (i = 0; i < numElements; i++) {
     numGPPerElement = 8;
-    for (j=0; j<numGPPerElement; j++){
-      idx = (i*numGPPerElement*6)+(j*6);
+    for (j = 0; j < numGPPerElement; j++) {
+      idx = (i * numGPPerElement * 6) + (j * 6);
       // strainData[count] = eei[idx]; //EPS_11
       // strainData[count+1] = eei[idx+1]; //EPS_22
       // strainData[count+2] = eei[idx+2]; //EPS_33
       // strainData[count] = eei[idx+3]; //EPS_12
       // strainData[count+1] = eei[idx+4]; //EPS_13
       // strainData[count+2] = eei[idx+5]; //EPS_23
-      count = count+3;
+      count = count + 3;
     }
   }
-
 }
 
-
-void getRVETag(int numGPTotal, double *rveData){
+void getRVETag(int numGPTotal, double *rveData)
+{
 
   int i;
 
-  for (i=0; i<numGPTotal; i++){
+  for (i = 0; i < numGPTotal; i++) {
     rveData[i] = 5.0; // RVE_ID
   }
-
 }
-
 
 void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, double *displacements)
 {
@@ -517,19 +512,19 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
 
 void setMaterialTangentMatrix(int start_idx, int numElements, int numGPTotal, int *elementIDs, double *matData, double *xstiff)
 {
-  int i,j, numGPPerElement, idx, numMatData, count;
-          
-  numMatData = 27;
+  int i, j, numGPPerElement, idx, numMatData, count;
+
+  numMatData      = 27;
   numGPPerElement = 8;
-  count = 0;
-  for (i=0; i<numElements; i++){
-    for (j=0; j<numGPPerElement; j++){
-      idx = (i*numGPPerElement*numMatData)+(j*numMatData)+start_idx;
+  count           = 0;
+  for (i = 0; i < numElements; i++) {
+    for (j = 0; j < numGPPerElement; j++) {
+      idx = (i * numGPPerElement * numMatData) + (j * numMatData) + start_idx;
       // printf( " GP: %i Idx: %i Count: %i  %f \n",j, idx, count,matData[count]);
-      xstiff[idx] = matData[count];
-      xstiff[idx+1] = matData[count+1];
-      xstiff[idx+2] = matData[count+2];
-      count = count +3;
+      xstiff[idx]     = matData[count];
+      xstiff[idx + 1] = matData[count + 1];
+      xstiff[idx + 2] = matData[count + 2];
+      count           = count + 3;
     }
   }
 }
@@ -599,8 +594,6 @@ void printVectorData(const double *values, const int nv, const int dim)
     printf("]\n");
   }
 }
-
-
 
 void mapData2Dto3DVector(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D)
 {

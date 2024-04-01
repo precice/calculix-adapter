@@ -62,7 +62,7 @@ enum CouplingDataType { TEMPERATURE,
                         MATERTIAL_TANGENT_5,
                         MATERTIAL_TANGENT_6,
                         MATERTIAL_TANGENT_7,
-                        };
+};
 
 /**
  * @brief Returns node set name with internal CalculiX format
