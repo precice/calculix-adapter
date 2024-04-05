@@ -20,7 +20,7 @@ jobs:
     container: precice/precice:develop
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
-      PACKAGE_NAME: "calculix-precice3_2.20.1-1_amd64"
+      PACKAGE_NAME: "calculix-precice3_2.20.2-1_amd64"
 
     steps:
     - name: Update system
@@ -45,8 +45,8 @@ jobs:
       run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
       run: |
-        mkdir -p "packaging/calculix-precice3_2.20.1-1_amd64/usr/bin" &&
-        cp ./bin/ccx_preCICE ./packaging/calculix-precice3_2.20.1-1_amd64/usr/bin/ccx_preCICE &&
+        mkdir -p "packaging/calculix-precice3_2.20.2-1_amd64/usr/bin" &&
+        cp ./bin/ccx_preCICE ./packaging/calculix-precice3_2.20.2-1_amd64/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v2
