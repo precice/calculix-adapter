@@ -96,7 +96,7 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
 //, d
 void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord)
 {
-  FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
+  // FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
 }
 
 void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *temperatures)
@@ -123,58 +123,21 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
   }
 }
 
-void getStrainNorm(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData)
+void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData)
 {
+ 
+  int i, count, idx;
 
-  int i, j, numGPPerElement, count, idx;
-
-  count = 0;
-
-  for (i = 0; i < numElements; i++) {
-    numGPPerElement = 8;
-    for (j = 0; j < numGPPerElement; j++) {
-      idx                   = (i * numGPPerElement * 6) + (j * 6);
-      strainData[count]     = count;     // eei[idx]; //EPS_11
-      strainData[count + 1] = count + 1; //eei[idx+1]; //EPS_22
-      strainData[count + 2] = count + 2; // eei[idx+2]; //EPS_33
-      // strainData[count+5] = eei[idx+3]; //EPS_12
-      // strainData[count+6] = eei[idx+4]; //EPS_13
-      // strainData[count+7] = eei[idx+5]; //EPS_23
-      count = count + 3;
-    }
+  // Loop through all element and respective gauss points
+  count=0;
+  for (i = 0; i < mi[0]*nelem; i++) {
+    idx = i*6+strainIdx;
+    strainData[count]      = eei[idx];
+    strainData[count+1]    = eei[idx+1];
+    strainData[count+2]    = eei[idx+2];
+    count = count + 3;
   }
-}
 
-void getStrainShear(int numElements, int numGPTotal, int *elementIDs, double *eei, double *strainData)
-{
-
-  int i, j, numGPPerElement, count, idx;
-
-  count = 0;
-
-  for (i = 0; i < numElements; i++) {
-    numGPPerElement = 8;
-    for (j = 0; j < numGPPerElement; j++) {
-      idx = (i * numGPPerElement * 6) + (j * 6);
-      // strainData[count] = eei[idx]; //EPS_11
-      // strainData[count+1] = eei[idx+1]; //EPS_22
-      // strainData[count+2] = eei[idx+2]; //EPS_33
-      // strainData[count] = eei[idx+3]; //EPS_12
-      // strainData[count+1] = eei[idx+4]; //EPS_13
-      // strainData[count+2] = eei[idx+5]; //EPS_23
-      count = count + 3;
-    }
-  }
-}
-
-void getRVETag(int numGPTotal, double *rveData)
-{
-
-  int i;
-
-  for (i = 0; i < numGPTotal; i++) {
-    rveData[i] = 5.0; // RVE_ID
-  }
 }
 
 void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, double *displacements)
@@ -510,23 +473,31 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
   }
 }
 
-void setMaterialTangentMatrix(int start_idx, int numElements, int numGPTotal, int *elementIDs, double *matData, double *xstiff)
+void setElementXstiff(int nelem, ITG *mi, double *cmatData, double *xstiff)
 {
-  int i, j, numGPPerElement, idx, numMatData, count;
+    printf("bbbefore setting xstiff\n");
 
-  numMatData      = 27;
-  numGPPerElement = 8;
-  count           = 0;
-  for (i = 0; i < numElements; i++) {
-    for (j = 0; j < numGPPerElement; j++) {
-      idx = (i * numGPPerElement * numMatData) + (j * numMatData) + start_idx;
-      // printf( " GP: %i Idx: %i Count: %i  %f \n",j, idx, count,matData[count]);
-      xstiff[idx]     = matData[count];
-      xstiff[idx + 1] = matData[count + 1];
-      xstiff[idx + 2] = matData[count + 2];
-      count           = count + 3;
+    // int i, count, j,xstiffSize, nSize;
+    // xstiffSize = 27;
+    // nSize = mi[0]*nelem;
+    // cidx = 15;
+
+    printf("before setting xstiff\n");
+    for (int i = 0; i < mi[0]*nelem*27; i++) {
+      xstiff[i] = 1.0;
     }
-  }
+    printf("after setting xstiff\n");
+
+    // // Loop through all element and respective gauss points
+    // count=0;
+    // for (i = 0; i < nSize; i++) {
+    //   j = i*xstiffSize+cidx;
+    //   printf("idx: %ld\n",j);
+    //   xstiff[j]      =  1.0; //cmatData[count];
+    //   xstiff[j+1]    =  1.0; //cmatData[count+1];
+    //   xstiff[j+2]    =  1.0; //cmatData[count+2];
+    //   count = count + 3;
+    // }
 }
 
 bool isSteadyStateSimulation(ITG *nmethod)
@@ -689,3 +660,5 @@ void unreachableError()
   printf("ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n");
   exit(EXIT_FAILURE);
 }
+
+

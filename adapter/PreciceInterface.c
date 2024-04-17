@@ -61,7 +61,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  Precice_ReadCouplingData(sim);
+  // Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -73,9 +73,9 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     fflush(stdout);
 
     // For steady-state simulations, we will always compute the converged steady-state solution in one coupling step
-    *sim->theta  = 0;
-    *sim->tper   = 1;
-    *sim->dtheta = 1;
+    sim->theta  = 0;
+    sim->tper   = 1;
+    sim->dtheta = 1;
 
     // Set the solver time step to be the same as the coupling time step
     sim->solver_dt = precice_dt;
@@ -168,11 +168,13 @@ void Precice_ReadCouplingData(SimulationData *sim)
 
   PreciceInterface **interfaces    = sim->preciceInterfaces;
   int                numInterfaces = sim->numPreciceInterfaces;
-  int                i, j;
+  int                i, j, idx;
 
   for (i = 0; i < numInterfaces; i++) {
 
     for (j = 0; j < interfaces[i]->numReadData; j++) {
+
+      printf("Read data: %d\n", interfaces[i]->readData[j]);
 
       switch (interfaces[i]->readData[j]) {
       case TEMPERATURE:
@@ -221,10 +223,10 @@ void Precice_ReadCouplingData(SimulationData *sim)
         printf("Reading FORCES coupling data.\n");
         break;
       case PRESSURE:
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->pressure, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, sim->solver_dt, interfaces[i]->faceCenterData);
-        setFacePressure(interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload);
-        printf("Reading PRESSURE coupling data.\n");
-        break;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->pressure, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, sim->solver_dt, interfaces[i]->faceCenterData);
+        // setFacePressure(interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload);
+        // printf("Reading PRESSURE coupling data.\n");
+        // break;
       case DISPLACEMENTS:
         // Read and set displacements as single point constraints (Dirichlet BC)
         if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
@@ -236,83 +238,125 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading DISPLACEMENTS coupling data.\n");
         break;
-      case MATERTIAL_TANGENT_1:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
+
+      // VOLUMETRIC COUPLING - MULTISCALE
+      case CONV_FLAG:
+      // READ CONVERGENCE FLAG
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->macroInputData, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPScalarData);
+        printf("Reading CONVERGENCE FLAG coupling data.\n");
+        break;
+
+      case CMAT1:
+        // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13        
+        idx=1;
+        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->elementIPVectorData[k*3], interfaces[i]->elementIPVectorData[k*3+1], interfaces[i]->elementIPVectorData[k*3+2]);
         // }
-        setMaterialTangentMatrix(0, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+                                  idx, 
+                                  interfaces[i]->numElements,
+                                  interfaces[i]->elementIPVectorData,
+                                  sim->xstiff));
         printf("Reading MATERIAL TANGENT 1 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_2:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readaces[interfaces[i]->couplingMeshName, i]->couplingMeshName, interfaces[i]materialTangent2Data, interfaces[i]->numGPTotal, inte sim->solver_dt,rfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(3, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT2:
+        // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
+        // idx=4;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 2 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_3:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(6, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT3:
+        // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
+        // idx=7;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 3 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_4:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(9, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT4:
+        // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
+        // idx=10;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 4 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_5:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(12, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT5:
+        // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
+        // idx=13;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 5 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_6:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(15, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT6:
+        // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
+        // idx=16;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 6 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
-      case MATERTIAL_TANGENT_7:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, sim->solver_dt, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        setMaterialTangentMatrix(18, interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, interfaces[i]->strainGPData, sim->xstiff);
+
+      case CMAT7:
+        // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
+        // idx=19;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
+        //                           &idx, 
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->xstiff));
         printf("Reading MATERIAL TANGENT 7 coupling data.\n");
-        fflush(stdout);
-        free(interfaces[i]->strainGPData);
         break;
+
+      case STRESS1TO3:
+      // READ STRESS COMPONENTS - S11, S22, S33
+        idx=1;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_stx, (sim->mi,
+        //                           &idx,
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->stx));
+        printf("Reading STRESS1TO3 coupling data.\n");
+        break;
+
+      case STRESS4TO6:
+        // READ STRESS COMPONENTS - S23, S13, S12
+        // idx=4;
+        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
+        // FORTRAN(precice_multiscale_set_stx, (sim->mi,
+        //                           &idx,
+        //                           &interfaces[i]->numElements,
+        //                           interfaces[i]->elementIPVectorData,
+        //                           sim->stx));
+        printf("Reading STRESS4TO6 coupling data.\n");
+        break;
+
       case DISPLACEMENTDELTAS:
         printf("DisplacementDeltas cannot be used as read data\n");
         fflush(stdout);
@@ -328,28 +372,23 @@ void Precice_ReadCouplingData(SimulationData *sim)
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
-      case RVE_ID:
-        printf("RVE ID cannot be used as read data.\n");
+      case MACRO_IP_ID:
+        printf("MACRO IP ID  cannot be used as read data.\n");
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
-      case STRAIN_NORM:
-        printf("Normal Strain cannot be used as read data.\n");
+      case INPUT_ID:
+        printf("Input ID cannot be used as read data.\n");
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
-      case STRAIN_SHEAR:
-        printf("Shear Strain cannot be used as read data.\n");
+      case STRAIN1TO3:
+        printf("Strain 1to3 cannot be used as read data.\n");
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
-      case STRESS_NORM:
-        printf("Normal Stress cannot be used as read data.\n");
-        fflush(stdout);
-        exit(EXIT_FAILURE);
-        break;
-      case STRESS_SHEAR:
-        printf("Shear Stress cannot be used as read data.\n");
+      case STRAIN4TO6:
+        printf("Strain 4to6 cannot be used as read data.\n");
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
@@ -366,8 +405,9 @@ void Precice_WriteCouplingData(SimulationData *sim)
 
   PreciceInterface **interfaces    = sim->preciceInterfaces;
   int                numInterfaces = sim->numPreciceInterfaces;
-  int                i, j;
+  int                i, j, idx;
   int                iset;
+
 
   for (i = 0; i < numInterfaces; i++) {
     // Prepare data
@@ -402,7 +442,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
 
     // Write data
     for (j = 0; j < interfaces[i]->numWriteData; j++) {
-
+      printf("Write data: %d\n", interfaces[i]->writeData[j]);
       switch (interfaces[i]->writeData[j]) {
       case TEMPERATURE:
         if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
@@ -480,36 +520,26 @@ void Precice_WriteCouplingData(SimulationData *sim)
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->forces, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
         printf("Writing FORCES coupling data.\n");
         break;
-      case RVE_ID:
-        interfaces[i]->rveGPData = malloc(interfaces[i]->numGPTotal * sizeof(double));
-        // Getting RVE tags
-        getRVETag(interfaces[i]->numGPTotal, interfaces[i]->rveGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( "%i, %e \n", k, interfaces[i]->rveGPData[k]);
-        // }
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->rveIdData, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, interfaces[i]->rveGPData);
-        printf("Writing RVE ID coupling data.\n");
-        free(interfaces[i]->rveGPData);
+      /* VOLUMETRIC COUPLING - MULTISCALE */
+      case INPUT_ID:
+        // WRITE INPUT ID
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          interfaces[i]->elementIPScalarData[k] = 1;
+        };
+        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->macroInputData, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPScalarData);
+        printf("Writing INPUT ID coupling data.\n");
         break;
-      case STRAIN_NORM:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        getStrainNorm(interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, sim->eei, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strainNormData, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, interfaces[i]->strainGPData);
-        printf("Writing STRAIN NORMAL coupling data.\n");
-        free(interfaces[i]->strainGPData);
+      case STRAIN1TO3:
+        idx=0;
+        getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
+        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
+        printf("Writing STRAIN1TO3 coupling data.\n");
         break;
-      case STRAIN_SHEAR:
-        interfaces[i]->strainGPData = malloc(interfaces[i]->numGPTotal * 3 * sizeof(double));
-        getStrainShear(interfaces[i]->numElements, interfaces[i]->numGPTotal, interfaces[i]->elementIDs, sim->eei, interfaces[i]->strainGPData);
-        // for (int k = 0; k < interfaces[i]->numGPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->strainGPData[k*3], interfaces[i]->strainGPData[k*3+1], interfaces[i]->strainGPData[k*3+2]);
-        // }
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strainShearData, interfaces[i]->numGPTotal, interfaces[i]->elemGPID, interfaces[i]->strainGPData);
-        printf("Writing STRAIN SHEAR coupling data.\n");
-        free(interfaces[i]->strainGPData);
+      case STRAIN4TO6:
+        idx=3;
+        getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
+        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
+        printf("Writing STRAIN4TO6 coupling data.\n");
         break;
       }
     }
@@ -539,8 +569,8 @@ void Precice_FreeData(SimulationData *sim)
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config)
 {
   // Deduce configured dimensions
-  if (config->nodesMeshName == NULL && config->facesMeshName == NULL) {
-    printf("ERROR: You need to define either a face or a nodes mesh. Check the adapter configuration file.\n");
+  if (config->nodesMeshName == NULL && config->facesMeshName == NULL && config->elementsMeshName == NULL) {
+    printf("ERROR: You need to define a face mesh, nodes mesh or element mesh. Check the adapter configuration file.\n");
     exit(EXIT_FAILURE);
   }
   if (config->nodesMeshName && config->facesMeshName) {
@@ -578,7 +608,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->xbounIndices          = NULL;
   interface->xloadIndices          = NULL;
   interface->xforcIndices          = NULL;
-  interface->elementGPData         = NULL;
 
   // Initialize preCICE mesh name as NULL
   interface->couplingMeshName = NULL;
@@ -596,11 +625,11 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->velocities             = NULL;
   interface->forces                 = NULL;
   interface->pressure               = NULL;
-  interface->rveIdData              = NULL;
-  interface->strainNormData         = NULL;
-  interface->strainShearData        = NULL;
-  interface->stressNormData         = NULL;
-  interface->stressShearData        = NULL;
+  interface->macroInputData         = NULL;
+  interface->strain1to3Data         = NULL;
+  interface->strain4to6Data         = NULL;
+  interface->stress1to3Data         = NULL;
+  interface->stress4to6Data         = NULL;
   interface->materialTangent1Data   = NULL;
   interface->materialTangent2Data   = NULL;
   interface->materialTangent3Data   = NULL;
@@ -630,7 +659,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   if (config->nodesMeshName) {
     interface->nodesMeshName = strdup(config->nodesMeshName);
     PreciceInterface_ConfigureNodesMesh(interface, sim);
-
     interface->couplingMeshName = interface->nodesMeshName;
   }
 
@@ -652,6 +680,7 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->elementMeshName = strdup(config->elementsMeshName);
     // Configuring element mesh
     PreciceInterface_ConfigureElementsMesh(interface, sim);
+    interface->couplingMeshName = interface->elementMeshName;
   }
 
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
@@ -676,21 +705,21 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   // Find guass point coordinates of the element -> Serves as mesh for data transfer
   int numElt                   = interface->numElements;
-  interface->numGPTotal        = 8 * interface->numElements; // Gauss point mesh coordinate -Each element 8 gauss points
-  interface->elemGPCoordinates = malloc(interface->numGPTotal * 3 * sizeof(double));
-  interface->elemGPID          = malloc(interface->numGPTotal * sizeof(int));
+  interface->numIPTotal        = 8 * interface->numElements; // Gauss point mesh coordinate -Each element 8 gauss points
+  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
+  interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
 
-  for (int j = 0; j < interface->numGPTotal; j++) {
-    // interface->elemGPID[j] = j;
-    interface->elemGPCoordinates[j * 3]     = j;
-    interface->elemGPCoordinates[j * 3 + 1] = 0.0;
-    interface->elemGPCoordinates[j * 3 + 2] = 0.0;
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    interface->elemIPID[j] = j;
+    interface->elemIPCoordinates[j * 3]     = j;
+    interface->elemIPCoordinates[j * 3 + 1] = 0.0;
+    interface->elemIPCoordinates[j * 3 + 2] = 0.0;
   }
 
-  // getElementGaussPointCoordinates(interface->numElements, interface->numGPTotal, interface->elementIDs, sim->co,
-  //                                 sim->kon, sim->lakon, sim->ipkon, interface->elemGPID, interface->elemGPCoordinates);
+  // getElementGaussPointCoordinates(interface->numElements, interface->numIPTotal, interface->elementIDs, sim->co,
+  //                                 sim->kon, sim->lakon, sim->ipkon, interface->elemIPID, interface->elemIPCoordinates);
 
-  precicec_setMeshVertices(interface->elementMeshName, interface->numGPTotal, interface->elemGPCoordinates, interface->elemGPID);
+  precicec_setMeshVertices(interface->elementMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
@@ -744,7 +773,8 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   // If 2D-3Q coupling is used (for a node mesh) delegate this to the specialized data structure.
   if (interface->nodesMeshName != NULL) {
 
-    count = 0;
+    int count = 0;
+    int dimCCX = interface->dimCCX;
     for (int i = 0; i < interface->numNodes; i++) {
       for (int ii = 0; ii < interface->numNodes; ii++) {
         // Compare each node with every other node to find nodes with matching X and Y coordinates
@@ -763,7 +793,7 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
 
   if (interface->nodesMeshName != NULL) {
     //printf("nodesMeshName is not null \n");
-    interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
+    // interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
     if (isQuasi2D3D(interface->quasi2D3D)) {
       interface->mappingQuasi2D3D = createMapping(interface->nodeCoordinates, interface->numNodes, interface->nodesMeshName);
     } else {
@@ -792,8 +822,9 @@ void PreciceInterface_NodeConnectivity(PreciceInterface *interface, SimulationDa
   PreciceInterface_ConfigureTetraFaces(interface, sim);
 }
 
-void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type)
+void PreciceInterface_EnsureValidRead(PreciceInterface *interface, enum CouplingDataType type)
 {
+
   if (interface->elementMeshName == NULL) {
     printf("Element mesh not provided in YAML config file\n");
     fflush(stdout);
@@ -803,7 +834,7 @@ void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType
 
 void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, SimulationData *sim)
 {
-  int i;
+  // int i;
   printf("Setting node connectivity for nearest projection mapping: \n");
   if (interface->nodesMeshName != NULL) {
     int *triangles = malloc(interface->numElements * 3 * sizeof(ITG));
@@ -833,13 +864,23 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
 
   interface->faceCenterData = malloc(interface->numElements * sizeof(double));
 
+  /* Allocating and initilizing memory for multiscale coupling */
+  interface->elementIPScalarData = malloc(interface->numIPTotal * sizeof(double));
+  interface->elementIPVectorData = malloc(interface->numIPTotal * 3 * sizeof(double));
+  for (int i = 0; i < interface->numIPTotal; i++) {
+    interface->elementIPScalarData[i] = 0.0;
+    interface->elementIPVectorData[i * 3]     = 0.0;
+    interface->elementIPVectorData[i * 3 + 1] = 0.0;
+    interface->elementIPVectorData[i * 3 + 2] = 0.0;
+  }
+
   int i;
   interface->numReadData = config->numReadData;
   if (config->numReadData > 0)
     interface->readData = malloc(config->numReadData * sizeof(int));
   for (i = 0; i < config->numReadData; i++) {
     if (startsWith(config->readDataNames[i], "Temperature")) {
-      PreciceInterface_EnsureValidRead(sim, TEMPERATURE);
+      PreciceInterface_EnsureValidRead(interface, TEMPERATURE);
       interface->readData[i]  = TEMPERATURE;
       interface->xbounIndices = malloc(interface->numNodes * sizeof(int));
       interface->temperature  = strdup(config->readDataNames[i]);
@@ -849,83 +890,91 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->readData[i]  = HEAT_FLUX;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
-      PreciceInterface_EnsureValidRead(sim, HEAT_FLUX);
+      PreciceInterface_EnsureValidRead(interface, HEAT_FLUX);
       interface->flux = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->flux);
     } else if (startsWith(config->readDataNames[i], "Sink-Temperature")) {
       interface->readData[i]  = SINK_TEMPERATURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("FILM", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
-      PreciceInterface_EnsureValidRead(sim, SINK_TEMPERATURE);
+      PreciceInterface_EnsureValidRead(interface, SINK_TEMPERATURE);
       interface->kDeltaTemperatureRead = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->kDeltaTemperatureRead);
     } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient")) {
       interface->readData[i] = HEAT_TRANSFER_COEFF;
-      PreciceInterface_EnsureValidRead(sim, HEAT_TRANSFER_COEFF);
+      PreciceInterface_EnsureValidRead(interface, HEAT_TRANSFER_COEFF);
       interface->kDeltaRead = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->kDeltaRead);
     } else if (startsWith(config->readDataNames[i], "Pressure")) {
       interface->readData[i]  = PRESSURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
-      PreciceInterface_EnsureValidRead(sim, PRESSURE);
+      PreciceInterface_EnsureValidRead(interface, PRESSURE);
       getXloadIndices("PRESSUREDLOAD", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       interface->pressure = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->pressure);
     } else if (startsWith(config->readDataNames[i], "Force")) {
-      PreciceInterface_EnsureValidRead(sim, FORCES);
+      PreciceInterface_EnsureValidRead(interface, FORCES);
       interface->readData[i]  = FORCES;
       interface->xforcIndices = malloc(interface->numNodes * 3 * sizeof(int));
       interface->forces       = strdup(config->readDataNames[i]);
       getXforcIndices(interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices);
       printf("Read data '%s' found.\n", interface->forces);
     } else if (startsWith(config->readDataNames[i], "Displacement")) {
-      PreciceInterface_EnsureValidNodesMeshID(interface);
+      PreciceInterface_EnsureValidRead(interface, DISPLACEMENTS);
       interface->readData[i]       = DISPLACEMENTS;
       interface->xbounIndices      = malloc(interface->numNodes * 3 * sizeof(int));
       interface->displacementsData = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-1")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i]          = MATERTIAL_TANGENT_1;
-      interface->elementGPData        = malloc(interface->numGPTotal * 38 * sizeof(double)); // 9 entries per gauss point
+      /* MICROMANAGER COUPLING */
+    } else if (startsWith(config->readDataNames[i], "cmat1")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT1);
+      interface->readData[i]          = CMAT1;
       interface->materialTangent1Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-2")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_2;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat2")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT2);
+      interface->readData[i] = CMAT2;
       interface->materialTangent2Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-3")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_3;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat3")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT3);
+      interface->readData[i] = CMAT3;
       interface->materialTangent3Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-4")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_4;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat4")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT4);
+      interface->readData[i] = CMAT4;
       interface->materialTangent4Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-5")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_5;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat5")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT5);
+      interface->readData[i] = CMAT5;
       interface->materialTangent5Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-6")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_6;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat6")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT6);
+      interface->readData[i] = CMAT6;
       interface->materialTangent6Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "Material-Tangent-7")) {
-      PreciceInterface_EnsureValidElementsMeshID(interface);
-      interface->readData[i] = MATERTIAL_TANGENT_7;
-      // interface->elementGPData       = malloc(interface->numGPTotal  * 38 * sizeof(double)); // 9 entries per gauss point
+    } else if (startsWith(config->readDataNames[i], "cmat7")) {
+      PreciceInterface_EnsureValidRead(interface, CMAT7);
+      interface->readData[i] = CMAT7;
       interface->materialTangent7Data = strdup(config->readDataNames[i]);
+      printf("Read data '%s' found.\n", config->readDataNames[i]);
+    } else if (startsWith(config->readDataNames[i], "conv_flag")) {
+      PreciceInterface_EnsureValidRead(interface, CONV_FLAG);
+      interface->readData[i] = CONV_FLAG;
+      printf("Read data '%s' found.\n", config->readDataNames[i]);
+    } else if (startsWith(config->readDataNames[i], "stress1to3")) {
+      PreciceInterface_EnsureValidRead(interface, STRESS1TO3);
+      interface->readData[i] = STRESS1TO3;
+      interface->stress1to3Data = strdup(config->readDataNames[i]);
+      printf("Read data '%s' found.\n", config->readDataNames[i]);
+    } else if (startsWith(config->readDataNames[i], "stress4to6")) {
+      PreciceInterface_EnsureValidRead(interface, STRESS4TO6);
+      interface->readData[i] = STRESS4TO6;
+      interface->stress4to6Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else {
       printf("ERROR: Read data '%s' does not exist!\n", config->readDataNames[i]);
@@ -976,18 +1025,18 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->writeData[i] = FORCES;
       interface->forces       = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", interface->forces);
-    } else if (isEqual(config->writeDataNames[i], "RVE-ID")) {
-      interface->writeData[i] = RVE_ID;
-      interface->rveIdData    = strdup(config->writeDataNames[i]);
+    } else if (isEqual(config->writeDataNames[i], "input_id")) {
+      interface->writeData[i] = INPUT_ID;
+      interface->macroInputData    = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", config->writeDataNames[i]);
-    } else if (isEqual(config->writeDataNames[i], "Strain-Norm")) {
-      interface->writeData[i]   = STRAIN_NORM;
-      interface->strainNormData = strdup(config->writeDataNames[i]);
+    } else if (isEqual(config->writeDataNames[i], "strain1to3")) {
+      interface->writeData[i]   = STRAIN1TO3;
+      interface->strain1to3Data = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", config->writeDataNames[i]);
-    } else if (isEqual(config->writeDataNames[i], "Strain-Shear")) {
-      interface->writeData[i]      = STRAIN_SHEAR;
-      interface->strainShearDataID = strdup(config->writeDataNames[i])
-          printf("Write data '%s' found.\n", config->writeDataNames[i]);
+    } else if (isEqual(config->writeDataNames[i], "strain4to6")) {
+      interface->writeData[i]      = STRAIN4TO6;
+      interface->strain4to6Data = strdup(config->writeDataNames[i]);
+      printf("Write data '%s' found.\n", config->writeDataNames[i]);
     } else {
       printf("ERROR: Write data '%s' is not of a known type for the CalculiX-preCICE adapter. Check the adapter configuration file.\n", config->writeDataNames[i]);
       exit(EXIT_FAILURE);
@@ -1033,11 +1082,10 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->pressure);
   free(preciceInterface->temperature);
   free(preciceInterface->velocities);
-  free(preciceInterface->rveIdData);
-  free(preciceInterface->strainNormData);
-  free(preciceInterface->strainShearData);
-  free(preciceInterface->stressNormData);
-  free(preciceInterface->stressShearData);
+  free(preciceInterface->strain1to3Data);
+  free(preciceInterface->strain4to6Data);
+  free(preciceInterface->stress1to3Data);
+  free(preciceInterface->stress4to6Data);
   free(preciceInterface->materialTangent1Data);
   free(preciceInterface->materialTangent2Data);
   free(preciceInterface->materialTangent3Data);
@@ -1045,4 +1093,20 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->materialTangent5Data);
   free(preciceInterface->materialTangent6Data);
   free(preciceInterface->materialTangent7Data);
+}
+
+void PreciceInterface_MultiscaleCheckpoint(SimulationData *sim){
+
+  if( Precice_IsCouplingOngoing()){
+
+  // Write strain data
+  Precice_WriteCouplingData(sim);
+
+  // Advance time
+  Precice_Advance(sim);
+
+  // Read stress, material tangent data
+  Precice_ReadCouplingData(sim);
+
+  }
 }

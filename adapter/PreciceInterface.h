@@ -21,85 +21,89 @@
  */
 typedef struct PreciceInterface {
 
-  char *name;
-  int   dim;    // Dimension received from preCICE configuration
-  int   dimCCX; // Dimension as seen by CalculiX
+  char *      name;
+  int         dim;    // Dimension received from preCICE configuration
+  int         dimCCX; // Dimension as seen by CalculiX
 
   // Interface nodes
   int          numNodes;
+  int          num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
   int *        nodeIDs;
+  int *        mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
+  double *     node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
   int          nodeSetID;
   int *        preciceNodeIDs;
+  int          nodesMeshID;
   char *       nodesMeshName;
 
   // Interface face elements
-  int     numElements;
-  int *   elementIDs;
-  int *   faceIDs;
-  double *faceCenterCoordinates;
-  int     faceSetID;
-  char *  faceCentersMeshName;
-  int *   preciceFaceCenterIDs;
+  int          numElements;
+  int *        elementIDs;
+  int *        faceIDs;
+  double *     faceCenterCoordinates;
+  int          faceSetID;
+  char *       faceCentersMeshName;
+  int *        preciceFaceCenterIDs;
 
   // Interface volumetric elements
-  int     elementMeshID;
-  char *  elementMeshName;
-  int     elementSetID;
-  int     numGPTotal;
-  double *elemGPCoordinates;
-  int *   elemGPID;
+  int          elementMeshID;
+  char *       elementMeshName;
+  int          elementSetID;
+  int          numIPTotal;
+  double *     elemIPCoordinates;
+  int *        elemIPID;
 
   // Arrays to store the coupling data
-  double *nodeScalarData;
-  double *node2DScalarData; // Scalar quantities in 2D in case quasi 2D-3D coupling is done
-  double *nodeVectorData;   // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
-  double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
-  double *faceCenterData;
-  double *elementGPData;
-  double *strainGPData;
-  double *rveGPData;
+  double *     nodeScalarData;
+  double *     node2DScalarData; // Scalar quantities in 2D in case quasi 2D-3D coupling is done
+  double *     nodeVectorData;   // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
+  double *     node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
+  double *     faceCenterData;
+  double *     elementIPScalarData;
+  double *     elementIPVectorData;
 
   // preCICE mesh name
-  char *couplingMeshName;
+  char *       couplingMeshName;
 
   // preCICE data names
-  char *temperature;
-  char *flux;
-  char *kDeltaWrite;
-  char *kDeltaTemperatureWrite;
-  char *kDeltaRead;
-  char *kDeltaTemperatureRead;
-  char *displacements;
-  char *displacementDeltas;
-  char *positions;
-  char *velocities;
-  char *forces;
-  char *pressure;
-  char *rveIdData;
-  char *strainNormData;
-  char *strainShearData;
-  char *stressNormData;
-  char *stressShearData;
-  char *materialTangent1Data;
-  char *materialTangent2Data;
-  char *materialTangent3Data;
-  char *materialTangent4Data;
-  char *materialTangent5Data;
-  char *materialTangent6Data;
-  char *materialTangent7Data;
+  char *       temperature;
+  char *       flux;
+  char *       kDeltaWrite;
+  char *       kDeltaTemperatureWrite;
+  char *       kDeltaRead;
+  char *       kDeltaTemperatureRead;
+  char *       displacements;
+  char *       displacementsData;
+  char *       displacementDeltas;
+  char *       positions;
+  char *       velocities;
+  char *       forces;
+  char *       pressure;
+  char *       macroInputData;
+  char *       strain1to3Data;
+  char *       strain4to6Data;
+  char *       stress1to3Data;
+  char *       stress4to6Data;
+  char *       materialTangent1Data;
+  char *       materialTangent2Data;
+  char *       materialTangent3Data;
+  char *       materialTangent4Data;
+  char *       materialTangent5Data;
+  char *       materialTangent6Data;
+  char *       materialTangent7Data;
 
   // Indices that indicate where to apply the boundary conditions / forces
-  int *xloadIndices;
-  int *xbounIndices;
-  int *xforcIndices;
+  int *        xloadIndices;
+  int *        xbounIndices;
+  int *        xforcIndices;
 
   // Mapping type if nearest-projection mapping
-  int mapNPType;
+  int          mapNPType;
 
   // Indicates if pseudo 2D-3D coupling is implemented
-  int quasi2D3D;
+  int          quasi2D3D;
 
   int                    numReadData;
   int                    numWriteData;
@@ -154,8 +158,9 @@ typedef struct SimulationData {
   ITG *   mi;
   ITG *   nea;    // element bounds in each thread - start
   ITG *   neb;    // element bounds in each thread - end
-  double *eei;    // Strain values
-  double *xstiff; // Strain values
+  double *eei;    // Strain values for multiscale
+  double *stx;   // Stress values for multiscale
+  double *xstiff; // Strain values for multiscale
 
   // Interfaces
   int                numPreciceInterfaces;

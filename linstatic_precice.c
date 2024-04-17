@@ -1,5 +1,5 @@
 /*     CalculiX - A 3-dimensional finite element program                   */
-/*              Copyright (C) 1998-2021 Guido Dhondt                          */
+/*              Copyright (C) 1998-2023 Guido Dhondt                          */
 
 /*     This program is free software; you can redistribute it and/or     */
 /*     modify it under the terms of the GNU General Public License as    */
@@ -38,7 +38,6 @@
 /* Adapter: Add header */
 #include "adapter/PreciceInterface.h"
 
-
 void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	       ITG *ne,
 	       ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
@@ -75,8 +74,9 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	       ITG *istep,ITG *nmat,ITG *ielprop,double *prop,char *typeboun,
 	       ITG *mortar,ITG *mpcinfo,double *tietol,ITG *ics,
 	       char *orname,ITG *itempuser,double *t0g,double *t1g,
-		   /* Adapter: Add variables for the participant name and the config file */
-           char *preciceParticipantName, char *configFilename){
+	       ITG *jmax,
+         /* Adapter: Add variables for the participant name and the config file */
+         char *preciceParticipantName, char *configFilename){
   
   char description[13]="            ",*lakon=NULL,stiffmatrix[132]="",
     fneig[132]="",jobnamef[396]="",*labmpc2=NULL;
@@ -97,11 +97,10 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
     *ielorien=NULL,network=0,nrhs=1,iperturbsav,mscalmethod=0,*jqw=NULL,
     *iroww=NULL,nzsw,*islavelinv=NULL,*irowtloc=NULL,*jqtloc=NULL,nboun2,
     *ndirboun2=NULL,*nodeboun2=NULL,nmpc2,*ipompc2=NULL,*nodempc2=NULL,
-    *ikboun2=NULL,*ilboun2=NULL,*ikmpc2=NULL,*ilmpc2=NULL,mortartrafoflag=0,
-	*ikforc=NULL, *ilforc=NULL;
+    *ikboun2=NULL,*ilboun2=NULL,*ikmpc2=NULL,*ilmpc2=NULL,mortartrafoflag=0;
 
   double *stn=NULL,*v=NULL,*een=NULL,cam[5],*xstiff=NULL,*stiini=NULL,*tper,
-    *f=NULL,*fn=NULL,qa[4],*fext=NULL,*epn=NULL,*xstateini=NULL,dtheta,
+    *f=NULL,*fn=NULL,qa[4],*fext=NULL,*epn=NULL,*xstateini=NULL,
     *vini=NULL,*stx=NULL,*enern=NULL,*xbounact=NULL,*xforcact=NULL,
     *xloadact=NULL,*t1act=NULL,*ampli=NULL,*xstaten=NULL,*eei=NULL,
     *enerini=NULL,*cocon=NULL,*shcon=NULL,*physcon=NULL,*qfx=NULL,
@@ -139,8 +138,7 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 
   ne0=*ne;
 
-
-  /* Adapter: Put all the CalculiX data that is needed for the coupling into an array */
+  /* preCICE Adapter: Initialize the Calculix data structure */
   struct SimulationData simulationData = {
       .ialset    = ialset,
       .ielmat    = ielmat,
@@ -153,9 +151,9 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       .set       = set,
       .nset      = *nset,
       .ikboun    = ikboun,
-      .ikforc    = ikforc,
+      // .ikforc    = ikforc,
       .ilboun    = ilboun,
-      .ilforc    = ilforc,
+      // .ilforc    = ilforc,
       .nboun     = *nboun,
       .nforc     = *nforc,
       .nelemload = nelemload,
@@ -164,7 +162,7 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       .mt        = mt,
       .nk        = *nk,
       .theta     = &theta,
-      .dtheta    = &dtheta,
+      // .dtheta    = &dtheta,
       .tper      = tper,
       .nmethod   = nmethod,
       .xload     = xload,
@@ -177,9 +175,14 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       .cocon     = cocon,
       .ncocon    = ncocon,
       .mi        = mi,
-    //   .eei       = &eei,
-    //   .xstiff    = &xstiff
+      // .eei       = &eei,
+      // .stx       = &stx,
+      // .xstiff    = xstiff
       };
+
+  /* preCICE Adapter: Initialize */ 
+  Precice_Setup(configFilename, preciceParticipantName, &simulationData);
+  Precice_AdjustSolverTimestep(&simulationData);
 
   /* determining the global values to be used as boundary conditions
      for a submodel */
@@ -216,15 +219,15 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
   /* assigning the body forces to the elements */ 
 
   /*  if(*nbody>0){
-    ifreebody=*ne+1;
-    NNEW(ipobody,ITG,2*ifreebody**nbody);
-    for(k=1;k<=*nbody;k++){
+      ifreebody=*ne+1;
+      NNEW(ipobody,ITG,2*ifreebody**nbody);
+      for(k=1;k<=*nbody;k++){
       FORTRAN(bodyforce,(cbody,ibody,ipobody,nbody,set,istartset,
-			 iendset,ialset,&inewton,nset,&ifreebody,&k));
+      iendset,ialset,&inewton,nset,&ifreebody,&k));
       RENEW(ipobody,ITG,2*(*ne+ifreebody));
-    }
-    RENEW(ipobody,ITG,2*(ifreebody-1));
-    }*/
+      }
+      RENEW(ipobody,ITG,2*(ifreebody-1));
+      }*/
 
   /* contact conditions */
   
@@ -253,7 +256,8 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	RENEW(kon,ITG,*nkon+11*nslavs);
 	NNEW(springarea,double,2*nslavs);
 	if(*nener==1){
-	  RENEW(ener,double,mi[0]*(*ne+nslavs)*2);
+	  RENEW(ener,double,2*mi[0]*(*ne+nslavs));
+	  DMEMSET(ener,2*mi[0]**ne,2*mi[0]*(*ne+nslavs),0.);
 	}
 	RENEW(ipkon,ITG,*ne+nslavs);
 	RENEW(lakon,char,8*(*ne+nslavs));
@@ -299,7 +303,8 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	RENEW(pmastsurf,double,6*nintpoint);
 	      
 	if(*nener==1){
-	  RENEW(ener,double,mi[0]*(*ne+nintpoint)*2);
+	  RENEW(ener,double,2*mi[0]*(*ne+nintpoint));
+	  DMEMSET(ener,2*mi[0]**ne,2*mi[0]*(*ne+nintpoint),0.);
 	}
 	RENEW(ipkon,ITG,*ne+nintpoint);
 	RENEW(lakon,char,8*(*ne+nintpoint));
@@ -332,7 +337,7 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       contact(&ncont,ntie,tieset,nset,set,istartset,iendset,
 	      ialset,itietri,lakon,ipkon,kon,koncont,ne,cg,straight,nkon,
 	      co,vold,ielmat,cs,elcon,istep,&iinc,&iit,ncmat_,ntmat_,
-	      &ne0,vini,nmethod,
+	      &ne0,nmethod,
 	      iperturb,ikboun,nboun,mi,imastop,nslavnode,islavnode,islavsurf,
 	      itiefac,areaslav,iponoels,inoels,springarea,tietol,&reltime,
 	      imastnode,nmastnode,xmastnor,filab,mcs,ics,&nasym,
@@ -349,7 +354,7 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 		   labmpc,nk,&memmpc_,&icascade,&maxlenmpc,
 		   kon,ipkon,lakon,ne,nactdof,icol,jq,&irow,isolver,
 		   neq,nzs,nmethod,ithermal,iperturb,mass,mi,ics,cs,
-		   mcs,mortar,typeboun,&iit,&network,iexpl);
+		   mcs,mortar,typeboun,&iit,&network,iexpl,ielmat,matname);
     }
 
     /* field for initial values of state variables (needed for contact */
@@ -383,990 +388,654 @@ void linstatic_precice(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 
   NNEW(f,double,*neq);
 
-    /* allocating a field for the stiffness matrix */
+  /* allocating a field for the stiffness matrix */
 
-    NNEW(xstiff,double,(long long)27*mi[0]**ne);
+  NNEW(xstiff,double,(long long)27*mi[0]**ne);
 
-   	theta = 1.0;
-  	dtheta = 1.0;
+  /* for a *STATIC,PERTURBATION analysis with submodel boundary
+     conditions from a *FREQUENCY analysis iperturb[0]=1 has to be
+     temporarily set to iperturb[0]=0 in order for f to be calculated in
+     resultsini and subsequent results* routines */
 
-  	/* Adapter: Copy necessary data for coupling */
-    simulationData.fn = fn;
-    // memcpy(&vold[0], &v[0], sizeof(double) * mt * *nk);
+  if((*nmethod==1)&&(iglob<0)&&(iperturb[0]>0)){
+    iperturbsav=iperturb[0];
+    iperturb[0]=0;
+  }
 
-  	/* Adapter: Create the interfaces and initialize the coupling */
-  	Precice_Setup(configFilename, preciceParticipantName, &simulationData);
+  iout=-1;
+  NNEW(v,double,mt**nk);
+  NNEW(fn,double,mt**nk);
+  NNEW(stx,double,6*mi[0]**ne);
+  NNEW(inum,ITG,*nk);
+  NNEW(eei,double,6*mi[0]**ne);
+  results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
+	  elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
+	  ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
+	  prestr,iprestr,filab,eme,emn,een,iperturb,
+	  f,fn,nactdof,&iout,qa,vold,b,nodeboun,
+	  ndirboun,xbounact,nboun,ipompc,
+	  nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,accold,
+	  &bet,&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
+	  xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,
+	  &icmd,ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,
+	  emeini,xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,
+	  iendset,ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,
+	  fmpc,nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,
+	  &reltime,&ne0,thicke,shcon,nshcon,
+	  sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
+	  mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
+	  islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
+          inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
+	  itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
+	  islavelinv,autloc,irowtloc,jqtloc,&nboun2,
+	  ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
+	  labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
+	  &intscheme,physcon);
 
-	Precice_AdjustSolverTimestep(&simulationData);
 
-	Precice_Advance(&simulationData);
+  /* preCICE Adapter: Multiscale checkpoint*/
+  simulationData.xstiff = &xstiff;
+  simulationData.eei = &eei;
+  simulationData.stx = &stx;
+  PreciceInterface_MultiscaleCheckpoint(&simulationData);
+  
+  SFREE(v);SFREE(fn);SFREE(stx);SFREE(inum); SFREE(eei);
+  iout=1;
 
-	while (Precice_IsCouplingOngoing()) {
+  if((*nmethod==1)&&(iglob<0)&&(iperturb[0]>0)){
+    iperturb[0]=iperturbsav;
+  }
+  
+  /* determining the system matrix and the external forces */
 
+  NNEW(ad,double,*neq);
+  NNEW(fext,double,*neq);
 
-		// STRAIN CALCULATION
-		iout=-1;
-		NNEW(v,double,mt**nk);
-		NNEW(fn,double,mt**nk);
-		NNEW(stx,double,6*mi[0]**ne);
-		NNEW(inum,ITG,*nk);
-		NNEW(eei,double,6*mi[0]**ne);
-		results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-			elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-			ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-			prestr,iprestr,filab,eme,emn,een,iperturb,
-			f,fn,nactdof,&iout,qa,vold,b,nodeboun,
-			ndirboun,xbounact,nboun,ipompc,
-			nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,accold,
-			&bet,&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-			xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,
-			&icmd,ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,
-			emeini,xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,
-			iendset,ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,
-			fmpc,nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,
-			&reltime,&ne0,thicke,shcon,nshcon,
-			sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-			mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-			islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-			inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
-			itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
-			islavelinv,autloc,irowtloc,jqtloc,&nboun2,
-			ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
-			labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
-			&intscheme);
-		
+  if(*nmethod==11){
+      
+    /* determining the nodes and the degrees of freedom in those nodes
+       belonging to the substructure */
+      
+    NNEW(iretain,ITG,*nk);
+    NNEW(noderetain,ITG,*nk);
+    NNEW(ndirretain,ITG,*nk);
+    nretain=0;
+      
+    for(i=0;i<*nboun;i++){
+      if(strcmp1(&typeboun[i],"C")==0){
+	iretain[nretain]=i+1;
+	noderetain[nretain]=nodeboun[i];
+	ndirretain[nretain]=ndirboun[i];
+	nretain++;
+      }
+    }
+ 
+    /* nretain!=0: substructure application */
+      
+    RENEW(iretain,ITG,nretain);
+    RENEW(noderetain,ITG,nretain);
+    RENEW(ndirretain,ITG,nretain);
+      
+    /* creating the right size au */
 
-		// SENDING DATA TO NASMAT
-		simulationData.eei = &eei;
-		Precice_WriteCouplingData(&simulationData);
-		SFREE(eei);
-		SFREE(v);SFREE(fn);SFREE(stx);SFREE(inum); 
-		iout=1;
+    NNEW(au,double,nzs[2]);
+    rhsi=0;
+    nmethodl=2;
 
-		Precice_Advance(&simulationData);
+  }else{
 
-		/* for a *STATIC,PERTURBATION analysis with submodel boundary
-			conditions from a *FREQUENCY analysis iperturb[0]=1 has to be
-			temporarily set to iperturb[0]=0 in order for f to be calculated in
-			resultsini and subsequent results* routines */
+    /* linear static calculation */
 
-		if((*nmethod==1)&&(iglob<0)&&(iperturb[0]>0)){
-			iperturbsav=iperturb[0];
-			iperturb[0]=0;
-		}
+    NNEW(au,double,*nzs);
+    nmethodl=*nmethod;
 
-		iout=-1;
-		NNEW(v,double,mt**nk);
-		NNEW(fn,double,mt**nk);
-		NNEW(stx,double,6*mi[0]**ne);
-		NNEW(inum,ITG,*nk);
-		results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-			elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-			ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-			prestr,iprestr,filab,eme,emn,een,iperturb,
-			f,fn,nactdof,&iout,qa,vold,b,nodeboun,
-			ndirboun,xbounact,nboun,ipompc,
-			nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,accold,
-			&bet,&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-			xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,
-			&icmd,ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,
-			emeini,xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,
-			iendset,ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,
-			fmpc,nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,
-			&reltime,&ne0,thicke,shcon,nshcon,
-			sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-			mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-			islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-			inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
-			itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
-			islavelinv,autloc,irowtloc,jqtloc,&nboun2,
-			ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
-			labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
-			&intscheme);
-		SFREE(v);SFREE(fn);SFREE(stx);SFREE(inum);
-		iout=1;
+    /* if submodel calculation with a global model obtained by
+       a *FREQUENCY calculation: replace stiffness matrix K by
+       K-sigma*M */
 
-		// RECIEVING MATERIAL TANGENT FROM NASMAT
-		simulationData.xstiff = xstiff;
-		Precice_ReadCouplingData(&simulationData);
+    if(iglob<0){
+      mass[0]=1;
+      NNEW(adb,double,*neq);
+      NNEW(aub,double,nzs[1]);
+    }
+	  
+  }
 
+  mafillsmmain(co,nk,kon,ipkon,lakon,ne,nodeboun,ndirboun,xbounact,nboun,
+	       ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
+	       nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
+	       nbody,cgr,ad,au,fext,nactdof,icol,jq,irow,neq,nzl,&nmethodl,
+	       ikmpc,ilmpc,ikboun,ilboun,
+	       elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
+	       ielorien,norien,orab,ntmat_,
+	       t0,t1act,ithermal,prestr,iprestr,vold,iperturb,sti,
+	       nzs,stx,adb,aub,iexpl,plicon,nplicon,plkcon,nplkcon,
+	       xstiff,npmat_,&dtime,matname,mi,
+	       ncmat_,mass,&stiffness,&buckling,&rhsi,&intscheme,physcon,
+	       shcon,nshcon,cocon,ncocon,ttime,&time,istep,&iinc,&coriolis,
+	       ibody,xloadold,&reltime,veold,springarea,nstate_,
+	       xstateini,xstate,thicke,integerglob,doubleglob,
+	       tieset,istartset,iendset,ialset,ntie,&nasym,pslavsurf,
+	       pmastsurf,mortar,clearini,ielprop,prop,&ne0,fnext,&kscale,
+	       iponoel,inoel,&network,ntrans,inotr,trab,smscale,&mscalmethod,
+	       set,nset,islavelinv,autloc,irowtloc,jqtloc,&mortartrafoflag);
+
+  /* check for negative Jacobians */
+
+  if(nmethodl==0) *nmethod=0;
+
+  if(nasym==1){
+    RENEW(au,double,2*nzs[1]);
+    symmetryflag=2;
+    inputformat=1;
+      
+    mafillsmasmain(co,nk,kon,ipkon,lakon,ne,nodeboun,
+		   ndirboun,xbounact,nboun,
+		   ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
+		   nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
+		   nbody,cgr,ad,au,fext,nactdof,icol,jq,irow,neq,nzl,
+		   nmethod,ikmpc,ilmpc,ikboun,ilboun,
+		   elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,
+		   ielmat,ielorien,norien,orab,ntmat_,
+		   t0,t1act,ithermal,prestr,iprestr,vold,iperturb,sti,
+		   nzs,stx,adb,aub,iexpl,plicon,nplicon,plkcon,nplkcon,
+		   xstiff,npmat_,&dtime,matname,mi,
+		   ncmat_,mass,&stiffness,&buckling,&rhsi,&intscheme,
+		   physcon,shcon,nshcon,cocon,ncocon,ttime,&time,istep,&iinc,
+		   &coriolis,ibody,xloadold,&reltime,veold,springarea,nstate_,
+		   xstateini,xstate,thicke,
+		   integerglob,doubleglob,tieset,istartset,iendset,
+		   ialset,ntie,&nasym,pslavsurf,pmastsurf,mortar,clearini,
+		   ielprop,prop,&ne0,&kscale,iponoel,inoel,&network,set,nset);
+  }
+
+  /* determining the right hand side */
+
+  NNEW(b,double,*neq);
+  for(k=0;k<*neq;++k){
+    b[k]=fext[k]-f[k];
+  }
+  SFREE(fext);SFREE(f);
+
+  /* generation of a substructure stiffness matrix  */
+
+  if(*nmethod==11){
+
+    /* factorizing the matrix */
+
+    if(*neq>0){
+      if(*isolver==0){
+#ifdef SPOOLES
+	spooles_factor(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,&symmetryflag,
+		       &inputformat,&nzs[2]);
+#else
+	printf(" *ERROR in linstatic: the SPOOLES library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==7){
+#ifdef PARDISO
+	pardiso_factor(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,
+		       &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in linstatic: the PARDISO library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==8){
+#ifdef PASTIX
+	pastix_factor_main(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,
+			   &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in linstatic: the PASTIX library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+    }
+
+    /* solving the system of equations with appropriate rhs */
+
+    /* substructure calculations */
+
+    NNEW(submatrix,double,nretain*nretain);
+	  
+    for(i=0;i<nretain;i++){
+      DMEMSET(b,0,*neq,0.);
+      ic=*neq+iretain[i]-1;
+      for(j=jq[ic]-1;j<jq[ic+1]-1;j++){
+	ir=irow[j]-1;
+	b[ir]-=au[j];
+      }
+	      
+      /* solving the system */
+	      
+      if(*neq>0){
+	if(*isolver==0){
+#ifdef SPOOLES
+	  spooles_solve(b,neq);
+#endif
 	}
-
-	precicec_finalize();
-
-		if((*nmethod==1)&&(iglob<0)&&(iperturb[0]>0)){
-			iperturb[0]=iperturbsav;
-		}
-		
-		/* determining the system matrix and the external forces */
-
-		NNEW(ad,double,*neq);
-		NNEW(fext,double,*neq);
-
-		if(*nmethod==11){
-			
-			/* determining the nodes and the degrees of freedom in those nodes
-			belonging to the substructure */
-			
-			NNEW(iretain,ITG,*nk);
-			NNEW(noderetain,ITG,*nk);
-			NNEW(ndirretain,ITG,*nk);
-			nretain=0;
-			
-			for(i=0;i<*nboun;i++){
-			if(strcmp1(&typeboun[i],"C")==0){
-			iretain[nretain]=i+1;
-			noderetain[nretain]=nodeboun[i];
-			ndirretain[nretain]=ndirboun[i];
-			nretain++;
-			}
-			}
-		
-			/* nretain!=0: submatrix application
-			nretain==0: Green function application */
-			
-			if(nretain>0){
-			RENEW(iretain,ITG,nretain);
-			RENEW(noderetain,ITG,nretain);
-			RENEW(ndirretain,ITG,nretain);
-			}else{
-			SFREE(iretain);SFREE(noderetain);SFREE(ndirretain);
-			}
-			
-			/* creating the right size au */
-
-			NNEW(au,double,nzs[2]);
-			rhsi=0;
-			//      nmethodl=2;
-			nmethodl=*nmethod;
-
-			/* providing for the mass matrix in case of Green functions */
-
-			if(nretain==0){
-			mass[0]=1.;
-			NNEW(adb,double,*neq);
-			NNEW(aub,double,nzs[1]);
-			}
-
-		}else{
-
-			/* linear static calculation */
-
-			NNEW(au,double,*nzs);
-			nmethodl=*nmethod;
-
-			/* if submodel calculation with a global model obtained by
-			a *FREQUENCY calculation: replace stiffness matrix K by
-			K-sigma*M */
-
-			if(iglob<0){
-			mass[0]=1;
-			NNEW(adb,double,*neq);
-			NNEW(aub,double,nzs[1]);
-			}
-			
-		}
-
-
-		mafillsmmain(co,nk,kon,ipkon,lakon,ne,nodeboun,ndirboun,xbounact,nboun,
-				ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
-				nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
-				nbody,cgr,ad,au,fext,nactdof,icol,jq,irow,neq,nzl,&nmethodl,
-				ikmpc,ilmpc,ikboun,ilboun,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-				ielorien,norien,orab,ntmat_,
-				t0,t1act,ithermal,prestr,iprestr,vold,iperturb,sti,
-				nzs,stx,adb,aub,iexpl,plicon,nplicon,plkcon,nplkcon,
-				xstiff,npmat_,&dtime,matname,mi,
-				ncmat_,mass,&stiffness,&buckling,&rhsi,&intscheme,physcon,
-				shcon,nshcon,cocon,ncocon,ttime,&time,istep,&iinc,&coriolis,
-				ibody,xloadold,&reltime,veold,springarea,nstate_,
-				xstateini,xstate,thicke,integerglob,doubleglob,
-				tieset,istartset,iendset,ialset,ntie,&nasym,pslavsurf,
-				pmastsurf,mortar,clearini,ielprop,prop,&ne0,fnext,&kscale,
-				iponoel,inoel,&network,ntrans,inotr,trab,smscale,&mscalmethod,
-				set,nset,islavelinv,autloc,irowtloc,jqtloc,&mortartrafoflag);
-
-		/* check for negative Jacobians */
-
-		if(nmethodl==0) *nmethod=0;
-
-		if(nasym==1){
-			RENEW(au,double,2*nzs[1]);
-			symmetryflag=2;
-			inputformat=1;
-			
-			mafillsmasmain(co,nk,kon,ipkon,lakon,ne,nodeboun,
-				ndirboun,xbounact,nboun,
-				ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
-				nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
-				nbody,cgr,ad,au,fext,nactdof,icol,jq,irow,neq,nzl,
-				nmethod,ikmpc,ilmpc,ikboun,ilboun,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,
-				ielmat,ielorien,norien,orab,ntmat_,
-				t0,t1act,ithermal,prestr,iprestr,vold,iperturb,sti,
-				nzs,stx,adb,aub,iexpl,plicon,nplicon,plkcon,nplkcon,
-				xstiff,npmat_,&dtime,matname,mi,
-				ncmat_,mass,&stiffness,&buckling,&rhsi,&intscheme,
-				physcon,shcon,nshcon,cocon,ncocon,ttime,&time,istep,&iinc,
-				&coriolis,ibody,xloadold,&reltime,veold,springarea,nstate_,
-				xstateini,xstate,thicke,
-				integerglob,doubleglob,tieset,istartset,iendset,
-				ialset,ntie,&nasym,pslavsurf,pmastsurf,mortar,clearini,
-				ielprop,prop,&ne0,&kscale,iponoel,inoel,&network,set,nset);
-			
-			/*      FORTRAN(mafillsmas,(co,nk,kon,ipkon,lakon,ne,nodeboun,
-				ndirboun,xbounact,nboun,
-				ipompc,nodempc,coefmpc,nmpc,nodeforc,ndirforc,xforcact,
-				nforc,nelemload,sideload,xloadact,nload,xbodyact,ipobody,
-				nbody,cgr,ad,au,fext,nactdof,icol,jq,irow,neq,nzl,
-				nmethod,ikmpc,ilmpc,ikboun,ilboun,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,
-				ielmat,ielorien,norien,orab,ntmat_,
-				t0,t1act,ithermal,prestr,iprestr,vold,iperturb,sti,
-				nzs,stx,adb,aub,iexpl,plicon,nplicon,plkcon,nplkcon,
-				xstiff,npmat_,&dtime,matname,mi,
-				ncmat_,mass,&stiffness,&buckling,&rhsi,&intscheme,
-				physcon,shcon,nshcon,cocon,ncocon,ttime,&time,istep,&iinc,
-				&coriolis,ibody,xloadold,&reltime,veold,springarea,nstate_,
-				xstateini,xstate,thicke,
-				integerglob,doubleglob,tieset,istartset,iendset,
-				ialset,ntie,&nasym,pslavsurf,pmastsurf,mortar,clearini,
-				ielprop,prop,&ne0,&kscale,iponoel,inoel,&network));*/
-		}
-
-		/* determining the right hand side */
-
-		NNEW(b,double,*neq);
-		for(k=0;k<*neq;++k){
-			b[k]=fext[k]-f[k];
-		}
-		SFREE(fext);SFREE(f);
-
-
-		/* generation of a substructure stiffness matrix (nretain>0) or treating
-			Green functions (nretain=0) */
-
-		if(*nmethod==11){
-
-			/* recovering omega_0^2 for Green applications */
-
-			if(nretain==0){
-			if(*nforc>0){sigma=xforc[0];}
-			}
-
-			/* factorizing the matrix */
-
-			if(*neq>0){
-			if(*isolver==0){
-		#ifdef SPOOLES
-			spooles_factor(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,&symmetryflag,
-					&inputformat,&nzs[2]);
-		#else
-			printf("*ERROR in linstatic: the SPOOLES library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if(*isolver==7){
-		#ifdef PARDISO
-			pardiso_factor(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,
-					&symmetryflag,&inputformat,jq,&nzs[2]);
-		#else
-			printf("*ERROR in linstatic: the PARDISO library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if(*isolver==8){
-		#ifdef PASTIX
-			pastix_factor_main(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,
-					&symmetryflag,&inputformat,jq,&nzs[2]);
-		#else
-			printf("*ERROR in linstatic: the PASTIX library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			}
-
-
-			/* solving the system of equations with appropriate rhs */
-
-			if(nretain>0){
-
-			/* substructure calculations */
-
-			NNEW(submatrix,double,nretain*nretain);
-			
-			for(i=0;i<nretain;i++){
-			DMEMSET(b,0,*neq,0.);
-			ic=*neq+iretain[i]-1;
-			for(j=jq[ic]-1;j<jq[ic+1]-1;j++){
-			ir=irow[j]-1;
-			b[ir]-=au[j];
-			}
-				
-			/* solving the system */
-				
-			if(*neq>0){
-			if(*isolver==0){
-		#ifdef SPOOLES
-				spooles_solve(b,neq);
-		#endif
-			}
-			else if(*isolver==7){
-		#ifdef PARDISO
-				pardiso_solve(b,neq,&symmetryflag,&inputformat,&nrhs);
-		#endif
-					
-			}
-			else if(*isolver==8){
-		#ifdef PASTIX
-				pastix_solve(b,neq,&symmetryflag,&nrhs);
-		#endif
-					
-			}
-			}
-				
-			/* calculating the internal forces */
-			
-
-				
-			NNEW(v,double,mt**nk);
-			NNEW(fn,double,mt**nk);
-			NNEW(stn,double,6**nk);
-			NNEW(inum,ITG,*nk);
-			NNEW(stx,double,6*mi[0]**ne);
-				
-			if(strcmp1(&filab[261],"E   ")==0) NNEW(een,double,6**nk);
-			if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
-			if(strcmp1(&filab[522],"ENER")==0) NNEW(enern,double,*nk);
-				
-			NNEW(eei,double,6*mi[0]**ne);
-			if(*nener==1){
-			NNEW(stiini,double,6*mi[0]**ne);
-			NNEW(emeini,double,6*mi[0]**ne);
-			NNEW(enerini,double,mi[0]**ne);}
-				
-			/* replacing the appropriate boundary value by unity */
-				
-			xbounact[iretain[i]-1]=1.;
-
-			
-				
-			results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-				ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-				prestr,iprestr,filab,eme,emn,een,iperturb,
-				f,fn,nactdof,&iout,qa,vold,b,nodeboun,ndirboun,
-				xbounact,nboun,ipompc,
-				nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,
-				accold,&bet,
-				&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-				xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
-				ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
-				xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
-				ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
-				nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,&reltime,
-				&ne0,thicke,shcon,nshcon,
-				sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-				mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-				islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-				inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
-				itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
-				islavelinv,autloc,irowtloc,jqtloc,&nboun2,
-				ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
-				labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
-				&intscheme);
-				
-			xbounact[iretain[i]-1]=0.;
-				
-			SFREE(v);SFREE(stn);SFREE(inum);SFREE(stx);
-				
-			if(strcmp1(&filab[261],"E   ")==0) SFREE(een);
-			if(strcmp1(&filab[2697],"ME  ")==0) SFREE(emn);
-			if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
-				
-			SFREE(eei);if(*nener==1){SFREE(stiini);SFREE(emeini);SFREE(enerini);}
-				
-			/* storing the internal forces in the substructure
-			stiffness matrix */
-				
-			for(j=0;j<nretain;j++){
-			submatrix[i*nretain+j]=fn[mt*(noderetain[j]-1)+ndirretain[j]];
-			}
-				
-			SFREE(fn);
-				
-			}
-
-			/* cleanup */
-			
-			if(*isolver==0){
-		#ifdef SPOOLES
-			spooles_cleanup();
-		#endif
-			}
-			else if(*isolver==7){
-		#ifdef PARDISO
-			pardiso_cleanup(&neq[0],&symmetryflag,&inputformat);
-		#endif
-			}
-			else if(*isolver==8){
-		#ifdef PASTIX
-		#endif
-			}
-			
-			SFREE(iretain);
-			
-			FORTRAN(writesubmatrix,(submatrix,noderetain,ndirretain,&nretain,jobnamec));
-			
-			SFREE(submatrix);SFREE(noderetain);SFREE(ndirretain);
-
-			}else{
-
-			/* Green function applications (nretain=0) */
-
-			/* storing omega_0^2 into d */
-
-			NNEW(d,double,*nforc);
-			for(i=0;i<*nforc;i++){d[i]=xforc[0];}
-
-			strcpy(fneig,jobnamec);
-			strcat(fneig,".eig");
-			
-			if((f2=fopen(fneig,"wb"))==NULL){
-			printf("*ERROR in linstatic: cannot open eigenvalue file for writing...");
-				
-			exit(0);
-			}
-			
-			/* storing a zero as indication that this was not a
-			cyclic symmetry calculation */
-			
-			if(fwrite(&zero,sizeof(ITG),1,f2)!=1){
-			printf("*ERROR saving the cyclic symmetry flag to the eigenvalue file...");
-			exit(0);
-			}
-			
-			/* Hermitian */
-			
-			if(fwrite(&nherm,sizeof(ITG),1,f2)!=1){
-			printf("*ERROR saving the Hermitian flag to the eigenvalue file...");
-			exit(0);
-			}
-
-			/* perturbation parameter iperturb[0] */
-			
-			if(fwrite(&iperturb[0],sizeof(ITG),1,f2)!=1){
-			printf("*ERROR saving the perturbation flag to the eigenvalue file...");
-			exit(0);
-			}
-				
-			/* reference displacements */
-
-			if(iperturb[0]==1){
-			if(fwrite(vold,sizeof(double),mt**nk,f2)!=mt**nk){
-			printf("*ERROR saving the reference displacements to the eigenvalue file...");
-			exit(0);
-			}
-			}
-			
-			/* storing the number of eigenvalues */
-			
-			if(fwrite(&nev,sizeof(ITG),1,f2)!=1){
-			printf("*ERROR saving the number of eigenvalues to the eigenvalue file...");
-			exit(0);
-			}
-			
-			/* the eigenfrequencies are stored as radians/time */
-			
-			if(fwrite(d,sizeof(double),nev,f2)!=nev){
-			printf("*ERROR saving the eigenfrequencies to the eigenvalue file...");
-			exit(0);
-			}
-			
-			/* storing the stiffness matrix */
-			
-			if(fwrite(ad,sizeof(double),neq[1],f2)!=neq[1]){
-			printf("*ERROR saving the diagonal of the stiffness matrix to the eigenvalue file...");
-			exit(0);
-			}
-			if(fwrite(au,sizeof(double),nzs[2],f2)!=nzs[2]){
-			printf("*ERROR saving the off-diagonal terms of the stiffness matrix to the eigenvalue file...");
-			exit(0);
-			}
-			
-			/* storing the mass matrix */
-			
-			if(fwrite(adb,sizeof(double),neq[1],f2)!=neq[1]){
-			printf("*ERROR saving the diagonal of the mass matrix to the eigenvalue file...");
-			exit(0);
-			}
-			if(fwrite(aub,sizeof(double),nzs[1],f2)!=nzs[1]){
-			printf("*ERROR saving the off-diagonal terms of the mass matrix to the eigenvalue file...");
-			exit(0);
-			}
-
-			SFREE(d);
-			
-			/* calculating each Green function */
-
-			for(i=0;i<*nforc;i++){
-			node=nodeforc[2*i];
-			idir=ndirforc[i];
-
-			/* check whether degree of freedom is active */
-
-			if(nactdof[mt*(node-1)+idir]==0){
-			printf("*ERROR in linstatic: degree of freedom corresponding to node %d \n and direction %d is not active: no unit force can be applied\n",node,idir);
-			FORTRAN(stop,());
-			}
-
-			/* defining a unit force on the rhs */
-
-			DMEMSET(b,0,*neq,0.);
-			b[nactdof[mt*(node-1)+idir]-1]=1.;
-				
-			/* solving the system */
-				
-			if(*neq>0){
-			if(*isolver==0){
-		#ifdef SPOOLES
-				spooles_solve(b,neq);
-		#endif
-			}
-			else if(*isolver==7){
-		#ifdef PARDISO
-				pardiso_solve(b,neq,&symmetryflag,&inputformat,&nrhs);
-		#endif
-					
-			}
-			else if(*isolver==8){
-		#ifdef PASTIX
-				pastix_solve(b,neq,&symmetryflag,&nrhs);
-		#endif
-					
-			}
-			}
-				
-			/* storing the Green function */
-
-			if(fwrite(b,sizeof(double),*neq,f2)!=*neq){
-			printf("*ERROR saving data to the eigenvalue file...");
-			exit(0);
-			}
-
-			/* calculating the displacements and the stresses and storing */
-			/* the results in frd format for each valid eigenmode */
-				
-			NNEW(v,double,mt**nk);
-			NNEW(fn,double,mt**nk);
-			NNEW(stn,double,6**nk);
-			NNEW(inum,ITG,*nk);
-			NNEW(stx,double,6*mi[0]**ne);
-				
-			if(strcmp1(&filab[261],"E   ")==0) NNEW(een,double,6**nk);
-			if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
-			if(strcmp1(&filab[522],"ENER")==0) NNEW(enern,double,*nk);
-			if(strcmp1(&filab[2175],"CONT")==0) NNEW(cdn,double,6**nk);
-				
-			NNEW(eei,double,6*mi[0]**ne);
-			if(*nener==1){
-			NNEW(stiini,double,6*mi[0]**ne);
-			NNEW(emeini,double,6*mi[0]**ne);
-			NNEW(enerini,double,mi[0]**ne);}
-
-				
-			results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-				ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-				prestr,iprestr,filab,eme,emn,een,iperturb,
-				f,fn,nactdof,&iout,qa,vold,b,nodeboun,ndirboun,
-				xbounact,nboun,ipompc,
-				nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,
-				accold,&bet,
-				&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-				xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
-				ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
-				xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
-				ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
-				nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,&reltime,
-				&ne0,thicke,shcon,nshcon,
-				sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-				mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-				islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-				inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
-				itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
-				islavelinv,autloc,irowtloc,jqtloc,&nboun2,
-				ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
-				labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
-				&intscheme);
-				
-			SFREE(eei);
-			if(*nener==1){
-			SFREE(stiini);SFREE(emeini);SFREE(enerini);}
-				
-			/*	      memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
-					memcpy(&sti[0],&stx[0],sizeof(double)*6*mi[0]*ne0);*/
-				
-			++*kode;
-			time=1.*i;
-				
-			/* for cyclic symmetric sectors: duplicating the results */
-				
-			if(*mcs>0){
-			ptime=*ttime+time;
-			frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,t1act,
-				fn,&ptime,epn,ielmat,matname,cs,mcs,nkon,enern,xstaten,
-				nstate_,istep,&iinc,iperturb,ener,mi,output,ithermal,
-				qfn,ialset,istartset,iendset,trab,inotr,ntrans,orab,
-				ielorien,norien,sti,veold,&noddiam,set,nset,emn,thicke,
-				jobnamec,&ne0,cdn,mortar,nmat,qfx,ielprop,prop);
-			}
-			else{
-			if(strcmp1(&filab[1044],"ZZS")==0){
-				NNEW(neigh,ITG,40**ne);
-				NNEW(ipneigh,ITG,*nk);
-			}
-			ptime=*ttime+time;
-			frd(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,
-				kode,filab,een,t1act,fn,&ptime,epn,ielmat,matname,enern,xstaten,
-				nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
-				ntrans,orab,ielorien,norien,description,ipneigh,neigh,
-				mi,stx,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
-				cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
-				thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,
-				ielprop,prop,sti);
-			if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
-			}
-				
-			SFREE(v);SFREE(stn);SFREE(inum);
-			SFREE(stx);SFREE(fn);
-				
-			if(strcmp1(&filab[261],"E   ")==0) SFREE(een);
-			if(strcmp1(&filab[2697],"ME  ")==0) SFREE(emn);
-			if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
-			if(strcmp1(&filab[2175],"CONT")==0) SFREE(cdn);
-				
-			}
-
-
-			fclose(f2);
-
-			}
-			
-			SFREE(au);SFREE(ad);SFREE(b);
-			
-			SFREE(xbounact);SFREE(xforcact);SFREE(xloadact);SFREE(t1act);SFREE(ampli);
-			SFREE(xbodyact);
-
-			//    if(*nbody>0) SFREE(ipobody);
-
-			SFREE(xstiff);
-			
-			if(iglob!=0){SFREE(integerglob);SFREE(doubleglob);}
-			
-			return;
-
-
-		}else if(*nmethod!=0){
-
-			/* linear static applications */
-
-			if(*isolver==0){
-		#ifdef SPOOLES
-			spooles(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,&symmetryflag,
-					&inputformat,&nzs[2]);
-		#else
-			printf("*ERROR in linstatic: the SPOOLES library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if((*isolver==2)||(*isolver==3)){
-			if(nasym>0){
-			printf(" *ERROR in nonlingeo: the iterative solver cannot be used for asymmetric matrices\n\n");
-			FORTRAN(stop,());
-			}
-			preiter(ad,&au,b,&icol,&irow,neq,nzs,isolver,iperturb);
-			}
-			else if(*isolver==4){
-		#ifdef SGI
-			if(nasym>0){
-			printf(" *ERROR in nonlingeo: the SGI solver cannot be used for asymmetric matrices\n\n");
-			FORTRAN(stop,());
-			}
-			token=1;
-			sgi_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,token);
-		#else
-			printf("*ERROR in linstatic: the SGI library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if(*isolver==5){
-		#ifdef TAUCS
-			if(nasym>0){
-			printf(" *ERROR in nonlingeo: the TAUCS solver cannot be used for asymmetric matrices\n\n");
-			FORTRAN(stop,());
-			}
-			tau(ad,&au,adb,aub,&sigma,b,icol,&irow,neq,nzs);
-		#else
-			printf("*ERROR in linstatic: the TAUCS library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if(*isolver==7){
-		#ifdef PARDISO
-			pardiso_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,
-				&symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
-		#else
-			printf("*ERROR in linstatic: the PARDISO library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-			else if(*isolver==8){
-		#ifdef PASTIX
-			pastix_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,
-				&symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
-		#else
-			printf("*ERROR in linstatic: the PASTIX library is not linked\n\n");
-			FORTRAN(stop,());
-		#endif
-			}
-
-			/* saving of ad and au for sensitivity analysis */
-
-			for(i=0;i<*ntie;i++){
-			if(strcmp1(&tieset[i*243+80],"D")==0){
-				
-			strcpy(stiffmatrix,jobnamec);
-			strcat(stiffmatrix,".stm");
-				
-			if((f1=fopen(stiffmatrix,"wb"))==NULL){
-			printf("*ERROR in linstatic: cannot open stiffness matrix file for writing...");
-			exit(0);
-			}
-				
-			/* storing the stiffness matrix */
-
-			/* nzs,irow,jq and icol have to be stored too, since the static analysis
-			can involve contact, whereas in the sensitivity analysis contact is not
-			taken into account while determining the structure of the stiffness
-			matrix (in mastruct.c)
-			*/
-				
-			if(fwrite(&nasym,sizeof(ITG),1,f1)!=1){
-			printf("*ERROR saving the symmetry flag to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(nzs,sizeof(ITG),3,f1)!=3){
-			printf("*ERROR saving the number of subdiagonal nonzeros to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(irow,sizeof(ITG),nzs[2],f1)!=nzs[2]){
-			printf("*ERROR saving irow to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(jq,sizeof(ITG),neq[1]+1,f1)!=neq[1]+1){
-			printf("*ERROR saving jq to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(icol,sizeof(ITG),neq[1],f1)!=neq[1]){
-			printf("*ERROR saving icol to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(ad,sizeof(double),neq[1],f1)!=neq[1]){
-			printf("*ERROR saving the diagonal of the stiffness matrix to the stiffness matrix file...");
-			exit(0);
-			}
-			if(fwrite(au,sizeof(double),nzs[2],f1)!=nzs[2]){
-			printf("*ERROR saving the off-diagonal terms of the stiffness matrix to the tiffness matrix file...");
-			exit(0);
-			}
-			fclose(f1);
-
-			break;
-			}
-			}
-			
-			SFREE(ad);SFREE(au);
-			if(iglob<0){SFREE(adb);SFREE(aub);}
-
-			/* calculating the displacements and the stresses and storing */
-			/* the results in frd format for each valid eigenmode */
-
-			NNEW(v,double,mt**nk);
-			NNEW(fn,double,mt**nk);
-			NNEW(stn,double,6**nk);
-			NNEW(inum,ITG,*nk);
-			NNEW(stx,double,6*mi[0]**ne);
-		
-			if(strcmp1(&filab[261],"E   ")==0) NNEW(een,double,6**nk);
-			if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
-			if(strcmp1(&filab[522],"ENER")==0) NNEW(enern,double,*nk);
-			if(strcmp1(&filab[2175],"CONT")==0) NNEW(cdn,double,6**nk);
-
-			NNEW(eei,double,6*mi[0]**ne);
-			if(*nener==1){
-			NNEW(stiini,double,6*mi[0]**ne);
-			NNEW(emeini,double,6*mi[0]**ne);
-			NNEW(enerini,double,mi[0]**ne);}
-
-
-			results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
-				elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
-				ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
-				prestr,iprestr,filab,eme,emn,een,iperturb,
-					f,fn,nactdof,&iout,qa,vold,b,nodeboun,ndirboun,xbounact,nboun,ipompc,
-				nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,accold,&bet,
-					&gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
-				xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
-					ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
-					xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
-					ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
-				nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,&reltime,
-					&ne0,thicke,shcon,nshcon,
-					sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
-					mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
-				islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
-					inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
-				itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
-				islavelinv,autloc,irowtloc,jqtloc,&nboun2,
-				ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
-				labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
-				&intscheme);
-
-			SFREE(eei);
-			if(*nener==1){
-			SFREE(stiini);SFREE(emeini);SFREE(enerini);}
-
-			memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
-			memcpy(&sti[0],&stx[0],sizeof(double)*6*mi[0]*ne0);
-
-			++*kode;
-
-			/* for cyclic symmetric sectors: duplicating the results */
-
-			if(*mcs>0){
-			ptime=*ttime+time;
-			frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,t1act,
-				fn,&ptime,epn,ielmat,matname,cs,mcs,nkon,enern,xstaten,
-				nstate_,istep,&iinc,iperturb,ener,mi,output,ithermal,
-				qfn,ialset,istartset,iendset,trab,inotr,ntrans,orab,
-				ielorien,norien,sti,veold,&noddiam,set,nset,emn,thicke,
-				jobnamec,&ne0,cdn,mortar,nmat,qfx,ielprop,prop);
-			}
-			else{
-			if(strcmp1(&filab[1044],"ZZS")==0){
-			NNEW(neigh,ITG,40**ne);
-			NNEW(ipneigh,ITG,*nk);
-			}
-			ptime=*ttime+time;
-			frd(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,
-			kode,filab,een,t1act,fn,&ptime,epn,ielmat,matname,enern,xstaten,
-			nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
-			ntrans,orab,ielorien,norien,description,ipneigh,neigh,
-			mi,stx,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
-			cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
-			thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,
-			prop,sti);
-			if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
-			}
-
-			/* updating the .sta file */
-
-			iitsta=1;
-			FORTRAN(writesta,(istep,&iinc,&icutb,&iitsta,ttime,&time,&dtime));
-
-			SFREE(v);SFREE(stn);SFREE(inum);
-			SFREE(b);SFREE(stx);SFREE(fn);
-
-			if(strcmp1(&filab[261],"E   ")==0) SFREE(een);
-			if(strcmp1(&filab[2697],"ME  ")==0) SFREE(emn);
-			if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
-			if(strcmp1(&filab[2175],"CONT")==0) SFREE(cdn);
-
-		}
-		else {
-
-			/* error occurred in mafill: storing the geometry in frd format */
-
-			++*kode;
-			NNEW(inum,ITG,*nk);for(k=0;k<*nk;k++) inum[k]=1;
-			if(strcmp1(&filab[1044],"ZZS")==0){
-			NNEW(neigh,ITG,40**ne);
-			NNEW(ipneigh,ITG,*nk);
-			}
-			ptime=*ttime+time;
-			frd(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,
-			kode,filab,een,t1,fn,&ptime,epn,ielmat,matname,enern,xstaten,
-			nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
-			ntrans,orab,ielorien,norien,description,ipneigh,neigh,
-			mi,sti,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
-			cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
-			thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,
-			prop,sti);
-			if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
-			SFREE(inum);FORTRAN(stop,());
-
-		}
-
-		if(*mortar>-2){
-			if(ncont!=0){
-			*ne=ne0;
-			if(*nener==1){
-			RENEW(ener,double,mi[0]**ne*2);
-			}
-			RENEW(ipkon,ITG,*ne);
-			RENEW(lakon,char,8**ne);
-			RENEW(kon,ITG,*nkon);
-			if(*norien>0){
-			RENEW(ielorien,ITG,mi[2]**ne);
-			}
-			RENEW(ielmat,ITG,mi[2]**ne);
-			SFREE(cg);SFREE(straight);
-			SFREE(imastop);SFREE(itiefac);SFREE(islavnode);SFREE(islavsurf);
-			SFREE(nslavnode);SFREE(iponoels);SFREE(inoels);SFREE(imastnode);
-			SFREE(nmastnode);SFREE(itietri);SFREE(koncont);SFREE(xnoels);
-			SFREE(springarea);SFREE(xmastnor);
-
-			if(*mortar==0){
-			SFREE(areaslav);
-			}else if(*mortar==1){
-			SFREE(pmastsurf);SFREE(ipe);SFREE(ime);SFREE(pslavsurf);
-			SFREE(islavact);SFREE(clearini);
-			}
-			}
-			mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
-			mpcinfo[3]=maxlenmpc;
-		}
-
-		/* updating the loading at the end of the step; 
-			important in case the amplitude at the end of the step
-			is not equal to one */
-
-		for(k=0;k<*nboun;++k){xbounold[k]=xbounact[k];}
-		for(k=0;k<*nforc;++k){xforcold[k]=xforcact[k];}
-		for(k=0;k<2**nload;++k){xloadold[k]=xloadact[k];}
-		for(k=0;k<7**nbody;k=k+7){xbodyold[k]=xbodyact[k];}
-		if(*ithermal==1){
-			for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
-			for(k=0;k<*nk;++k){vold[mt*k]=t1act[k];}
-		}
-
-		SFREE(xbounact);SFREE(xforcact);SFREE(xloadact);SFREE(t1act);SFREE(ampli);
-		SFREE(xbodyact);
-
-		//  if(*nbody>0) SFREE(ipobody);
-
-		SFREE(xstiff);
-
-		if(iglob!=0){SFREE(integerglob);SFREE(doubleglob);}
-
-		*irowp=irow;*enerp=ener;*xstatep=xstate;*ipkonp=ipkon;*lakonp=lakon;
-		*konp=kon;*ielmatp=ielmat;*ielorienp=ielorien;*icolp=icol;
-
-		(*ttime)+=(*tper);
-		
-		return;
-
-		
+	else if(*isolver==7){
+#ifdef PARDISO
+	  pardiso_solve(b,neq,&symmetryflag,&inputformat,&nrhs);
+#endif
+		      
+	}
+	else if(*isolver==8){
+#ifdef PASTIX
+	  pastix_solve(b,neq,&symmetryflag,&nrhs);
+#endif
+		      
+	}
+      }
+	      
+      /* calculating the internal forces */
+	      
+      NNEW(v,double,mt**nk);
+      NNEW(fn,double,mt**nk);
+      NNEW(stn,double,6**nk);
+      NNEW(inum,ITG,*nk);
+      NNEW(stx,double,6*mi[0]**ne);
+	      
+      if(strcmp1(&filab[261],"E   ")==0) NNEW(een,double,6**nk);
+      if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
+      if(strcmp1(&filab[522],"ENER")==0) NNEW(enern,double,*nk);
+	      
+      NNEW(eei,double,6*mi[0]**ne);
+      if(*nener==1){
+	NNEW(stiini,double,6*mi[0]**ne);
+	NNEW(emeini,double,6*mi[0]**ne);
+	NNEW(enerini,double,2*mi[0]**ne);}
+	      
+      /* replacing the appropriate boundary value by unity */
+	      
+      xbounact[iretain[i]-1]=1.;
+	      
+      results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
+	      elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
+	      ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
+	      prestr,iprestr,filab,eme,emn,een,iperturb,
+	      f,fn,nactdof,&iout,qa,vold,b,nodeboun,ndirboun,
+	      xbounact,nboun,ipompc,
+	      nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,
+	      accold,&bet,
+	      &gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
+	      xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
+	      ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
+	      xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
+	      ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
+	      nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,&reltime,
+	      &ne0,thicke,shcon,nshcon,
+	      sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
+	      mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
+	      islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
+	      inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
+	      itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
+	      islavelinv,autloc,irowtloc,jqtloc,&nboun2,
+	      ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
+	      labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
+	      &intscheme,physcon);
+	      
+      xbounact[iretain[i]-1]=0.;
+	      
+      SFREE(v);SFREE(stn);SFREE(inum);SFREE(stx);
+	      
+      if(strcmp1(&filab[261],"E   ")==0) SFREE(een);
+      if(strcmp1(&filab[2697],"ME  ")==0) SFREE(emn);
+      if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
+	      
+      SFREE(eei);if(*nener==1){SFREE(stiini);SFREE(emeini);SFREE(enerini);}
+	      
+      /* storing the internal forces in the substructure
+	 stiffness matrix */
+	      
+      for(j=0;j<nretain;j++){
+	submatrix[i*nretain+j]=fn[mt*(noderetain[j]-1)+ndirretain[j]];
+      }
+	      
+      SFREE(fn);
+	      
+    }
+
+    /* preCICE cleanup*/
+	  precicec_finalize();
+
+
+    /* cleanup */
+      
+    if(*neq>0){
+      if(*isolver==0){
+#ifdef SPOOLES
+	spooles_cleanup();
+#endif
+      }
+      else if(*isolver==7){
+#ifdef PARDISO
+	pardiso_cleanup(&neq[0],&symmetryflag,&inputformat);
+#endif
+      }
+      else if(*isolver==8){
+#ifdef PASTIX
+#endif
+      }
+    }
+      
+    SFREE(iretain);
+	  
+    FORTRAN(writesubmatrix,(submatrix,noderetain,ndirretain,&nretain,jobnamec,
+			    jmax));
+	  
+    SFREE(submatrix);SFREE(noderetain);SFREE(ndirretain);
+	  
+    SFREE(au);SFREE(ad);SFREE(b);
+      
+    SFREE(xbounact);SFREE(xforcact);SFREE(xloadact);SFREE(t1act);SFREE(ampli);
+    SFREE(xbodyact);
+
+    //    if(*nbody>0) SFREE(ipobody);
+
+    SFREE(xstiff);
+      
+    if(iglob!=0){SFREE(integerglob);SFREE(doubleglob);}
+      
+    return;
+
+
+  }else if(*nmethod!=0){
+
+    /* linear static applications */
+
+    if(*isolver==0){
+#ifdef SPOOLES
+      spooles(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,&symmetryflag,
+              &inputformat,&nzs[2]);
+#else
+      printf(" *ERROR in linstatic: the SPOOLES library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if((*isolver==2)||(*isolver==3)){
+      if(nasym>0){
+	printf(" *ERROR in nonlingeo: the iterative solver cannot be used for asymmetric matrices\n\n");
+	FORTRAN(stop,());
+      }
+      preiter(ad,&au,b,&icol,&irow,neq,nzs,isolver,iperturb);
+    }
+    else if(*isolver==4){
+#ifdef SGI
+      if(nasym>0){
+	printf(" *ERROR in nonlingeo: the SGI solver cannot be used for asymmetric matrices\n\n");
+	FORTRAN(stop,());
+      }
+      token=1;
+      sgi_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,token);
+#else
+      printf(" *ERROR in linstatic: the SGI library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==5){
+#ifdef TAUCS
+      if(nasym>0){
+	printf(" *ERROR in nonlingeo: the TAUCS solver cannot be used for asymmetric matrices\n\n");
+	FORTRAN(stop,());
+      }
+      tau(ad,&au,adb,aub,&sigma,b,icol,&irow,neq,nzs);
+#else
+      printf(" *ERROR in linstatic: the TAUCS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==7){
+#ifdef PARDISO
+      pardiso_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,
+		   &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+      printf(" *ERROR in linstatic: the PARDISO library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==8){
+#ifdef PASTIX
+      pastix_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,
+		  &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+      printf(" *ERROR in linstatic: the PASTIX library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+
+    /* saving of ad and au for sensitivity analysis */
+
+    for(i=0;i<*ntie;i++){
+      if(strcmp1(&tieset[i*243+80],"D")==0){
+	    
+	strcpy2(stiffmatrix,jobnamec,132);
+	strcat(stiffmatrix,".stm");
+	    
+	if((f1=fopen(stiffmatrix,"wb"))==NULL){
+	  printf(" *ERROR in linstatic: cannot open stiffness matrix file for writing...");
+	  exit(0);
+	}
+	    
+	/* storing the stiffness matrix */
+
+	/* nzs,irow,jq and icol have to be stored too, since the static analysis
+	   can involve contact, whereas in the sensitivity analysis contact is not
+	   taken into account while determining the structure of the stiffness
+	   matrix (in mastruct.c)
+	*/
+	    
+	if(fwrite(&nasym,sizeof(ITG),1,f1)!=1){
+	  printf(" *ERROR saving the symmetry flag to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(nzs,sizeof(ITG),3,f1)!=3){
+	  printf(" *ERROR saving the number of subdiagonal nonzeros to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(irow,sizeof(ITG),nzs[2],f1)!=nzs[2]){
+	  printf(" *ERROR saving irow to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(jq,sizeof(ITG),neq[1]+1,f1)!=neq[1]+1){
+	  printf(" *ERROR saving jq to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(icol,sizeof(ITG),neq[1],f1)!=neq[1]){
+	  printf(" *ERROR saving icol to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(ad,sizeof(double),neq[1],f1)!=neq[1]){
+	  printf(" *ERROR saving the diagonal of the stiffness matrix to the stiffness matrix file...");
+	  exit(0);
+	}
+	if(fwrite(au,sizeof(double),nzs[2],f1)!=nzs[2]){
+	  printf(" *ERROR saving the off-diagonal terms of the stiffness matrix to the tiffness matrix file...");
+	  exit(0);
+	}
+	fclose(f1);
+
+	break;
+      }
+    }
+    
+    SFREE(ad);SFREE(au);
+    if(iglob<0){SFREE(adb);SFREE(aub);}
+
+    /* calculating the displacements and the stresses and storing */
+    /* the results in frd format for each valid eigenmode */
+
+    NNEW(v,double,mt**nk);
+    NNEW(fn,double,mt**nk);
+    NNEW(stn,double,6**nk);
+    NNEW(inum,ITG,*nk);
+    NNEW(stx,double,6*mi[0]**ne);
+  
+    if(strcmp1(&filab[261],"E   ")==0) NNEW(een,double,6**nk);
+    if(strcmp1(&filab[2697],"ME  ")==0) NNEW(emn,double,6**nk);
+    if(strcmp1(&filab[522],"ENER")==0) NNEW(enern,double,*nk);
+    if(strcmp1(&filab[2175],"CONT")==0) NNEW(cdn,double,6**nk);
+
+    NNEW(eei,double,6*mi[0]**ne);
+    if(*nener==1){
+      NNEW(stiini,double,6*mi[0]**ne);
+      NNEW(emeini,double,6*mi[0]**ne);
+      NNEW(enerini,double,2*mi[0]**ne);}
+
+    results(co,nk,kon,ipkon,lakon,ne,v,stn,inum,stx,
+	    elcon,nelcon,rhcon,nrhcon,alcon,nalcon,alzero,ielmat,
+	    ielorien,norien,orab,ntmat_,t0,t1act,ithermal,
+	    prestr,iprestr,filab,eme,emn,een,iperturb,
+            f,fn,nactdof,&iout,qa,vold,b,nodeboun,ndirboun,xbounact,nboun,
+	    ipompc,
+	    nodempc,coefmpc,labmpc,nmpc,nmethod,cam,neq,veold,accold,&bet,
+            &gam,&dtime,&time,ttime,plicon,nplicon,plkcon,nplkcon,
+	    xstateini,xstiff,xstate,npmat_,epn,matname,mi,&ielas,&icmd,
+            ncmat_,nstate_,stiini,vini,ikboun,ilboun,ener,enern,emeini,
+            xstaten,eei,enerini,cocon,ncocon,set,nset,istartset,iendset,
+            ialset,nprint,prlab,prset,qfx,qfn,trab,inotr,ntrans,fmpc,
+	    nelemload,nload,ikmpc,ilmpc,istep,&iinc,springarea,&reltime,
+            &ne0,thicke,shcon,nshcon,
+            sideload,xloadact,xloadold,&icfd,inomat,pslavsurf,pmastsurf,
+            mortar,islavact,cdn,islavnode,nslavnode,ntie,clearini,
+	    islavsurf,ielprop,prop,energyini,energy,&kscale,iponoel,
+            inoel,nener,orname,&network,ipobody,xbodyact,ibody,typeboun,
+	    itiefac,tieset,smscale,&mscalmethod,nbody,t0g,t1g,
+	    islavelinv,autloc,irowtloc,jqtloc,&nboun2,
+	    ndirboun2,nodeboun2,xboun2,&nmpc2,ipompc2,nodempc2,coefmpc2,
+	    labmpc2,ikboun2,ilboun2,ikmpc2,ilmpc2,&mortartrafoflag,
+	    &intscheme,physcon);
+
+    SFREE(eei);
+    if(*nener==1){
+      SFREE(stiini);SFREE(emeini);SFREE(enerini);}
+
+    memcpy(&vold[0],&v[0],sizeof(double)*mt**nk);
+    memcpy(&sti[0],&stx[0],sizeof(double)*6*mi[0]*ne0);
+
+    ++*kode;
+
+    /* for cyclic symmetric sectors: duplicating the results */
+
+    if(*mcs>0){
+      ptime=*ttime+time;
+      frdcyc(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,kode,filab,een,t1act,
+	     fn,&ptime,epn,ielmat,matname,cs,mcs,nkon,enern,xstaten,
+	     nstate_,istep,&iinc,iperturb,ener,mi,output,ithermal,
+	     qfn,ialset,istartset,iendset,trab,inotr,ntrans,orab,
+	     ielorien,norien,sti,veold,&noddiam,set,nset,emn,thicke,
+	     jobnamec,&ne0,cdn,mortar,nmat,qfx,ielprop,prop);
+    }
+    else{
+      if(strcmp1(&filab[1044],"ZZS")==0){
+	NNEW(neigh,ITG,40**ne);
+	NNEW(ipneigh,ITG,*nk);
+      }
+      ptime=*ttime+time;
+      frd(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,
+	  kode,filab,een,t1act,fn,&ptime,epn,ielmat,matname,enern,xstaten,
+	  nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
+	  ntrans,orab,ielorien,norien,description,ipneigh,neigh,
+	  mi,stx,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
+	  cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
+	  thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,
+	  prop,sti);
+      if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
+    }
+
+    /* updating the .sta file */
+
+    iitsta=1;
+    FORTRAN(writesta,(istep,&iinc,&icutb,&iitsta,ttime,&time,&dtime));
+
+    SFREE(v);SFREE(stn);SFREE(inum);
+    SFREE(b);SFREE(stx);SFREE(fn);
+
+    if(strcmp1(&filab[261],"E   ")==0) SFREE(een);
+    if(strcmp1(&filab[2697],"ME  ")==0) SFREE(emn);
+    if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
+    if(strcmp1(&filab[2175],"CONT")==0) SFREE(cdn);
+
+  }
+  else {
+
+    /* error occurred in mafill: storing the geometry in frd format */
+
+    ++*kode;
+    NNEW(inum,ITG,*nk);for(k=0;k<*nk;k++) inum[k]=1;
+    if(strcmp1(&filab[1044],"ZZS")==0){
+      NNEW(neigh,ITG,40**ne);
+      NNEW(ipneigh,ITG,*nk);
+    }
+    ptime=*ttime+time;
+    frd(co,nk,kon,ipkon,lakon,ne,v,stn,inum,nmethod,
+	kode,filab,een,t1,fn,&ptime,epn,ielmat,matname,enern,xstaten,
+	nstate_,istep,&iinc,ithermal,qfn,&mode,&noddiam,trab,inotr,
+	ntrans,orab,ielorien,norien,description,ipneigh,neigh,
+	mi,sti,vr,vi,stnr,stni,vmax,stnmax,&ngraph,veold,ener,ne,
+	cs,set,nset,istartset,iendset,ialset,eenmax,fnr,fni,emn,
+	thicke,jobnamec,output,qfx,cdn,mortar,cdnr,cdni,nmat,ielprop,
+	prop,sti);
+    if(strcmp1(&filab[1044],"ZZS")==0){SFREE(ipneigh);SFREE(neigh);}
+    SFREE(inum);FORTRAN(stop,());
+
+  }
+
+  if(*mortar>-2){
+    if(ncont!=0){
+      *ne=ne0;
+      if(*nener==1) RENEW(ener,double,2*mi[0]**ne);
+      RENEW(ipkon,ITG,*ne);
+      RENEW(lakon,char,8**ne);
+      RENEW(kon,ITG,*nkon);
+      if(*norien>0){
+	RENEW(ielorien,ITG,mi[2]**ne);
+      }
+      RENEW(ielmat,ITG,mi[2]**ne);
+      SFREE(cg);SFREE(straight);
+      SFREE(imastop);SFREE(itiefac);SFREE(islavnode);SFREE(islavsurf);
+      SFREE(nslavnode);SFREE(iponoels);SFREE(inoels);SFREE(imastnode);
+      SFREE(nmastnode);SFREE(itietri);SFREE(koncont);SFREE(xnoels);
+      SFREE(springarea);SFREE(xmastnor);
+
+      if(*mortar==0){
+	SFREE(areaslav);
+      }else if(*mortar==1){
+	SFREE(pmastsurf);SFREE(ipe);SFREE(ime);SFREE(pslavsurf);
+	SFREE(islavact);SFREE(clearini);
+      }
+    }
+    mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
+    mpcinfo[3]=maxlenmpc;
+  }
+
+  /* updating the loading at the end of the step; 
+     important in case the amplitude at the end of the step
+     is not equal to one */
+
+  for(k=0;k<*nboun;++k){xbounold[k]=xbounact[k];}
+  for(k=0;k<*nforc;++k){xforcold[k]=xforcact[k];}
+  for(k=0;k<2**nload;++k){xloadold[k]=xloadact[k];}
+  for(k=0;k<7**nbody;k=k+7){xbodyold[k]=xbodyact[k];}
+  if(*ithermal==1){
+    for(k=0;k<*nk;++k){t1old[k]=t1act[k];}
+    for(k=0;k<*nk;++k){vold[mt*k]=t1act[k];}
+  }
+
+  SFREE(xbounact);SFREE(xforcact);SFREE(xloadact);SFREE(t1act);SFREE(ampli);
+  SFREE(xbodyact);
+
+  //  if(*nbody>0) SFREE(ipobody);
+
+  SFREE(xstiff);
+
+  if(iglob!=0){SFREE(integerglob);SFREE(doubleglob);}
+
+  *irowp=irow;*enerp=ener;*xstatep=xstate;*ipkonp=ipkon;*lakonp=lakon;
+  *konp=kon;*ielmatp=ielmat;*ielorienp=ielorien;*icolp=icol;
+
+  (*ttime)+=(*tper);
+ 
+  return;
 }

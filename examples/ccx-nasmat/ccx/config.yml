@@ -1,0 +1,9 @@
+participants:
+    macro_ccx:
+        interfaces:
+        - elements: Eall
+          patch: Eall
+          read-data: [conv_flag, stress1to3, stress4to6, cmat1, cmat2, cmat3, cmat4, cmat5, cmat6, cmat7]
+          write-data: [input_id, strain1to3, strain4to6]
+          
+precice-config-file: ../precice-config.xml
