@@ -1,0 +1,26 @@
+{
+    "micro_file_name": "ruc_nasmat",
+    "coupling_params": {
+        "config_file_name": "../precice-config.xml",
+        "macro_mesh_name": "Eall",
+        "read_data_names": {"input_id":"scalar", 
+                            "strain1to3": "vector", 
+                            "strain4to6": "vector"
+                            },
+        "write_data_names": {"conv_flag": "scalar",
+                            "stress1to3": "vector", 
+                            "stress4to6": "vector",
+                            "cmat1":"vector",
+                            "cmat2":"vector",
+                            "cmat3":"vector",
+                            "cmat4":"vector",
+                            "cmat5":"vector",
+                            "cmat6":"vector",
+                            "cmat7":"vector"
+                        }
+    },
+    "simulation_params": {
+        "macro_domain_bounds": [0, 10000, 0, 10000, 0, 100000],
+        "decomposition": [1, 1, 1]
+    }
+}

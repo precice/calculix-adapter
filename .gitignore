@@ -1,1 +1,15 @@
+.vscode
+
 bin
+
+# precice output files
+*precice-profiling*
+*precice-run*
+__pycache__
+
+# ccx output files
+*.12d
+*.cvg
+*.dat
+*.frd
+*.sta

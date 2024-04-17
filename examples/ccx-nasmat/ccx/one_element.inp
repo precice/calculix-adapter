@@ -1,0 +1,51 @@
+**
+**   Structure: One element test (Corner BC)
+**   Test objective: user beam element U1
+**
+*NODE, NSET=Nall
+1,    0.000,    1.000,    0.000 
+2,    0.000,    1.000,    1.000 
+3,    0.000,    0.000,    1.000 
+4,    0.000,    0.000,    0.000 
+5,    1.000,    1.000,    0.000 
+6,    1.000,    1.000,    1.000 
+7,    1.000,    0.000,    1.000 
+8,    1.000,    0.000,    0.000 
+*ELEMENT, TYPE=C3D8, ELSET=Eall
+     1,     1,     2,     3,     4,     5,     6,     7,     8
+*MATERIAL, NAME=EL
+*ELASTIC, TYPE=ANISOTROPIC
+1.85e5, 40.75, 269.36e2, 5.6e1, 4.07e1, 1.84e2, 0.0, 0.0 
+0.0, 1.36e2, 0.0, 0.0, 0.0, 0.0, 1.3e2, 0.0
+0.0, 0.0, 0.0,0.0, 135e0
+*SOLID SECTION,ELSET=Eall,MATERIAL=EL
+*NSET, NSET=CX
+    1, 2, 3, 4
+*NSET, NSET=CY
+    3, 4, 7, 8
+*NSET, NSET=CZ
+    2, 3, 6, 7
+*NSET, NSET=CXD
+    5, 6, 7, 8
+*BOUNDARY
+CX, 1
+*BOUNDARY
+CY, 2
+*BOUNDARY
+CZ, 3
+*STEP
+*STATIC, SOLVER=PARDISO
+*BOUNDARY
+CXD, 1,1, 0.1 
+*NODE PRINT,NSET=Nall
+U
+*EL PRINT,ELSET=Eall
+S
+*NODE FILE 
+U
+*EL FILE 
+S, E
+*END STEP
+
+
+
