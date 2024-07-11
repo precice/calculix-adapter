@@ -2,7 +2,7 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
-CCX_VERSION		= 2.21
+CCX_VERSION		= 2.20
 CCX             = $(CCX_ROOT)/ccx_$(CCX_VERSION)
 CCX_FLAGS       =  -DPARDISO -DMATRIXSTORAGE -DUSE_MT
 
