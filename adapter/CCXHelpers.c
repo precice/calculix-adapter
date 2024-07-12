@@ -125,19 +125,18 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
 
 void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData)
 {
- 
+
   int i, count, idx;
 
   // Loop through all element and respective gauss points
-  count=0;
-  for (i = 0; i < mi[0]*nelem; i++) {
-    idx = i*6+strainIdx;
-    strainData[count]      = eei[idx];
-    strainData[count+1]    = eei[idx+1];
-    strainData[count+2]    = eei[idx+2];
-    count = count + 3;
+  count = 0;
+  for (i = 0; i < mi[0] * nelem; i++) {
+    idx                   = i * 6 + strainIdx;
+    strainData[count]     = eei[idx];
+    strainData[count + 1] = eei[idx + 1];
+    strainData[count + 2] = eei[idx + 2];
+    count                 = count + 3;
   }
-
 }
 
 void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, double *displacements)
@@ -475,29 +474,29 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
 
 void setElementXstiff(int nelem, ITG *mi, double *cmatData, double *xstiff)
 {
-    printf("bbbefore setting xstiff\n");
+  printf("bbbefore setting xstiff\n");
 
-    // int i, count, j,xstiffSize, nSize;
-    // xstiffSize = 27;
-    // nSize = mi[0]*nelem;
-    // cidx = 15;
+  // int i, count, j,xstiffSize, nSize;
+  // xstiffSize = 27;
+  // nSize = mi[0]*nelem;
+  // cidx = 15;
 
-    printf("before setting xstiff\n");
-    for (int i = 0; i < mi[0]*nelem*27; i++) {
-      xstiff[i] = 1.0;
-    }
-    printf("after setting xstiff\n");
+  printf("before setting xstiff\n");
+  for (int i = 0; i < mi[0] * nelem * 27; i++) {
+    xstiff[i] = 1.0;
+  }
+  printf("after setting xstiff\n");
 
-    // // Loop through all element and respective gauss points
-    // count=0;
-    // for (i = 0; i < nSize; i++) {
-    //   j = i*xstiffSize+cidx;
-    //   printf("idx: %ld\n",j);
-    //   xstiff[j]      =  1.0; //cmatData[count];
-    //   xstiff[j+1]    =  1.0; //cmatData[count+1];
-    //   xstiff[j+2]    =  1.0; //cmatData[count+2];
-    //   count = count + 3;
-    // }
+  // // Loop through all element and respective gauss points
+  // count=0;
+  // for (i = 0; i < nSize; i++) {
+  //   j = i*xstiffSize+cidx;
+  //   printf("idx: %ld\n",j);
+  //   xstiff[j]      =  1.0; //cmatData[count];
+  //   xstiff[j+1]    =  1.0; //cmatData[count+1];
+  //   xstiff[j+2]    =  1.0; //cmatData[count+2];
+  //   count = count + 3;
+  // }
 }
 
 bool isSteadyStateSimulation(ITG *nmethod)
@@ -660,5 +659,3 @@ void unreachableError()
   printf("ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n");
   exit(EXIT_FAILURE);
 }
-
-

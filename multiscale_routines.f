@@ -41,13 +41,14 @@
 
 
 
-        SUBROUTINE PRECICE_MULTISCALE_SET_XSTIFF(MAX_NGP,
+        SUBROUTINE PRECICE_MULTISCALE_SET_XSTIFF(MI,
      &    INTPT, NUM_ELEM, pdata, XSTIFF)
 
         IMPLICIT NONE
 
         ! IO VARIABLES
-        INTEGER          :: MAX_NGP       ! MAXIMUM VALUE OF INTEGRATION POINT PER ELEMENT (MI[0])
+        INTEGER          :: MI(*)       ! MAXIMUM VALUE OF INTEGRATION POINT PER ELEMENT (MI[0])
+        INTEGER          :: MAX_NGP     ! MAXIMUM VALUE OF INTEGRATION POINT PER ELEMENT (MI[0])
         INTEGER          :: NUM_ELEM    ! NUMBER OF ELEMENTS
         INTEGER          :: INTPT       ! INTERCEPT ADDED TO XSTIFF
         REAL(8)          :: PDATA(:)    ! DATA RECEIVED FROM PRECICE
@@ -71,11 +72,11 @@
         ENDDO
 
         ! IF(INTPT == 19) THEN
-        DO I = 1, NUM_ELEM
-            DO J = 1, NGP_MAX
-                write(*,*) XSTIFF(1:3, J, I)
-            ENDDO
-        ENDDO
+        ! DO I = 1, NUM_ELEM
+        !    DO J = 1, NGP_MAX
+        !        write(*,*) XSTIFF(1:3, J, I)
+        !    ENDDO
+        ! ENDDO
         ! ENDIF
 
 
