@@ -3,7 +3,7 @@
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
 CCX_VERSION		= 2.20
-CCX             = $(CCX_ROOT)/ccx_$(CCX_VERSION)
+CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 CCX_FLAGS       =  -DPARDISO -DMATRIXSTORAGE -DUSE_MT
 
 ### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
@@ -85,11 +85,9 @@ include $(CCX)/Makefile.inc
 SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
-# SCCXC += nonlingeo_precice.c linstatic_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
-SCCXC += linstatic_precice.c CCXHelpers.c PreciceInterface.c
+SCCXC += nonlingeo_precice.c linstatic_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
+# SCCXC += linstatic_precice.c CCXHelpers.c PreciceInterface.c
 SCCXF += getflux.f getkdeltatemp.f multiscale_routines.f
-
-
 
 # Source files in this folder and in the adapter directory
 $(OBJDIR)/%.o : %.c
