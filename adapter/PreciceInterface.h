@@ -141,6 +141,7 @@ typedef struct SimulationData {
   int     nload;
   char *  sideload;
   double  nk;
+  double  ne; // new variable added
   ITG     mt;
   double *theta;
   double *dtheta;
@@ -235,6 +236,24 @@ void Precice_ReadIterationCheckpoint(SimulationData *sim, double *v);
  * @param v: CalculiX array with the temperature and displacement values
  */
 void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v);
+
+/**
+ * @brief Reads iteration checkpoint (in dyna_precice)
+ * @param sim: Structure with CalculiX data
+ * @param dofs: array containing the degrees of freedom in eigenspace
+ * @param derivatives: array containing the time derivatives (velocities) of the dofs
+ * @param nev: number of eigenvalues used (i.e. array size)
+ */
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev);
+
+/**
+ * @brief Writes iteration checkpoint
+ * @param sim: Structure with CalculiX data (in dyna_precice)
+ * @param dofs: array containing the degrees of freedom in eigenspace
+ * @param derivatives: array containing the time derivatives (velocities) of the dofs
+ * @param nev: number of eigenvalues used (i.e. array size)
+ */
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev);
 
 /**
  * @brief Reads the coupling data for all interfaces
