@@ -62,7 +62,7 @@ else
 	CC = mpicc
 endif
 
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -fallow-argument-mismatch
 # Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90
@@ -73,8 +73,8 @@ include $(CCX)/Makefile.inc
 SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
-SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
-SCCXF += getflux.f getkdeltatemp.f
+SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c linstatic_precice.c
+SCCXF += getflux.f getkdeltatemp.f getgausspointscoords.f getelementgausspointcoords.f getstrain.f multiscale_routines.f
 
 
 
