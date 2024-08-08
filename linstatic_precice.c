@@ -74,7 +74,6 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
                        ITG *istep, ITG *nmat, ITG *ielprop, double *prop, char *typeboun,
                        ITG *mortar, ITG *mpcinfo, double *tietol, ITG *ics,
                        char *orname, ITG *itempuser, double *t0g, double *t1g,
-                       ITG *jmax,
                        /* Adapter: Add variables for the participant name and the config file */
                        char *preciceParticipantName, char *configFilename)
 {
@@ -189,6 +188,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
   };
 
   /* preCICE Adapter: Initialize */
+  printf("configFilename: %s\n", configFilename);
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
   Precice_AdjustSolverTimestep(&simulationData);
 
@@ -843,7 +843,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
     for (i = 0; i < *ntie; i++) {
       if (strcmp1(&tieset[i * 243 + 80], "D") == 0) {
 
-        strcpy2(stiffmatrix, jobnamec, 132);
+        // strcpy2(stiffmatrix, jobnamec, 132);
         strcat(stiffmatrix, ".stm");
 
         if ((f1 = fopen(stiffmatrix, "wb")) == NULL) {
