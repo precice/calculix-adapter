@@ -52,7 +52,9 @@ enum CouplingDataType { TEMPERATURE,
                         POSITIONS,
                         PRESSURE,
                         MACRO_IP_ID,
-                        INPUT_ID,
+                        RVE_ID,
+                        MOD_ID,
+                        RUC_SIZE,
                         CONV_FLAG,
                         STRAIN1TO3,
                         STRAIN4TO6,
@@ -231,6 +233,16 @@ void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilbo
  * @param xforcIndices: output list of indices of the xforc array
  */
 void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilforc, int *xforcIndices);
+
+/**
+ * @brief Gets the strain values at each Gauss point of each element
+ * @param strainIdx: CalculiX variable for the index of the strain values
+ * @param mi: CalculiX variable for the number of integration points
+ * @param nelem: CalculiX variable for the number of elements
+ * @param eei: CalculiX array for the element integration information
+ * @param strainData: CalculiX array for the strain values
+ */
+void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData);
 
 /**
  * @brief Modifies the values of a DFLUX or FILM boundary condition

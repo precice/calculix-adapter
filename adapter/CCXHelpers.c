@@ -123,22 +123,6 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
   }
 }
 
-void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData)
-{
-
-  int i, count, idx;
-
-  // Loop through all element and respective gauss points
-  count = 0;
-  for (i = 0; i < mi[0] * nelem; i++) {
-    idx                   = i * 6 + strainIdx;
-    strainData[count]     = eei[idx];
-    strainData[count + 1] = eei[idx + 1];
-    strainData[count + 2] = eei[idx + 2];
-    count                 = count + 3;
-  }
-}
-
 void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, double *displacements)
 {
 
@@ -445,6 +429,34 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
   default:
     unreachableError();
     return -1;
+  }
+}
+
+void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData)
+{
+  int i, count, idx;
+
+  // Set strainData values to zero, because there is a nan value somewhere
+  count = 0;
+  for (i = 0; i < mi[0] * nelem; i++) {
+    idx = i * 6 + strainIdx;
+    printf("eei[%d]: %f\n", idx, eei[idx]);
+    printf("eei[%d]: %f\n", idx + 1, eei[idx + 1]);
+    printf("eei[%d]: %f\n", idx + 2, eei[idx + 2]);
+  }
+
+  // printf("Manually setting eei[10] to 0.0, because it is somehow -nan\n");
+
+  eei[10] = 0.0;
+
+  // Loop through all element and respective gauss points
+  count = 0;
+  for (i = 0; i < mi[0] * nelem; i++) {
+    idx                   = i * 6 + strainIdx;
+    strainData[count]     = eei[idx];
+    strainData[count + 1] = eei[idx + 1];
+    strainData[count + 2] = eei[idx + 2];
+    count                 = count + 3;
   }
 }
 
