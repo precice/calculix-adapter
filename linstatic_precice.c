@@ -181,10 +181,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       .fn      = fn,
       .cocon   = cocon,
       .ncocon  = ncocon,
-      .mi      = mi,
-      // .eei       = &eei,
-      // .stx       = &stx,
-      // .xstiff    = xstiff
+      .mi      = mi
   };
 
   /* preCICE Adapter: Initialize */
@@ -427,6 +424,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
   NNEW(stx, double, 6 * mi[0] * *ne);
   NNEW(inum, ITG, *nk);
   NNEW(eei, double, 6 * mi[0] * *ne);
+
   results(co, nk, kon, ipkon, lakon, ne, v, stn, inum, stx,
           elcon, nelcon, rhcon, nrhcon, alcon, nalcon, alzero, ielmat,
           ielorien, norien, orab, ntmat_, t0, t1act, ithermal,
@@ -452,10 +450,15 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
           &intscheme);
 
   /* preCICE Adapter: Multiscale checkpoint*/
-  simulationData.xstiff = &xstiff;
-  simulationData.eei    = &eei;
-  simulationData.stx    = &stx;
+  simulationData.xstiff = xstiff;
+  simulationData.eei    = eei;
+  simulationData.stx    = stx;
+
   PreciceInterface_MultiscaleCheckpoint(&simulationData);
+
+  simulationData.eei = NULL;
+  simulationData.stx = NULL;
+  simulationData.xstiff = NULL;
 
   SFREE(v);
   SFREE(fn);
@@ -468,10 +471,12 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
     iperturb[0] = iperturbsav;
   }
 
+
   /* determining the system matrix and the external forces */
 
   NNEW(ad, double, *neq);
   NNEW(fext, double, *neq);
+
 
   if (*nmethod == 11) {
 
@@ -699,6 +704,25 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
               &intscheme);
 
       xbounact[iretain[i] - 1] = 0.;
+
+      /* preCICE Adapter: Multiscale checkpoint*/
+      simulationData.xstiff = xstiff;
+      simulationData.eei    = eei;
+      simulationData.stx    = stx;
+
+      // for (k = 0; k < 6 * mi[0] * *ne; k++) {
+      //   printf("eei[%d]: %f\n", k, eei[k]);
+      // }
+
+      PreciceInterface_MultiscaleCheckpoint(&simulationData);
+
+      // for (k = 0; k < 6 * mi[0] * *ne; k++) {
+      //   printf("stx[%d]: %f\n", k, stx[k]);
+      // }
+
+      simulationData.eei = NULL;
+      simulationData.stx = NULL;
+      simulationData.xstiff = NULL;
 
       SFREE(v);
       SFREE(stn);
@@ -955,6 +979,25 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       SFREE(emeini);
       SFREE(enerini);
     }
+
+    /* preCICE Adapter: Multiscale checkpoint*/
+      simulationData.xstiff = xstiff;
+      simulationData.eei    = eei;
+      simulationData.stx    = stx;
+
+      // for (k = 0; k < 6 * mi[0] * *ne; k++) {
+      //   printf("eei[%d]: %f\n", k, eei[k]);
+      // }
+
+      PreciceInterface_MultiscaleCheckpoint(&simulationData);
+
+      // for (k = 0; k < 6 * mi[0] * *ne; k++) {
+      //   printf("stx[%d]: %f\n", k, stx[k]);
+      // }
+
+      simulationData.eei = NULL;
+      simulationData.stx = NULL;
+      simulationData.xstiff = NULL;
 
     memcpy(&vold[0], &v[0], sizeof(double) * mt * *nk);
     memcpy(&sti[0], &stx[0], sizeof(double) * 6 * mi[0] * ne0);

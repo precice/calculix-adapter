@@ -282,88 +282,86 @@ void Precice_ReadCouplingData(SimulationData *sim)
 
       case CMAT1:
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
-        idx = 1;
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        //for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-        //     printf( " %i, %e, %e, %e \n", k, interfaces[i]->elementIPVectorData[k*3], interfaces[i]->elementIPVectorData[k*3+1], interfaces[i]->elementIPVectorData[k*3+2]);
-        //}
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                idx,
-                                                interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 0;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 1 coupling data.\n");
         break;
 
       case CMAT2:
-        // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
-        idx = 4;
+        // // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 3;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 2 coupling data.\n");
         break;
 
       case CMAT3:
-        // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
-        idx = 7;
+        // // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 6;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 3 coupling data.\n");
         break;
 
       case CMAT4:
-        // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
-        idx = 10;
+        // // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 9;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 4 coupling data.\n");
         break;
 
       case CMAT5:
-        // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
-        idx = 13;
+        // // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 12;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 5 coupling data.\n");
         break;
 
       case CMAT6:
-        // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
-        idx = 16;
+        // // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 15;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 6 coupling data.\n");
         break;
 
       case CMAT7:
-        // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
-        idx = 19;
+        // // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_xstiff, (sim->mi,
-                                                &idx,
-                                                &interfaces[i]->numElements,
-                                                interfaces[i]->elementIPVectorData,
-                                                sim->xstiff));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idx                  = k * 27 + 18;
+          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
+          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
+          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+        }
         printf("Reading MATERIAL TANGENT 7 coupling data.\n");
         break;
 
@@ -670,6 +668,9 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->xforcIndices          = NULL;
 
   // Initialize element data points as NULL
+  interface->elementMeshName     = NULL;
+  interface->elemIPID            = NULL;
+  interface->elemIPCoordinates   = NULL;
   interface->elementIPScalarData = NULL;
   interface->elementIPVectorData = NULL;
 
@@ -1139,11 +1140,18 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->xloadIndices);
   free(preciceInterface->xforcIndices);
 
+  // Volumteric element related data
+  free(preciceInterface->elemIPCoordinates);
+  free(preciceInterface->elemIPID);
+  free(preciceInterface->elementIPScalarData);
+  free(preciceInterface->elementIPVectorData);
+
   freeMapping(preciceInterface->mappingQuasi2D3D);
 
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
+  free(preciceInterface->elementMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);

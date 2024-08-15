@@ -61,8 +61,8 @@ typedef struct PreciceInterface {
   double *nodeVectorData;   // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
-  double *elementIPScalarData;
-  double *elementIPVectorData;
+  double *elementIPScalarData; // Scalar quantities at the integration points
+  double *elementIPVectorData; // Vector quantities at the integration points
 
   // preCICE mesh name
   char *couplingMeshName;
