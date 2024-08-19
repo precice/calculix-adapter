@@ -651,11 +651,11 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
   interface->faceIDs               = NULL;
+  interface->nodeIDs               = NULL;
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
   interface->nodeCoordinates       = NULL;
   interface->node2DCoordinates     = NULL;
-  interface->nodeIDs               = NULL;
   interface->mapping2D3D           = NULL;
   interface->preciceNodeIDs        = NULL;
   interface->nodeScalarData        = NULL;
@@ -767,25 +767,40 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
-  for (int j = 0; j < interface->numElements; j++) {
-    printf(" %d, element id: %d \n", j, interface->elementIDs[j]);
-  }
-
   // Find guass point coordinates of the element -> Serves as mesh for data transfer
-  int numElt                   = interface->numElements;
-  interface->numIPTotal        = 8 * interface->numElements; // Gauss point mesh coordinate -Each element 8 gauss points
+  interface->numIPTotal        = 8 * interface->numElements; // Gauss point mesh coordinate - each element 8 gauss points
   interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
   interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
 
   for (int j = 0; j < interface->numIPTotal; j++) {
-    interface->elemIPID[j]                  = j;
-    interface->elemIPCoordinates[j * 3]     = j;
-    interface->elemIPCoordinates[j * 3 + 1] = 0.0;
-    interface->elemIPCoordinates[j * 3 + 2] = 0.0;
+    interface->elemIPID[j] = j;
   }
 
-  // getElementGaussPointCoordinates(interface->numElements, interface->numIPTotal, interface->elementIDs, sim->co,
-  //                                 sim->kon, sim->lakon, sim->ipkon, interface->elemIPID, interface->elemIPCoordinates);
+  //getElementGaussPointCoordinates(interface->numElements, interface->numIPTotal, interface->elementIDs, sim->co,
+  //                                sim->kon, sim->lakon, sim->ipkon, interface->elemIPID, interface->elemIPCoordinates);
+
+  int *elem_ids = malloc(interface->numElements * sizeof(ITG));
+
+  printf("num elements: %d\n", interface->numElements);
+
+  int numElements = interface->numElements;
+
+  FORTRAN(getelementgausspointcoords, (&numElements,
+                                       interface->numIPTotal,
+                                       interface->elementIDs,
+                                       sim->co,
+                                       sim->lakon,
+                                       sim->kon,
+                                       sim->ipkon,
+                                       elem_ids,
+                                       interface->elemIPCoordinates));
+
+  free(elem_ids);
+
+  // print element coordinates
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    printf(" %d, element coordinates: %f, %f, %f \n", j, interface->elemIPCoordinates[j * 3], interface->elemIPCoordinates[j * 3 + 1], interface->elemIPCoordinates[j * 3 + 2]);
+  }
 
   precicec_setMeshVertices(interface->elementMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
@@ -1127,9 +1142,11 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->writeData);
   free(preciceInterface->elementIDs);
   free(preciceInterface->faceIDs);
+  free(preciceInterface->nodeIDs);
   free(preciceInterface->preciceFaceCenterIDs);
   free(preciceInterface->faceCenterCoordinates);
   free(preciceInterface->nodeCoordinates);
+  free(preciceInterface->node2DCoordinates);
   free(preciceInterface->preciceNodeIDs);
   free(preciceInterface->nodeScalarData);
   free(preciceInterface->node2DScalarData);
@@ -1146,12 +1163,15 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->elementIPScalarData);
   free(preciceInterface->elementIPVectorData);
 
+  // Quasi 2D-3D coupling
+  free(preciceInterface->mapping2D3D);
   freeMapping(preciceInterface->mappingQuasi2D3D);
 
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
   free(preciceInterface->elementMeshName);
+  free(preciceInterface->couplingMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);
@@ -1177,6 +1197,10 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->materialTangent5Data);
   free(preciceInterface->materialTangent6Data);
   free(preciceInterface->materialTangent7Data);
+  free(preciceInterface->rveid);
+  free(preciceInterface->modid);
+  free(preciceInterface->rucsize);
+  free(preciceInterface->conv);
 }
 
 void PreciceInterface_MultiscaleCheckpoint(SimulationData *sim)
@@ -1187,10 +1211,10 @@ void PreciceInterface_MultiscaleCheckpoint(SimulationData *sim)
     // Write strain data
     Precice_WriteCouplingData(sim);
 
-    // Advance time
-    Precice_Advance(sim);
-
     // Read stress, material tangent data
     Precice_ReadCouplingData(sim);
+
+    // Advance time
+    Precice_Advance(sim);
   }
 }

@@ -242,19 +242,17 @@
 
          implicit none
 
-
          !Input/Output variables
-         integer     :: NELEM             ! Number of elements
-         integer     :: NGP               ! Total number of elements (nelem * 8)
-         integer     :: ELEM_IDS(*)       ! Element Ids - Need to increment by 1 for C->Fortran conversion
-         real(8)     :: CO(3,*)           ! Nodal coordinates of all nodes
+         integer     :: NELEM            ! Number of elements
+         integer     :: NGP              ! Total number of elements (nelem * 8)
+         integer     :: ELEM_IDS(*)      ! Element IDs
+         real(8)     :: CO(3,*)          ! Nodal coordinates of all nodes
          character(8):: LAKON(*)
          integer     :: KON(*)
          integer     :: IPKON(*)
 
-         integer     :: ELEM_GP_ID(*)        ! GP ID
-         real        :: ELEM_GP_COORD(*)   ! GP coords
-
+         integer     :: ELEM_GP_ID(*)    ! GP ID
+         real        :: ELEM_GP_COORD(*) ! GP coords
 
          ! !Internal variables
          INTEGER(4)     :: IEL, EL_ID, INDEXE, I,J,K,L, KONL(8), GP_ID
@@ -262,14 +260,20 @@
          CHARACTER(8)   :: LAKONL
          REAL(8)        :: XL(3,8), XI, ET, ZE, xsj,shp(4,20)
 
-
          include "gauss.f"
 
          data iflag /1/
 
+         WRITE(*,*) "STEP 1"
+
+         WRITE(*,*) "NELEM: ", NELEM
+
          GP_TOT = 1
          DO IEL = 1, NELEM
+            WRITE(*,*) "IEL: ", IEL
             EL_ID = ELEM_IDS(IEL)
+
+            WRITE(*,*) "EL_ID: ", EL_ID
 
             LAKONL=LAKON(EL_ID)
             INDEXE=ipkon(EL_ID)
@@ -286,7 +290,7 @@
                enddo
             enddo
 
-            ! Loop through gauss points fo each element
+            ! Loop through gauss points of each element
             DO GP_ID = 1,8
                ELEM_GP_ID(GP_TOT) = GP_TOT-1
 
@@ -300,37 +304,31 @@
 
                ! GAUSS POINT COORDINATES
                
-   !             do k=1,3
-   !                do l=1,8
-   !                   ELEM_GP_COORD(k,GP_TOT)=ELEM_GP_COORD(k,GP_TOT)
-   !   &                                        +xl(k,l)*shp(4,l)
-   !                enddo
-   !             enddo
+               !do k=1,3
+               !   do l=1,8
+               !      ELEM_GP_COORD(k*l)=ELEM_GP_COORD(k*l)
+   !  &                                        +xl(k,l)*shp(4,l)
+               !   enddo
+               !enddo
                ELEM_GP_COORD((GP_TOT-1)*3+1) = GP_TOT-1
                ! ELEM_GP_COORD(1,GP_TOT)=GP_TOT-1
-         write(*,*) ELEM_GP_ID(GP_TOT), ELEM_GP_COORD((GP_TOT-1)*3+1)
 
                GP_TOT = GP_TOT+1
-               
-               
+                             
             ENDDO
-            
-
-
-
-
-
-
-
-
 
          ENDDO
 
+         write(*,*) "ELEMENT COORDS IN FORTRAN"
+         write(*,*) "========================="
+         GP_TOT = 1
+         do iel = 1, NELEM
+            do j = 1, 8
+         write(*,*) ELEM_GP_ID(GP_TOT), ELEM_GP_COORD((GP_TOT-1)*3+1)
+               GP_TOT = GP_TOT+1
+            enddo
+         enddo
 
          RETURN
 
       end subroutine getelementgausspointcoords
-
-      
-      
-

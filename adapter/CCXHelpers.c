@@ -93,11 +93,15 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
   }
 }
 
-//, d
-void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord)
-{
-  // FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
-}
+// void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord)
+// {
+//   FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
+
+//   printf("Element coordinates inside CCXHelpers.c\n");
+//   for (int j = 0; j < numGPTotal; j++) {
+//     printf(" %d, element coordinates: %f, %f, %f \n", j, gp_coord[j * 3], gp_coord[j * 3 + 1], gp_coord[j * 3 + 2]);
+//   }
+// }
 
 void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *temperatures)
 {
@@ -500,33 +504,6 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
       xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
     }
   }
-}
-
-void setElementXstiff(int nelem, ITG *mi, double *cmatData, double *xstiff)
-{
-  printf("bbbefore setting xstiff\n");
-
-  // int i, count, j,xstiffSize, nSize;
-  // xstiffSize = 27;
-  // nSize = mi[0]*nelem;
-  // cidx = 15;
-
-  printf("before setting xstiff\n");
-  for (int i = 0; i < mi[0] * nelem * 27; i++) {
-    xstiff[i] = 1.0;
-  }
-  printf("after setting xstiff\n");
-
-  // // Loop through all element and respective gauss points
-  // count=0;
-  // for (i = 0; i < nSize; i++) {
-  //   j = i*xstiffSize+cidx;
-  //   printf("idx: %ld\n",j);
-  //   xstiff[j]      =  1.0; //cmatData[count];
-  //   xstiff[j+1]    =  1.0; //cmatData[count+1];
-  //   xstiff[j+2]    =  1.0; //cmatData[count+2];
-  //   count = count + 3;
-  // }
 }
 
 bool isSteadyStateSimulation(ITG *nmethod)
