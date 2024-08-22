@@ -108,6 +108,16 @@ ITG getNumSetElements(ITG setID, ITG *istartset, ITG *iendset);
 void getSurfaceElementsAndFaces(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements, ITG *faces);
 
 /**
+ * @brief Gets the element IDs given a set ID
+ * @param setID: input set id
+ * @param ialset: CalculiX variable
+ * @param istartset: CalculiX variable
+ * @param iendset: CalculiX variable
+ * @param elements: output element IDs
+ */
+void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements);
+
+/**
  * @brief Gets the coordinates of a list of input node IDs
  * @param nodes: input node IDs
  * @param numNodes: number of input nodes

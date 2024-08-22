@@ -93,16 +93,6 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
   }
 }
 
-// void getElementGaussPointCoordinates(int numElements, int numGPTotal, int *elementIDs, double *co, ITG *kon, char *lakon, ITG *ipkon, int *gp_id, double *gp_coord)
-// {
-//   FORTRAN(getelementgausspointcoords, (&numElements, &numGPTotal, elementIDs, co, &lakon, kon, ipkon, gp_id, gp_coord));
-
-//   printf("Element coordinates inside CCXHelpers.c\n");
-//   for (int j = 0; j < numGPTotal; j++) {
-//     printf(" %d, element coordinates: %f, %f, %f \n", j, gp_coord[j * 3], gp_coord[j * 3 + 1], gp_coord[j * 3 + 2]);
-//   }
-// }
-
 void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *temperatures)
 {
 
