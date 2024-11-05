@@ -284,6 +284,13 @@ void Precice_ReadCouplingData(SimulationData *sim)
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
 
+        printf("Reading MATERIAL TANGENT 1 coupling data.\n");
+
+        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+        //   idx                  = k * 27 + 0;
+        //   printf("idx: %d, read stiffness: %f, %f, %f\n", idx, interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
+        // }
+
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 0;
           sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
@@ -294,7 +301,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT2:
-        // // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
+        // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 3;
@@ -306,7 +313,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT3:
-        // // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
+        // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 6;
@@ -318,7 +325,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT4:
-        // // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
+        // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 9;
@@ -330,7 +337,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT5:
-        // // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
+        // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 12;
@@ -342,7 +349,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT6:
-        // // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
+        // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 15;
@@ -354,7 +361,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
 
       case CMAT7:
-        // // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
+        // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 18;
@@ -588,14 +595,14 @@ void Precice_WriteCouplingData(SimulationData *sim)
       case STRAIN1TO3:
         idx = 0;
         getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
-        //printf("strain1to3 values: %d\n", interfaces[i]->elementIPVectorData[0]);
+        // printf("strain1to3 values: %d\n", interfaces[i]->elementIPVectorData[0]);
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
         printf("Writing STRAIN1TO3 coupling data.\n");
         break;
       case STRAIN4TO6:
         idx = 3;
         getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
-        //printf("strain4to6 values: %d\n", interfaces[i]->elementIPVectorData[0]);
+        // printf("strain4to6 values: %d\n", interfaces[i]->elementIPVectorData[0]);
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
         printf("Writing STRAIN4TO6 coupling data.\n");
         break;
@@ -693,18 +700,18 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->rveid                  = NULL;
   interface->modid                  = NULL;
   interface->rucsize                = NULL;
-
-  interface->strain1to3Data       = NULL;
-  interface->strain4to6Data       = NULL;
-  interface->stress1to3Data       = NULL;
-  interface->stress4to6Data       = NULL;
-  interface->materialTangent1Data = NULL;
-  interface->materialTangent2Data = NULL;
-  interface->materialTangent3Data = NULL;
-  interface->materialTangent4Data = NULL;
-  interface->materialTangent5Data = NULL;
-  interface->materialTangent6Data = NULL;
-  interface->materialTangent7Data = NULL;
+  interface->conv                   = NULL;
+  interface->strain1to3Data         = NULL;
+  interface->strain4to6Data         = NULL;
+  interface->stress1to3Data         = NULL;
+  interface->stress4to6Data         = NULL;
+  interface->materialTangent1Data   = NULL;
+  interface->materialTangent2Data   = NULL;
+  interface->materialTangent3Data   = NULL;
+  interface->materialTangent4Data   = NULL;
+  interface->materialTangent5Data   = NULL;
+  interface->materialTangent6Data   = NULL;
+  interface->materialTangent7Data   = NULL;
 
   // Check if quasi 2D-3D coupling needs to be implemented
   if (interface->dim == 2) {
@@ -716,8 +723,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->dimCCX    = interface->dim;
   }
 
-  //Mapping Type
-  // The patch identifies the set used as interface in Calculix
+  // Mapping Type
+  //  The patch identifies the set used as interface in Calculix
   interface->name = strdup(config->patchName);
   // Calculix needs to know if nearest-projection mapping is implemented. config->map = 1 is for nearest-projection, config->map = 0 is for everything else
   interface->mapNPType = config->map;
@@ -757,12 +764,9 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
 {
   printf("Entering ConfigureElementsMesh \n");
-  char *elementSetName    = interface->name; //toFaceSetName(interface->name);
+  char *elementSetName    = interface->name; // toFaceSetName(interface->name);
   interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
   interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
-
-  printf("element set id : %d\n", interface->elementSetID);
-  printf("num elements : %d\n", interface->numElements);
 
   interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
@@ -776,38 +780,27 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
     interface->elemIPID[j] = j;
   }
 
-  //getElementGaussPointCoordinates(interface->numElements, interface->numIPTotal, interface->elementIDs, sim->co,
-  //                                sim->kon, sim->lakon, sim->ipkon, interface->elemIPID, interface->elemIPCoordinates);
+  int    numElements = interface->numElements;
+  int    numIPTotal  = interface->numIPTotal;
+  char **lakon       = sim->lakon;
 
-  int *elem_ids = malloc(interface->numElements * sizeof(ITG));
-
-  printf("num elements: %d\n", interface->numElements);
-
-  int numElements = interface->numElements;
-
+  // Directly call Fortran function from getelementgausspointcoords.f
   FORTRAN(getelementgausspointcoords, (&numElements,
-                                       interface->numIPTotal,
+                                       &numIPTotal,
                                        interface->elementIDs,
                                        sim->co,
-                                       sim->lakon,
+                                       &lakon,
                                        sim->kon,
                                        sim->ipkon,
-                                       elem_ids,
+                                       interface->elemIPID,
                                        interface->elemIPCoordinates));
-
-  free(elem_ids);
-
-  // print element coordinates
-  for (int j = 0; j < interface->numIPTotal; j++) {
-    printf(" %d, element coordinates: %f, %f, %f \n", j, interface->elemIPCoordinates[j * 3], interface->elemIPCoordinates[j * 3 + 1], interface->elemIPCoordinates[j * 3 + 2]);
-  }
 
   precicec_setMeshVertices(interface->elementMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  //printf("Entering ConfigureFaceCentersMesh \n");
+  // printf("Entering ConfigureFaceCentersMesh \n");
   char *faceSetName      = toFaceSetName(interface->name);
   interface->faceSetID   = getSetID(faceSetName, sim->set, sim->nset);
   interface->numElements = getNumSetElements(interface->faceSetID, sim->istartset, sim->iendset);
@@ -844,11 +837,11 @@ void sendFaceCentersVertices(PreciceInterface *interface)
 
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim)
 {
-  //printf("Entering configureNodesMesh \n");
+  // printf("Entering configureNodesMesh \n");
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; //Lucia: make a copy
+  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
 
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);
@@ -875,8 +868,8 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   }
 
   if (interface->nodesMeshName != NULL) {
-    //printf("nodesMeshName is not null \n");
-    // interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
+    // printf("nodesMeshName is not null \n");
+    //  interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
     if (isQuasi2D3D(interface->quasi2D3D)) {
       interface->mappingQuasi2D3D = createMapping(interface->nodeCoordinates, interface->numNodes, interface->nodesMeshName);
     } else {
@@ -1165,13 +1158,17 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
 
   // Quasi 2D-3D coupling
   free(preciceInterface->mapping2D3D);
-  freeMapping(preciceInterface->mappingQuasi2D3D);
+  if (preciceInterface->quasi2D3D) {
+    freeMapping(preciceInterface->mappingQuasi2D3D);
+  }
 
+  printf("Freeing mesh names\n");
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
   free(preciceInterface->elementMeshName);
-  free(preciceInterface->couplingMeshName);
+
+  printf("Freeing data names\n");
 
   // Data names
   free(preciceInterface->displacementDeltas);
@@ -1201,20 +1198,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->modid);
   free(preciceInterface->rucsize);
   free(preciceInterface->conv);
-}
 
-void PreciceInterface_MultiscaleCheckpoint(SimulationData *sim)
-{
-
-  if (Precice_IsCouplingOngoing()) {
-
-    // Write strain data
-    Precice_WriteCouplingData(sim);
-
-    // Read stress, material tangent data
-    Precice_ReadCouplingData(sim);
-
-    // Advance time
-    Precice_Advance(sim);
-  }
+  printf("Freed all data\n");
 }

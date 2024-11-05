@@ -28,32 +28,32 @@ typedef struct PreciceInterface {
   // Interface nodes
   int          numNodes;
   int          num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
-  int *        nodeIDs;
-  int *        mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
+  int         *nodeIDs;
+  int         *mapping2D3D; // Node IDs to filter out 2D place in quasi 2D-3D coupling
   Mapping2D3D *mappingQuasi2D3D;
-  double *     nodeCoordinates;
-  double *     node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
+  double      *nodeCoordinates;
+  double      *node2DCoordinates; // 2D coordinates for quasi 2D-3D coupling
   int          nodeSetID;
-  int *        preciceNodeIDs;
+  int         *preciceNodeIDs;
   int          nodesMeshID;
-  char *       nodesMeshName;
+  char        *nodesMeshName;
 
   // Interface face elements
   int     numElements;
-  int *   elementIDs;
-  int *   faceIDs;
+  int    *elementIDs;
+  int    *faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
-  char *  faceCentersMeshName;
-  int *   preciceFaceCenterIDs;
+  char   *faceCentersMeshName;
+  int    *preciceFaceCenterIDs;
 
   // Interface volumetric elements
   int     elementMeshID;
-  char *  elementMeshName;
+  char   *elementMeshName;
   int     elementSetID;
   int     numIPTotal;
   double *elemIPCoordinates;
-  int *   elemIPID;
+  int    *elemIPID;
 
   // Arrays to store the coupling data
   double *nodeScalarData;
@@ -124,44 +124,44 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
-  ITG *   ialset;
-  ITG *   ielmat;
-  ITG *   istartset;
-  ITG *   iendset;
-  char ** lakon;
-  ITG *   kon;
-  ITG *   ipkon;
+  ITG    *ialset;
+  ITG    *ielmat;
+  ITG    *istartset;
+  ITG    *iendset;
+  char  **lakon;
+  ITG    *kon;
+  ITG    *ipkon;
   ITG     nset;
-  char *  set;
+  char   *set;
   double *co;
   ITG     nboun;
-  ITG     nforc; //total number of forces
-  ITG *   ikboun;
-  ITG *   ikforc; //the DoFs are all stored here in an array in numerical order
-  ITG *   ilboun;
-  ITG *   ilforc; //number of the force is stored here
-  ITG *   nelemload;
+  ITG     nforc; // total number of forces
+  ITG    *ikboun;
+  ITG    *ikforc; // the DoFs are all stored here in an array in numerical order
+  ITG    *ilboun;
+  ITG    *ilforc; // number of the force is stored here
+  ITG    *nelemload;
   int     nload;
-  char *  sideload;
+  char   *sideload;
   double  nk;
   double  ne; // new variable added
   ITG     mt;
   double *theta;
   double *dtheta;
   double *tper;
-  ITG *   nmethod;
+  ITG    *nmethod;
   double *xload;
-  double *xforc; //scalar value of the force in one direction
+  double *xforc; // scalar value of the force in one direction
   double *xboun;
-  ITG *   ntmat_;
+  ITG    *ntmat_;
   double *vold;
   double *veold;
-  double *fn; //values of forces read from calculix
+  double *fn; // values of forces read from calculix
   double *cocon;
-  ITG *   ncocon;
-  ITG *   mi;
-  ITG *   nea;    // element bounds in each thread - start
-  ITG *   neb;    // element bounds in each thread - end
+  ITG    *ncocon;
+  ITG    *mi;
+  ITG    *nea;    // element bounds in each thread - start
+  ITG    *neb;    // element bounds in each thread - end
   double *eei;    // Strain values for multiscale
   double *stx;    // Stress values for multiscale
   double *xstiff; // Strain values for multiscale
@@ -289,6 +289,13 @@ void Precice_FreeData(SimulationData *sim);
  * @param config
  */
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
+
+/**
+ * @brief Configures the elements mesh and calls setMeshVertices on preCICE
+ * @param interface
+ * @param sim
+ */
+void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim);
 
 /**
  * @brief Configures the face centers mesh and calls setMeshVertices on preCICE

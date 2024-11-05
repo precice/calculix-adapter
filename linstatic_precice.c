@@ -449,16 +449,20 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
           labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
           &intscheme);
 
-  /* preCICE Adapter: Multiscale checkpoint*/
   simulationData.xstiff = xstiff;
   simulationData.eei    = eei;
   simulationData.stx    = stx;
 
-  printf("Before PreciceInterface_MultiscaleCheckpoint call (1)\n");
+  if (Precice_IsCouplingOngoing()) {
+    printf("Write coupling data\n");
+    Precice_WriteCouplingData(&simulationData);
 
-  PreciceInterface_MultiscaleCheckpoint(&simulationData);
+    printf("Advancing the coupling\n");
+    Precice_Advance(&simulationData);
 
-  printf("After PreciceInterface_MultiscaleCheckpoint call (1)\n");
+    printf("Read the coupling\n");
+    Precice_ReadCouplingData(&simulationData);
+  }
 
   simulationData.eei = NULL;
   simulationData.stx = NULL;
@@ -526,9 +530,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
     if (iglob < 0) {
       mass[0] = 1;
       NNEW(adb, double, *neq);
-      printf("adb is allocated\n");
       NNEW(aub, double, nzs[1]);
-      printf("aub is allocated\n");
     }
   }
 
@@ -710,21 +712,6 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
 
       xbounact[iretain[i] - 1] = 0.;
 
-      /* preCICE Adapter: Multiscale checkpoint*/
-      simulationData.xstiff = xstiff;
-      simulationData.eei    = eei;
-      simulationData.stx    = stx;
-
-      printf("Before PreciceInterface_MultiscaleCheckpoint call (2)\n");
-
-      PreciceInterface_MultiscaleCheckpoint(&simulationData);
-
-      printf("After PreciceInterface_MultiscaleCheckpoint call (2)\n");
-
-      simulationData.eei = NULL;
-      simulationData.stx = NULL;
-      simulationData.xstiff = NULL;
-
       SFREE(v);
       SFREE(stn);
       SFREE(inum);
@@ -806,26 +793,11 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
     return;
 
   } else if (*nmethod != 0) {
-
     /* linear static applications */
-    printf("DEBUGGING STEP 1\n");
+    printf("Solve the linear static problem\n");
 
     if (*isolver == 0) {
 #ifdef SPOOLES
-      printf("Before spooles\n");
-      printf("ad[0] = %f\n", ad[0]);
-      printf("au[0] = %f\n", au[0]);
-      //printf("adb[0] = %f\n", adb[0]);
-      //printf("aub[0] = %f\n", aub[0]);
-      printf("sigma = %f\n", sigma);
-      printf("b[0] = %f\n", b[0]);
-      printf("icol[0] = %d\n", icol[0]);
-      printf("irow[0] = %d\n", irow[0]);
-      printf("neq[0] = %d\n", neq[0]);
-      printf("nzs[0] = %d\n", nzs[0]);
-      printf("symmetryflag = %d\n", symmetryflag);
-      printf("inputformat = %d\n", inputformat);
-      printf("nzs[2] = %d\n", nzs[2]);
       spooles(ad, au, adb, aub, &sigma, b, icol, irow, neq, nzs, &symmetryflag,
               &inputformat, &nzs[2]);
       printf("After spooles\n");
@@ -999,22 +971,25 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       SFREE(enerini);
     }
 
-    /* preCICE Adapter: Multiscale checkpoint*/
     simulationData.xstiff = xstiff;
     simulationData.eei    = eei;
     simulationData.stx    = stx;
 
-    printf("Before PreciceInterface_MultiscaleCheckpoint call (3)\n");
+    if (Precice_IsCouplingOngoing()) {
+      printf("Write coupling data\n");
+      Precice_WriteCouplingData(&simulationData);
 
-    PreciceInterface_MultiscaleCheckpoint(&simulationData);
+      printf("Advance coupling\n");
+      Precice_Advance(&simulationData);
 
-    printf("After PreciceInterface_MultiscaleCheckpoint call (3)\n");
+      // Last read command is not necessary as the data read is never used.
+      //printf("Read coupling data\n");
+      //Precice_ReadCouplingData(&simulationData);
+    }
 
     simulationData.eei = NULL;
     simulationData.stx = NULL;
     simulationData.xstiff = NULL;
-
-    SFREE(eei);
 
     memcpy(&vold[0], &v[0], sizeof(double) * mt * *nk);
     memcpy(&sti[0], &stx[0], sizeof(double) * 6 * mi[0] * ne0);
@@ -1181,8 +1156,6 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
 
   //  if(*nbody>0) SFREE(ipobody);
 
-  SFREE(xstiff);
-
   if (iglob != 0) {
     SFREE(integerglob);
     SFREE(doubleglob);
@@ -1199,6 +1172,9 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
   *icolp     = icol;
 
   (*ttime) += (*tper);
+
+  /* preCICE Adapter: Free the memory */
+  Precice_FreeData(&simulationData);
 
   return;
 }
