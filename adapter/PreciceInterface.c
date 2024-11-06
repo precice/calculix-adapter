@@ -1162,13 +1162,10 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
     freeMapping(preciceInterface->mappingQuasi2D3D);
   }
 
-  printf("Freeing mesh names\n");
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
   free(preciceInterface->elementMeshName);
-
-  printf("Freeing data names\n");
 
   // Data names
   free(preciceInterface->displacementDeltas);
