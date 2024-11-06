@@ -1195,6 +1195,4 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->modid);
   free(preciceInterface->rucsize);
   free(preciceInterface->conv);
-
-  printf("Freed all data\n");
 }
