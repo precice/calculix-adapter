@@ -49,7 +49,7 @@ jobs:
         cp ./bin/ccx_preCICE ./packaging/calculix-precice3_2.20.1-1_amd64/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
         path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
