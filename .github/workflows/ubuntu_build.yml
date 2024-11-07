@@ -1,6 +1,13 @@
 name: Calculix 2.20 with preCICE adapter test build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - "*"
 
 jobs:
   build:
