@@ -465,6 +465,11 @@ void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadI
   setXload(xload, xloadIndices, sinkTemperatures, numFaces, FILM_T);
 }
 
+void setFacePressure(double *pressure, ITG numFaces, int *xloadIndices, double *xload)
+{
+  setXload(xload, xloadIndices, pressure, numFaces, PRESSUREDLOAD);
+}
+
 void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun)
 {
   ITG i;
@@ -595,8 +600,20 @@ void missingFilmBCError()
   exit(EXIT_FAILURE);
 }
 
+void missingPressureError()
+{
+  printf("ERROR: Cannot apply Pressure to one or more interface elements.  Please make sure that a .dlo file is provided for the interface, when using Pressure and DLOAD.\n");
+  exit(EXIT_FAILURE);
+}
+
 void unreachableError()
 {
   printf("ERROR: The preCICE adapter just entered an unreachable state. Something is very wrong!\n");
+  exit(EXIT_FAILURE);
+}
+
+void supportedElementError()
+{
+  printf("ERROR: Cannot use the given surface elements to configure a faces mesh!\n");
   exit(EXIT_FAILURE);
 }

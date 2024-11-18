@@ -28,7 +28,8 @@
  */
 enum xloadVariable { DFLUX,
                      FILM_H,
-                     FILM_T };
+                     FILM_T,
+                     PRESSUREDLOAD };
 
 /**
  * @brief Type of coupling data
