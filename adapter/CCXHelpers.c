@@ -293,6 +293,8 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
     faceLabel[0] = (char) 'S';
   } else if (strcmp(loadType, "FILM") == 0) {
     faceLabel[0] = (char) 'F';
+  } else if (strcmp(loadType, "PRESSUREDLOAD") == 0) {
+    faceLabel[0] = (char) 'P';
   }
 
   for (k = 0; k < numElements; k++) {
@@ -315,6 +317,8 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
       missingDfluxBCError();
     } else if (!found && strcmp(loadType, "FILM") == 0) {
       missingFilmBCError();
+    } else if (!found && strcmp(loadType, "PRESSUREDLOAD") == 0) {
+      missingPressureError();
     }
   }
 }
@@ -420,6 +424,8 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
     return 0;
   case FILM_T:
     return 1;
+  case PRESSUREDLOAD:
+    return 0;
   default:
     unreachableError();
     return -1;

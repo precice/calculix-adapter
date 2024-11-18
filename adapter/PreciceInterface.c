@@ -102,7 +102,6 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
 void Precice_Advance(SimulationData *sim)
 {
   printf("Adapter calling advance()...\n");
-
   fflush(stdout);
 
   precicec_advance(sim->solver_dt);
@@ -143,10 +142,6 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
 {
 
   printf("Adapter writing checkpoint...\n");
-  fflush(stdout);
-
-  printf("*(sim->theta): %f\n", *(sim->theta));
-  printf("*(sim->dtheta): %f\n", *(sim->dtheta));
   fflush(stdout);
 
   // Save time
@@ -196,8 +191,7 @@ void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *do
 void Precice_ReadCouplingData(SimulationData *sim)
 {
 
-  printf("Adapter reading coupling data....\n");
-  // printf("precicec_isReadDataAvailable()  %d \n,",precicec_isReadDataAvailable());
+  printf("Adapter reading coupling data...\n");
   fflush(stdout);
 
   PreciceInterface **interfaces    = sim->preciceInterfaces;
@@ -257,10 +251,10 @@ void Precice_ReadCouplingData(SimulationData *sim)
         printf("Reading FORCES coupling data.\n");
         break;
       case PRESSURE:
-        // precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->pressure, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, sim->solver_dt, interfaces[i]->faceCenterData);
-        // setFacePressure(interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload);
-        // printf("Reading PRESSURE coupling data.\n");
-        // break;
+        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->pressure, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, sim->solver_dt, interfaces[i]->faceCenterData);
+        setFacePressure(interfaces[i]->faceCenterData, interfaces[i]->numElements, interfaces[i]->xloadIndices, sim->xload);
+        printf("Reading PRESSURE coupling data.\n");
+        break;
       case DISPLACEMENTS:
         // Read and set displacements as single point constraints (Dirichlet BC)
         if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
