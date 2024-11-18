@@ -61,7 +61,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  // Precice_ReadCouplingData(sim);
+  Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -201,8 +201,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
   for (i = 0; i < numInterfaces; i++) {
 
     for (j = 0; j < interfaces[i]->numReadData; j++) {
-
-      printf("Read data: %d\n", interfaces[i]->readData[j]);
 
       switch (interfaces[i]->readData[j]) {
       case TEMPERATURE:
@@ -484,7 +482,6 @@ void Precice_WriteCouplingData(SimulationData *sim)
 
     // Write data
     for (j = 0; j < interfaces[i]->numWriteData; j++) {
-      printf("Write data: %d\n", interfaces[i]->writeData[j]);
       switch (interfaces[i]->writeData[j]) {
       case TEMPERATURE:
         if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
@@ -519,11 +516,13 @@ void Precice_WriteCouplingData(SimulationData *sim)
         break;
       case SINK_TEMPERATURE:
         // Not implemented: 2D-3D
+
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->kDeltaTemperatureWrite, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, T);
         printf("Writing SINK_TEMPERATURE coupling data.\n");
         break;
       case HEAT_TRANSFER_COEFF:
         // Not implemented: 2D-3D
+
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->kDeltaWrite, interfaces[i]->numElements, interfaces[i]->preciceFaceCenterIDs, KDelta);
         printf("Writing HEAT_TRANSFER_COEFF coupling data.\n");
         break;
@@ -622,6 +621,15 @@ void Precice_FreeData(SimulationData *sim)
   }
 
   free(sim->preciceInterfaces);
+
+  // Clean up checkpointing buffers
+  if (sim->eigenDOFs != NULL) {
+    free(sim->eigenDOFs);
+  }
+  if (sim->eigenDOFsDerivatives != NULL) {
+    free(sim->eigenDOFsDerivatives);
+  }
+
   precicec_finalize();
 }
 
@@ -629,7 +637,7 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
 {
   // Deduce configured dimensions
   if (config->nodesMeshName == NULL && config->facesMeshName == NULL && config->elementsMeshName == NULL) {
-    printf("ERROR: You need to define a face mesh, nodes mesh or element mesh. Check the adapter configuration file.\n");
+    printf("ERROR: You need to define either a face mesh, nodes mesh or an element mesh. Check the adapter configuration file.\n");
     exit(EXIT_FAILURE);
   }
   if (config->nodesMeshName && config->facesMeshName) {
