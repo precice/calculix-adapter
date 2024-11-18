@@ -549,19 +549,6 @@ void setDoubleArrayZero(double *values, const int length, const int dim)
   }
 }
 
-void printVectorData(const double *values, const int nv, const int dim)
-{
-  ITG i, j;
-
-  for (i = 0; i < nv; i++) {
-    printf("[");
-    for (j = 0; j < dim; j++) {
-      printf("%f, ", values[i * dim + j]);
-    }
-    printf("]\n");
-  }
-}
-
 /* Errors messages */
 
 void nodeSetNotFoundError(char const *setName)
