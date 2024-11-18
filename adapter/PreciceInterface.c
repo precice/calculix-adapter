@@ -784,16 +784,19 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   int    numIPTotal  = interface->numIPTotal;
   char **lakon       = sim->lakon;
 
-  // Directly call Fortran function from getelementgausspointcoords.f
-  FORTRAN(getelementgausspointcoords, (&numElements,
-                                       &numIPTotal,
-                                       interface->elementIDs,
-                                       sim->co,
-                                       &lakon,
-                                       sim->kon,
-                                       sim->ipkon,
-                                       interface->elemIPID,
-                                       interface->elemIPCoordinates));
+  FORTRAN(getc3d8elementgausspointcoords, (&numElements,
+                                           &numIPTotal,
+                                           interface->elementIDs,
+                                           sim->co,
+                                           &lakon,
+                                           sim->kon,
+                                           sim->ipkon,
+                                           interface->elemIPID,
+                                           interface->elemIPCoordinates));
+
+  for (int i = 0; i < interface->numIPTotal; i++) {
+    printf("Gauss point coordinates: %f, %f, %f\n", interface->elemIPCoordinates[3 * i], interface->elemIPCoordinates[3 * i + 1], interface->elemIPCoordinates[3 * i + 2]);
+  }
 
   precicec_setMeshVertices(interface->elementMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }

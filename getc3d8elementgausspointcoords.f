@@ -18,8 +18,8 @@
 !
 !     This function is a copy of the function for calculation and printout of the lift and drag forces
 !
-      subroutine getelementgausspointcoords(nelem, ngp, elem_ids, co, 
-     &    lakon, kon, ipkon, elem_gp_id, elem_gp_coord)
+      subroutine getc3d8elementgausspointcoords(nelem, ngp, elem_ids,
+     &    co, lakon, kon, ipkon, elem_gp_id, elem_gp_coord)
 
          implicit none
 
@@ -44,11 +44,6 @@
 
          data iflag /1/
 
-         ! Increment element IDs by one to match Fortran indexing
-         do iel = 1, nelem
-            elem_ids(iel) = elem_ids(iel) + 1
-         end do
-
          ! Initialize gauss point coordinates to zero
          do l = 1, nelem*8*3
             elem_gp_coord(l) = 0.0
@@ -72,7 +67,7 @@
             end do
 
             ! Loop through gauss points of each element
-            do gp_id = 1,8
+            do gp_id = 1, 8
                elem_gp_id((el_id - 1)*8 + gp_id) =
      &            (el_id - 1)*8 + gp_id - 1
 
@@ -96,6 +91,6 @@
 
          end do
 
-         RetURN
+         return
 
-      end subroutine getelementgausspointcoords
+      end subroutine getc3d8elementgausspointcoords

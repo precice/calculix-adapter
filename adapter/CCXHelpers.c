@@ -74,7 +74,7 @@ void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *e
   ITG i, k = 0;
 
   for (i = istartset[setID] - 1; i < iendset[setID]; i++) {
-    elements[k] = ialset[i] / 10;
+    elements[k] = ialset[i];
     k++;
   }
 }

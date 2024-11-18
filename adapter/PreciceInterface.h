@@ -124,6 +124,8 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
+  ITG *iset;
+
   ITG *   ialset;
   ITG *   ielmat;
   ITG *   istartset;
