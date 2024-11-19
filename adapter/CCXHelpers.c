@@ -162,18 +162,6 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
   }
 }
 
-/*
-  int getNodesPerFace(char * lakon, int elementIdx) {
-	  int nodesPerFace;
-		if(strcmp1(&lakon[elementIdx * 8], "C3D4") == 0) {
-				nodesPerFace = 3;
-		} else if(strcmp1(&lakon[elementIdx * 8], "C3D10") == 0) {
-				nodesPerFace = 6;
-		}
-		return nodesPerFace;
-   }
- */
-
 void getTetraFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, ITG *ipkon, double *co, double *faceCenters)
 {
 
