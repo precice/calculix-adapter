@@ -61,7 +61,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  Precice_ReadCouplingData(sim);
+  //Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -264,25 +264,14 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading DISPLACEMENTS coupling data.\n");
         break;
-
-      // VOLUMETRIC COUPLING - MULTISCALE
       case CONV_FLAG:
         // READ CONVERGENCE FLAG
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->conv, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPScalarData);
         printf("Reading CONVERGENCE FLAG coupling data.\n");
         break;
-
       case CMAT1:
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-
-        printf("Reading MATERIAL TANGENT 1 coupling data.\n");
-
-        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-        //   idx                  = k * 27 + 0;
-        //   printf("idx: %d, read stiffness: %f, %f, %f\n", idx, interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
-        // }
-
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           idx                  = k * 27 + 0;
           sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
@@ -482,6 +471,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
 
     // Write data
     for (j = 0; j < interfaces[i]->numWriteData; j++) {
+
       switch (interfaces[i]->writeData[j]) {
       case TEMPERATURE:
         if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
