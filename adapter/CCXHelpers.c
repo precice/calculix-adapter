@@ -276,7 +276,7 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
   char faceLabel[] = {'x', 'x', '\0'};
 
   /* Face number is prefixed with 'S' if it is DFLUX boundary condition
-	 * and with 'F' if it is a FILM boundary condition */
+   * and with 'F' if it is a FILM boundary condition */
   if (strcmp(loadType, "DFLUX") == 0) {
     faceLabel[0] = (char) 'S';
   } else if (strcmp(loadType, "FILM") == 0) {
@@ -366,7 +366,7 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
-    //x-direction
+    // x-direction
     int idof = 8 * (nodes[i] - 1) + 1; // 1 for x force DOF
     int k;
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
@@ -374,14 +374,14 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
     int m               = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i] = m;
 
-    //y-direction
+    // y-direction
     idof = 8 * (nodes[i] - 1) + 2; // 2 for y force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
     m                       = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i + 1] = m;
 
-    //z-direction
+    // z-direction
     idof = 8 * (nodes[i] - 1) + 3; // 3 for z force DOF
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                                  // Adjust because of FORTRAN indices
@@ -535,17 +535,6 @@ bool isDoubleEqual(const double a, const double b)
 bool isQuasi2D3D(const int quasi2D3D)
 {
   return quasi2D3D == 1;
-}
-
-void setDoubleArrayZero(double *values, const int length, const int dim)
-{
-  ITG i, j;
-
-  for (i = 0; i < length; i++) {
-    for (j = 0; j < dim; j++) {
-      values[i * dim + j] = 0.0;
-    }
-  }
 }
 
 /* Errors messages */
