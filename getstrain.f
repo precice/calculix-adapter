@@ -60,7 +60,7 @@
      &             4,6,3,1,12,15,9,13/
       data iflag /3/
 
-!     initialisierung of the flux
+!     initialization of the flux
 
       f(0)=0.d0
             

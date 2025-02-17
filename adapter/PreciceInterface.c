@@ -357,11 +357,11 @@ void Precice_ReadCouplingData(SimulationData *sim)
         // READ STRESS COMPONENTS - S11, S22, S33
         idx = 1;
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_stx, (sim->mi,
-                                             &idx,
-                                             &interfaces[i]->numElements,
-                                             interfaces[i]->elementIPVectorData,
-                                             sim->stx));
+        FORTRAN(setstrain, (sim->mi,
+                            &idx,
+                            &interfaces[i]->numElements,
+                            interfaces[i]->elementIPVectorData,
+                            sim->stx));
         printf("Reading STRESS1TO3 coupling data.\n");
         break;
 
@@ -369,11 +369,11 @@ void Precice_ReadCouplingData(SimulationData *sim)
         // READ STRESS COMPONENTS - S23, S13, S12
         idx = 4;
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(precice_multiscale_set_stx, (sim->mi,
-                                             &idx,
-                                             &interfaces[i]->numElements,
-                                             interfaces[i]->elementIPVectorData,
-                                             sim->stx));
+        FORTRAN(setstrain, (sim->mi,
+                            &idx,
+                            &interfaces[i]->numElements,
+                            interfaces[i]->elementIPVectorData,
+                            sim->stx));
         printf("Reading STRESS4TO6 coupling data.\n");
         break;
 
@@ -665,6 +665,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->xbounIndices          = NULL;
   interface->xloadIndices          = NULL;
   interface->xforcIndices          = NULL;
+  interface->writeData             = NULL;
+  interface->readData              = NULL;
 
   // Initialize element data points as NULL
   interface->elementMeshName     = NULL;
@@ -726,6 +728,7 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   if (config->nodesMeshName) {
     interface->nodesMeshName = strdup(config->nodesMeshName);
     PreciceInterface_ConfigureNodesMesh(interface, sim);
+
     interface->couplingMeshName = interface->nodesMeshName;
   }
 
@@ -745,7 +748,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->elementMeshName = NULL;
   if (config->elementsMeshName) {
     interface->elementMeshName = strdup(config->elementsMeshName);
-    // Configuring element mesh
     PreciceInterface_ConfigureElementsMesh(interface, sim);
     interface->couplingMeshName = interface->elementMeshName;
   }
@@ -1049,7 +1051,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->stress4to6Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else {
-      printf("ERROR: Read data '%s' does not exist!\n", config->readDataNames[i]);
+      printf("ERROR: Read data '%s' is not of a known type for the CalculiX-preCICE adapter. Check the adapter configuration file.\n", config->readDataNames[i]);
       exit(EXIT_FAILURE);
     }
   }
