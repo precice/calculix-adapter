@@ -67,7 +67,17 @@ enum CouplingDataType { TEMPERATURE,
                         CMAT4,
                         CMAT5,
                         CMAT6,
-                        CMAT7,
+                        CMAT7 };
+
+/**
+ * @brief Type of element used for faces mesh, where we assume only one type of element is used.
+ *  TETRAHEDRA      - C3D4 or C3D10 element
+ *  HEXAHEDRA        - C3D8 or C3D20 elment
+ *  INVALID_ELEMENT - Anything else
+ */
+enum ElemType { TETRAHEDRA,
+                HEXAHEDRA,
+                INVALID_ELEMENT,
 };
 
 /**
