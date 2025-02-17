@@ -52,7 +52,7 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT -fbounds-check -g
+CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
@@ -62,7 +62,7 @@ else
 	CC = mpicc
 endif
 
-FFLAGS = -Wall -O0 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -fallow-argument-mismatch -fbounds-check -g
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 # Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90
@@ -75,6 +75,8 @@ SCCXMAIN = ccx_$(CCX_VERSION).c
 # Append additional sources
 SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c linstatic_precice.c
 SCCXF += getflux.f getkdeltatemp.f getc3d8elementgausspointcoords.f multiscale_routines.f
+
+
 
 # Source files in this folder and in the adapter directory
 $(OBJDIR)/%.o : %.c
@@ -102,7 +104,7 @@ OCCXC += $(OBJDIR)/ConfigReader.o $(OBJDIR)/2D3DCoupling.o $(OBJDIR)/OutputBuffe
 
 
 $(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a
-	$(FC) -fopenmp -Wall -O0 -g -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
+	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
 
 $(OBJDIR)/ccx_$(CCX_VERSION).a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
