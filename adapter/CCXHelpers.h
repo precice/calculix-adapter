@@ -358,14 +358,6 @@ bool isDoubleEqual(const double a, const double b);
  */
 bool isQuasi2D3D(const int quasi2D3D);
 
-/**
- * @brief Set all values of an array to 0
- * @param values is the array carrying double values
- * @param length is the number of elements in array
- * @param dim is the dimension of the array data
- */
-void setDoubleArrayZero(double *values, const int length, const int dim);
-
 /* Error messages */
 
 /**
