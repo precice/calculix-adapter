@@ -62,7 +62,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  //Precice_ReadCouplingData(sim);
+  Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -74,9 +74,9 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     fflush(stdout);
 
     // For steady-state simulations, we will always compute the converged steady-state solution in one coupling step
-    sim->theta  = 0;
-    sim->tper   = 1;
-    sim->dtheta = 1;
+    *sim->theta  = 0;
+    *sim->tper   = 1;
+    *sim->dtheta = 1;
 
     // Set the solver time step to be the same as the coupling time step
     sim->solver_dt = precice_dt;
@@ -276,7 +276,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 1 coupling data.\n");
         break;
-
       case CMAT2:
         // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -288,7 +287,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 2 coupling data.\n");
         break;
-
       case CMAT3:
         // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -300,7 +298,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 3 coupling data.\n");
         break;
-
       case CMAT4:
         // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -312,7 +309,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 4 coupling data.\n");
         break;
-
       case CMAT5:
         // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -324,7 +320,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 5 coupling data.\n");
         break;
-
       case CMAT6:
         // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -336,7 +331,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 6 coupling data.\n");
         break;
-
       case CMAT7:
         // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -348,7 +342,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading MATERIAL TANGENT 7 coupling data.\n");
         break;
-
       case STRESS1TO3:
         // READ STRESS COMPONENTS - S11, S22, S33
         idx = 1;
@@ -360,7 +353,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
                             sim->stx));
         printf("Reading STRESS1TO3 coupling data.\n");
         break;
-
       case STRESS4TO6:
         // READ STRESS COMPONENTS - S23, S13, S12
         idx = 4;
@@ -372,7 +364,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
                             sim->stx));
         printf("Reading STRESS4TO6 coupling data.\n");
         break;
-
       case DISPLACEMENTDELTAS:
         printf("DisplacementDeltas cannot be used as read data\n");
         fflush(stdout);
@@ -607,8 +598,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
   interface->nodeCoordinates       = NULL;
-  interface->node2DCoordinates     = NULL;
-  interface->mapping2D3D           = NULL;
   interface->preciceNodeIDs        = NULL;
   interface->nodeScalarData        = NULL;
   interface->node2DScalarData      = NULL;
@@ -795,27 +784,6 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   // If 2D-3Q coupling is used (for a node mesh) delegate this to the specialized data structure.
   if (interface->nodesMeshName != NULL) {
 
-    int count  = 0;
-    int dimCCX = interface->dimCCX;
-    for (int i = 0; i < interface->numNodes; i++) {
-      for (int ii = 0; ii < interface->numNodes; ii++) {
-        // Compare each node with every other node to find nodes with matching X and Y coordinates
-        if (isDoubleEqual(interface->nodeCoordinates[ii * dimCCX], interface->nodeCoordinates[i * dimCCX]) &&
-            isDoubleEqual(interface->nodeCoordinates[ii * dimCCX + 1], interface->nodeCoordinates[i * dimCCX + 1]) &&
-            !isDoubleEqual(interface->nodeCoordinates[ii * dimCCX + 2], interface->nodeCoordinates[i * dimCCX + 2])) {
-          if (!isDoubleEqual(interface->nodeCoordinates[i * dimCCX + 2], 0.0)) {
-            interface->mapping2D3D[i]  = count;
-            interface->mapping2D3D[ii] = count;
-            count += 1;
-          }
-        }
-      }
-    }
-  }
-
-  if (interface->nodesMeshName != NULL) {
-    // printf("nodesMeshName is not null \n");
-    //  interface->nodesMeshID = precicec_getMeshID(interface->nodesMeshName);
     if (isQuasi2D3D(interface->quasi2D3D)) {
       interface->mappingQuasi2D3D = createMapping(interface->nodeCoordinates, interface->numNodes, interface->nodesMeshName);
     } else {
@@ -844,8 +812,17 @@ void PreciceInterface_NodeConnectivity(PreciceInterface *interface, SimulationDa
   PreciceInterface_ConfigureTetraFaces(interface, sim);
 }
 
-void PreciceInterface_EnsureValidRead(PreciceInterface *interface, enum CouplingDataType type)
+void PreciceInterface_EnsureValidRead(SimulationData *sim, PreciceInterface *interface, enum CouplingDataType type)
 {
+  // Forbidden read data in modal dynamic simulations
+  if (sim->isModalDynamic) {
+    if (type == TEMPERATURE || type == DISPLACEMENTS || type == DISPLACEMENTDELTAS || type == VELOCITIES || type == POSITIONS) {
+      printf("Error: in modal dynamic simulations, only loads (forces, pressures, heat fluxes) can be read.\n"
+             "Degrees of freedom (positions, velocities, temperatures) cannot be read from preCICE.");
+      fflush(stdout);
+      exit(EXIT_FAILURE);
+    }
+  }
 
   if (interface->elementMeshName == NULL) {
     printf("Element mesh not provided in YAML config file\n");
@@ -856,7 +833,7 @@ void PreciceInterface_EnsureValidRead(PreciceInterface *interface, enum Coupling
 
 void PreciceInterface_ConfigureTetraFaces(PreciceInterface *interface, SimulationData *sim)
 {
-  // int i;
+  int i;
   printf("Setting node connectivity for nearest projection mapping: \n");
   if (interface->nodesMeshName != NULL) {
     int *triangles = malloc(interface->numElements * 3 * sizeof(ITG));
@@ -1068,7 +1045,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->preciceFaceCenterIDs);
   free(preciceInterface->faceCenterCoordinates);
   free(preciceInterface->nodeCoordinates);
-  free(preciceInterface->node2DCoordinates);
   free(preciceInterface->preciceNodeIDs);
   free(preciceInterface->nodeScalarData);
   free(preciceInterface->node2DScalarData);
@@ -1079,17 +1055,13 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->xloadIndices);
   free(preciceInterface->xforcIndices);
 
+  freeMapping(preciceInterface->mappingQuasi2D3D);
+
   // Volumteric element related data
   free(preciceInterface->elemIPCoordinates);
   free(preciceInterface->elemIPID);
   free(preciceInterface->elementIPScalarData);
   free(preciceInterface->elementIPVectorData);
-
-  // Quasi 2D-3D coupling
-  free(preciceInterface->mapping2D3D);
-  if (preciceInterface->quasi2D3D) {
-    freeMapping(preciceInterface->mappingQuasi2D3D);
-  }
 
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
