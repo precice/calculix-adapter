@@ -4,6 +4,7 @@
  *       Heat transfer adapter developed by Lucía Cheung with the support of SimScale GmbH    *
  *                                                                                            *
  *       Adapter extended to fluid-structure interaction by Alexander Rusch                   *
+ *       Adapter extended to multiscale mechanics by Ibrahim Kaleel and Ishaan Desai          *
  *                                                                                            *
  *********************************************************************************************/
 
@@ -264,11 +265,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         }
         printf("Reading DISPLACEMENTS coupling data.\n");
         break;
-      case CONV_FLAG:
-        // READ CONVERGENCE FLAG
-        precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->conv, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPScalarData);
-        printf("Reading CONVERGENCE FLAG coupling data.\n");
-        break;
       case CMAT1:
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
@@ -389,26 +385,6 @@ void Precice_ReadCouplingData(SimulationData *sim)
         break;
       case POSITIONS:
         printf("Positions cannot be used as read data.\n");
-        fflush(stdout);
-        exit(EXIT_FAILURE);
-        break;
-      case MACRO_IP_ID:
-        printf("MACRO IP ID  cannot be used as read data.\n");
-        fflush(stdout);
-        exit(EXIT_FAILURE);
-        break;
-      case RVE_ID:
-        printf("RVE ID cannot be used as read data.\n");
-        fflush(stdout);
-        exit(EXIT_FAILURE);
-        break;
-      case MOD_ID:
-        printf("MOD ID cannot be used as read data.\n");
-        fflush(stdout);
-        exit(EXIT_FAILURE);
-        break;
-      case RUC_SIZE:
-        printf("RUC size cannot be used as read data.\n");
         fflush(stdout);
         exit(EXIT_FAILURE);
         break;
@@ -552,29 +528,6 @@ void Precice_WriteCouplingData(SimulationData *sim)
         printf("Writing FORCES coupling data.\n");
         break;
       /* VOLUMETRIC COUPLING - MULTISCALE */
-      case RVE_ID:
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          interfaces[i]->elementIPScalarData[k] = k;
-        };
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->rveid, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPScalarData);
-        printf("Writing RVE ID coupling data.\n");
-        break;
-      case MOD_ID:
-        /* Solve GMC 102 on all Gauss points */
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          interfaces[i]->elementIPScalarData[k] = 102.0;
-        };
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->modid, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPScalarData);
-        printf("Writing MOD ID coupling data.\n");
-        break;
-      case RUC_SIZE:
-        /* Solve GMC problem with 4 sub cells in each axis */
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          interfaces[i]->elementIPScalarData[k] = 5;
-        };
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->rucsize, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPScalarData);
-        printf("Writing RUC_SIZE coupling data.\n");
-        break;
       case STRAIN1TO3:
         idx = 0;
         getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
@@ -691,10 +644,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->velocities             = NULL;
   interface->forces                 = NULL;
   interface->pressure               = NULL;
-  interface->rveid                  = NULL;
-  interface->modid                  = NULL;
-  interface->rucsize                = NULL;
-  interface->conv                   = NULL;
   interface->strain1to3Data         = NULL;
   interface->strain4to6Data         = NULL;
   interface->stress1to3Data         = NULL;
@@ -1035,11 +984,6 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->readData[i]          = CMAT7;
       interface->materialTangent7Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-    } else if (startsWith(config->readDataNames[i], "conv")) {
-      PreciceInterface_EnsureValidRead(interface, CONV_FLAG);
-      interface->readData[i] = CONV_FLAG;
-      interface->conv        = strdup(config->readDataNames[i]);
-      printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "stresses1to3")) {
       PreciceInterface_EnsureValidRead(interface, STRESS1TO3);
       interface->readData[i]    = STRESS1TO3;
@@ -1099,18 +1043,6 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->writeData[i] = FORCES;
       interface->forces       = strdup(config->writeDataNames[i]);
       printf("Write data '%s' found.\n", interface->forces);
-    } else if (isEqual(config->writeDataNames[i], "rve_id")) {
-      interface->writeData[i] = RVE_ID;
-      interface->rveid        = strdup(config->writeDataNames[i]);
-      printf("Write data '%s' found.\n", config->writeDataNames[i]);
-    } else if (isEqual(config->writeDataNames[i], "mod_id")) {
-      interface->writeData[i] = MOD_ID;
-      interface->modid        = strdup(config->writeDataNames[i]);
-      printf("Write data '%s' found.\n", config->writeDataNames[i]);
-    } else if (isEqual(config->writeDataNames[i], "ruc_size")) {
-      interface->writeData[i] = RUC_SIZE;
-      interface->rucsize      = strdup(config->writeDataNames[i]);
-      printf("Write data '%s' found.\n", config->writeDataNames[i]);
     } else if (isEqual(config->writeDataNames[i], "strains1to3")) {
       interface->writeData[i]   = STRAIN1TO3;
       interface->strain1to3Data = strdup(config->writeDataNames[i]);
@@ -1188,8 +1120,4 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->materialTangent5Data);
   free(preciceInterface->materialTangent6Data);
   free(preciceInterface->materialTangent7Data);
-  free(preciceInterface->rveid);
-  free(preciceInterface->modid);
-  free(preciceInterface->rucsize);
-  free(preciceInterface->conv);
 }

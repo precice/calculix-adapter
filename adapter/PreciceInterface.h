@@ -81,10 +81,6 @@ typedef struct PreciceInterface {
   char *velocities;
   char *forces;
   char *pressure;
-  char *rveid;
-  char *modid;
-  char *rucsize;
-  char *conv;
   char *strain1to3Data;
   char *strain4to6Data;
   char *stress1to3Data;
