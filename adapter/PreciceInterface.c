@@ -504,8 +504,13 @@ void Precice_WriteCouplingData(SimulationData *sim)
         printf("Writing DISPLACEMENTDELTAS coupling data.\n");
         break;
       case VELOCITIES:
-        getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->veold, sim->mt, interfaces[i]->nodeVectorData);
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->velocities, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
+        if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
+          getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->veold, sim->mt, interfaces[i]->mappingQuasi2D3D->bufferVector3D);
+          consistentVectorWrite(interfaces[i]->mappingQuasi2D3D, interfaces[i]->couplingMeshName, interfaces[i]->velocities);
+        } else {
+          getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->veold, sim->mt, interfaces[i]->nodeVectorData);
+          precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->velocities, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
+        }
         printf("Writing VELOCITIES coupling data.\n");
         break;
       case POSITIONS:
