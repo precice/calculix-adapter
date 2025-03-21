@@ -47,7 +47,7 @@ typedef struct PreciceInterface {
 
   // Interface volumetric elements
   int     elementMeshID;
-  char *  elementMeshName;
+  char *  elementsMeshName;
   int     elementSetID;
   int     numIPTotal;
   double *elemIPCoordinates;
@@ -73,7 +73,6 @@ typedef struct PreciceInterface {
   char *kDeltaRead;
   char *kDeltaTemperatureRead;
   char *displacements;
-  char *displacementsData;
   char *displacementDeltas;
   char *positions;
   char *velocities;
@@ -287,14 +286,8 @@ void Precice_FreeData(SimulationData *sim);
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
 
 /**
- * @brief Configures the elements mesh and calls setMeshVertices on preCICE
- * @param interface
- * @param sim
- */
-void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim);
-
-/**
- * @brief Configures the face centers mesh and calls setMeshVertices on preCICE
+ * @brief * @brief Configures the face centers mesh and calls sendFaceCentersVertices,
+ * who is responsible for calling preCICE
  * @param interface
  * @param sim
  */
@@ -306,6 +299,13 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
  * @param sim: Structure with CalculiX data
  */
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim);
+
+/**
+ * @brief Configures the elements mesh and calls setMeshVertices on preCICE
+ * @param interface
+ * @param sim
+ */
+void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim);
 
 /**
  * @brief Terminate execution if the nodes mesh ID is not valid

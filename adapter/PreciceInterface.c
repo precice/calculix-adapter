@@ -612,7 +612,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   interface->readData              = NULL;
 
   // Initialize element data points as NULL
-  interface->elementMeshName     = NULL;
   interface->elemIPID            = NULL;
   interface->elemIPCoordinates   = NULL;
   interface->elementIPScalarData = NULL;
@@ -684,11 +683,11 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   }
 
   // Element mesh
-  interface->elementMeshName = NULL;
+  interface->elementsMeshName = NULL;
   if (config->elementsMeshName) {
-    interface->elementMeshName = strdup(config->elementsMeshName);
+    interface->elementsMeshName = strdup(config->elementsMeshName);
     PreciceInterface_ConfigureElementsMesh(interface, sim);
-    interface->couplingMeshName = interface->elementMeshName;
+    interface->couplingMeshName = interface->elementsMeshName;
   }
 
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
@@ -751,7 +750,7 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
     printf("Gauss point coordinates: %f, %f, %f\n", interface->elemIPCoordinates[3 * i], interface->elemIPCoordinates[3 * i + 1], interface->elemIPCoordinates[3 * i + 2]);
   }
 
-  precicec_setMeshVertices(interface->elementMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
+  precicec_setMeshVertices(interface->elementsMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
@@ -844,7 +843,7 @@ void PreciceInterface_NodeConnectivity(PreciceInterface *interface, SimulationDa
   PreciceInterface_ConfigureTetraFaces(interface, sim);
 }
 
-void PreciceInterface_EnsureValidRead(SimulationData *sim, PreciceInterface *interface, enum CouplingDataType type)
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type)
 {
   // Forbidden read data in modal dynamic simulations
   if (sim->isModalDynamic) {
@@ -854,12 +853,6 @@ void PreciceInterface_EnsureValidRead(SimulationData *sim, PreciceInterface *int
       fflush(stdout);
       exit(EXIT_FAILURE);
     }
-  }
-
-  if (interface->elementMeshName == NULL) {
-    printf("Element mesh not provided in YAML config file\n");
-    fflush(stdout);
-    exit(EXIT_FAILURE);
   }
 }
 
@@ -880,7 +873,6 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
 {
   interface->nodeScalarData = malloc(interface->numNodes * sizeof(double));
   interface->nodeVectorData = malloc(interface->numNodes * 3 * sizeof(double));
-
   interface->faceCenterData = malloc(interface->numElements * sizeof(double));
 
   // Configure all the read data, then the write data
@@ -890,7 +882,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
     interface->readData = malloc(config->numReadData * sizeof(int));
   for (i = 0; i < config->numReadData; i++) {
     if (startsWith(config->readDataNames[i], "Temperature")) {
-      PreciceInterface_EnsureValidRead(interface, TEMPERATURE);
+      PreciceInterface_EnsureValidRead(sim, TEMPERATURE);
       interface->readData[i]  = TEMPERATURE;
       interface->xbounIndices = malloc(interface->numNodes * sizeof(int));
       interface->temperature  = strdup(config->readDataNames[i]);
@@ -900,85 +892,84 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       interface->readData[i]  = HEAT_FLUX;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
-      PreciceInterface_EnsureValidRead(interface, HEAT_FLUX);
+      PreciceInterface_EnsureValidRead(sim, HEAT_FLUX);
       interface->flux = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->flux);
     } else if (startsWith(config->readDataNames[i], "Sink-Temperature")) {
       interface->readData[i]  = SINK_TEMPERATURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
       getXloadIndices("FILM", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
-      PreciceInterface_EnsureValidRead(interface, SINK_TEMPERATURE);
+      PreciceInterface_EnsureValidRead(sim, SINK_TEMPERATURE);
       interface->kDeltaTemperatureRead = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->kDeltaTemperatureRead);
     } else if (startsWith(config->readDataNames[i], "Heat-Transfer-Coefficient")) {
       interface->readData[i] = HEAT_TRANSFER_COEFF;
-      PreciceInterface_EnsureValidRead(interface, HEAT_TRANSFER_COEFF);
+      PreciceInterface_EnsureValidRead(sim, HEAT_TRANSFER_COEFF);
       interface->kDeltaRead = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->kDeltaRead);
     } else if (startsWith(config->readDataNames[i], "Pressure")) {
       interface->readData[i]  = PRESSURE;
       interface->xloadIndices = malloc(interface->numElements * sizeof(int));
-      PreciceInterface_EnsureValidRead(interface, PRESSURE);
+      PreciceInterface_EnsureValidRead(sim, PRESSURE);
       getXloadIndices("PRESSUREDLOAD", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       interface->pressure = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->pressure);
     } else if (startsWith(config->readDataNames[i], "Force")) {
-      PreciceInterface_EnsureValidRead(interface, FORCES);
+      PreciceInterface_EnsureValidRead(sim, FORCES);
       interface->readData[i]  = FORCES;
       interface->xforcIndices = malloc(interface->numNodes * 3 * sizeof(int));
       interface->forces       = strdup(config->readDataNames[i]);
       getXforcIndices(interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices);
       printf("Read data '%s' found.\n", interface->forces);
     } else if (startsWith(config->readDataNames[i], "Displacement")) {
-      PreciceInterface_EnsureValidRead(interface, DISPLACEMENTS);
+      PreciceInterface_EnsureValidRead(sim, DISPLACEMENTS);
       interface->readData[i]   = DISPLACEMENTS;
       interface->xbounIndices  = malloc(interface->numNodes * 3 * sizeof(int));
       interface->displacements = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
-      /* MICROMANAGER COUPLING */
     } else if (startsWith(config->readDataNames[i], "cmat1")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT1);
+      PreciceInterface_EnsureValidRead(sim, CMAT1);
       interface->readData[i]          = CMAT1;
       interface->materialTangent1Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat2")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT2);
+      PreciceInterface_EnsureValidRead(sim, CMAT2);
       interface->readData[i]          = CMAT2;
       interface->materialTangent2Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat3")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT3);
+      PreciceInterface_EnsureValidRead(sim, CMAT3);
       interface->readData[i]          = CMAT3;
       interface->materialTangent3Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat4")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT4);
+      PreciceInterface_EnsureValidRead(sim, CMAT4);
       interface->readData[i]          = CMAT4;
       interface->materialTangent4Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat5")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT5);
+      PreciceInterface_EnsureValidRead(sim, CMAT5);
       interface->readData[i]          = CMAT5;
       interface->materialTangent5Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat6")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT6);
+      PreciceInterface_EnsureValidRead(sim, CMAT6);
       interface->readData[i]          = CMAT6;
       interface->materialTangent6Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "cmat7")) {
-      PreciceInterface_EnsureValidRead(interface, CMAT7);
+      PreciceInterface_EnsureValidRead(sim, CMAT7);
       interface->readData[i]          = CMAT7;
       interface->materialTangent7Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "stresses1to3")) {
-      PreciceInterface_EnsureValidRead(interface, STRESS1TO3);
+      PreciceInterface_EnsureValidRead(sim, STRESS1TO3);
       interface->readData[i]    = STRESS1TO3;
       interface->stress1to3Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
     } else if (startsWith(config->readDataNames[i], "stresses4to6")) {
-      PreciceInterface_EnsureValidRead(interface, STRESS4TO6);
+      PreciceInterface_EnsureValidRead(sim, STRESS4TO6);
       interface->readData[i]    = STRESS4TO6;
       interface->stress4to6Data = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
@@ -1077,7 +1068,7 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
-  free(preciceInterface->elementMeshName);
+  free(preciceInterface->elementsMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);
