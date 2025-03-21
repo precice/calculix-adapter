@@ -594,10 +594,11 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
   interface->faceIDs               = NULL;
-  interface->nodeIDs               = NULL;
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
   interface->nodeCoordinates       = NULL;
+  interface->nodeIDs               = NULL;
+  interface->mappingQuasi2D3D      = NULL;
   interface->preciceNodeIDs        = NULL;
   interface->nodeScalarData        = NULL;
   interface->node2DScalarData      = NULL;
@@ -693,6 +694,25 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
 }
 
+static enum ElemType findSimulationMeshType(SimulationData *sim)
+{
+  // Assuming only tetrahedra are used, or only hexaedral, for faces meshes.
+  // Return first non-zero mesh type.
+  // lakon tab takes 8 chars per element
+
+  const char *lakon_ptr = sim->lakon;
+  for (int i = 0; i < sim->ne; ++i) {
+    if (startsWith(lakon_ptr, "C3D4") || startsWith(lakon_ptr, "C3D10")) {
+      return TETRAHEDRA;
+    } else if (startsWith(lakon_ptr, "C3D8") || startsWith(lakon_ptr, "C3D20")) {
+      return HEXAHEDRA;
+    }
+    lakon_ptr += 8;
+  }
+
+  return INVALID_ELEMENT;
+}
+
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
 {
   printf("Entering ConfigureElementsMesh \n");
@@ -726,6 +746,7 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
                                            interface->elemIPID,
                                            interface->elemIPCoordinates));
 
+  // debugging TODO: remove
   for (int i = 0; i < interface->numIPTotal; i++) {
     printf("Gauss point coordinates: %f, %f, %f\n", interface->elemIPCoordinates[3 * i], interface->elemIPCoordinates[3 * i + 1], interface->elemIPCoordinates[3 * i + 2]);
   }

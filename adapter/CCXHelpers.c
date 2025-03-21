@@ -400,11 +400,11 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
 int getXloadIndexOffset(enum xloadVariable xloadVar)
 {
   /*
-	 * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
-	 * the array has two components:
-	 * - the first component corresponds to the flux value and the heat transfer coefficient
-	 * - the second component corresponds to the sink temperature
-	 * */
+   * xload is the CalculiX array where the DFLUX and FILM boundary conditions are stored
+   * the array has two components:
+   * - the first component corresponds to the flux value and the heat transfer coefficient
+   * - the second component corresponds to the sink temperature
+   * */
   switch (xloadVar) {
   case DFLUX:
     return 0;
