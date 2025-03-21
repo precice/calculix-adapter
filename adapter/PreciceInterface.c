@@ -767,7 +767,18 @@ void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, Simu
 
   interface->faceCenterCoordinates = malloc(interface->numElements * 3 * sizeof(double));
   interface->preciceFaceCenterIDs  = malloc(interface->numElements * 3 * sizeof(int));
-  getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+
+  enum ElemType elemType = findSimulationMeshType(sim);
+
+  if (elemType == TETRAHEDRA) {
+    printf("Configuring faces mesh with tetrahedra.\n");
+    getTetraFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+  } else if (elemType == HEXAHEDRA) {
+    printf("Configuring faces mesh with hexahedra.\n");
+    getHexaFaceCenters(interface->elementIDs, interface->faceIDs, interface->numElements, sim->kon, sim->ipkon, sim->co, interface->faceCenterCoordinates);
+  } else {
+    supportedElementError();
+  }
 
   interface->preciceFaceCenterIDs = malloc(interface->numElements * sizeof(int));
 
