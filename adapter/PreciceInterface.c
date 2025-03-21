@@ -614,7 +614,6 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
   // Initialize element data points as NULL
   interface->elemIPID            = NULL;
   interface->elemIPCoordinates   = NULL;
-  interface->elementIPScalarData = NULL;
   interface->elementIPVectorData = NULL;
 
   // Initialize preCICE mesh name as NULL
@@ -1062,7 +1061,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   // Volumteric element related data
   free(preciceInterface->elemIPCoordinates);
   free(preciceInterface->elemIPID);
-  free(preciceInterface->elementIPScalarData);
   free(preciceInterface->elementIPVectorData);
 
   // Mesh names

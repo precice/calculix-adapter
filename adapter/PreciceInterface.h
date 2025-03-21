@@ -27,13 +27,11 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int          num2DNodes; // Nodes in a single plane in case of quasi 2D-3D coupling
   int *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
   int          nodeSetID;
   int *        preciceNodeIDs;
-  int          nodesMeshID;
   char *       nodesMeshName;
 
   // Interface face elements
@@ -46,7 +44,6 @@ typedef struct PreciceInterface {
   int *   preciceFaceCenterIDs;
 
   // Interface volumetric elements
-  int     elementMeshID;
   char *  elementsMeshName;
   int     elementSetID;
   int     numIPTotal;
@@ -59,7 +56,6 @@ typedef struct PreciceInterface {
   double *nodeVectorData;   // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
-  double *elementIPScalarData; // Scalar quantities at the integration points
   double *elementIPVectorData; // Vector quantities at the integration points
 
   // preCICE mesh name
@@ -317,11 +313,13 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 /**
  * @brief Terminate execution if the nodes mesh ID is not valid
  * @param interface
+ * @param type of data requiring mesh ID
  */
-void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface);
+void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface, const char *type);
 
 /**
  * @brief Terminate execution if the faces mesh ID is not valid
+ * @param interface
  * @param type of data requiring mesh ID
  */
 void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type);
