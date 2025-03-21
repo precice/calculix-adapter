@@ -113,8 +113,7 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
-  ITG *iset;
-
+  ITG *   iset;
   ITG *   ialset;
   ITG *   ielmat;
   ITG *   istartset;
@@ -135,7 +134,7 @@ typedef struct SimulationData {
   int     nload;
   char *  sideload;
   double  nk;
-  double  ne; // new variable added
+  double  ne;
   ITG     mt;
   double *theta;
   double *dtheta;
@@ -153,9 +152,9 @@ typedef struct SimulationData {
   ITG *   mi;
   ITG *   nea;    // element bounds in each thread - start
   ITG *   neb;    // element bounds in each thread - end
-  double *eei;    // Strain values for multiscale
-  double *stx;    // Stress values for multiscale
-  double *xstiff; // Strain values for multiscale
+  double *eei;    // Strain tensor values
+  double *stx;    // Stress tensor values
+  double *xstiff; // Stiffness matrix values
 
   // Interfaces
   int                numPreciceInterfaces;

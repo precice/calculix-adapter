@@ -1308,7 +1308,7 @@ int main(int argc, char *argv[])
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
     if (preciceUsed) {
-      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)); //&& (iperturb[0] > 1);
+      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) ;//&& (iperturb[0] > 1); Necessary to trigger isStaticorDynamic
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
       int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
@@ -1428,7 +1428,6 @@ int main(int argc, char *argv[])
           mpcfree   = mpcinfo[1];
           icascade  = mpcinfo[2];
           maxlenmpc = mpcinfo[3];
-
         } else {
           printf("ERROR: This simulation type is not available with preCICE");
           exit(0);
@@ -1449,7 +1448,7 @@ int main(int argc, char *argv[])
           FORTRAN(stop, ());
         }
 
-        printf("Starting Multiscale Linear Static Analysis via preCICE...\n");
+        printf("Starting multiscale linear static analysis via preCICE...\n");
 
         linstatic_precice(co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
                 &nboun,

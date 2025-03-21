@@ -1,4 +1,4 @@
-        subroutine setstrain(mi, intpt, num_elem, pdata, stx)
+        subroutine setstresstensor(mi, intpt, num_elem, pdata, stx)
 
             implicit none
 
@@ -12,6 +12,10 @@
             ! local variables
             integer :: i, j , k, ngp_max, count
 
+            write(*,*) 'setstresstensor: num_elem = ', num_elem
+            write(*,*) 'setstresstensor: intpt = ', intpt
+            write(*,*) 'setstresstensor: mi(1) = ', mi(1)
+
             ngp_max = mi(1)
 
             count = 1
@@ -24,4 +28,4 @@
                 end do
             end do
 
-        end subroutine setstrain
+        end subroutine setstresstensor
