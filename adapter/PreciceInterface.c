@@ -881,30 +881,9 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
   interface->nodeScalarData = malloc(interface->numNodes * sizeof(double));
   interface->nodeVectorData = malloc(interface->numNodes * 3 * sizeof(double));
 
-  if (isQuasi2D3D(interface->quasi2D3D)) {
-    interface->node2DScalarData = malloc(interface->num2DNodes * sizeof(double));
-    interface->node2DVectorData = malloc(interface->num2DNodes * 2 * sizeof(double));
-
-    int dim = interface->dim;
-    for (int i = 0; i < interface->num2DNodes; i++) {
-      interface->node2DScalarData[i]           = 0.0;
-      interface->node2DVectorData[i * dim]     = 0.0;
-      interface->node2DVectorData[i * dim + 1] = 0.0;
-    }
-  }
-
   interface->faceCenterData = malloc(interface->numElements * sizeof(double));
 
-  /* Allocating and initilizing memory for multiscale coupling */
-  interface->elementIPScalarData = malloc(interface->numIPTotal * sizeof(double));
-  interface->elementIPVectorData = malloc(interface->numIPTotal * 3 * sizeof(double));
-  for (int i = 0; i < interface->numIPTotal; i++) {
-    interface->elementIPScalarData[i]         = 0.0;
-    interface->elementIPVectorData[i * 3]     = 0.0;
-    interface->elementIPVectorData[i * 3 + 1] = 0.0;
-    interface->elementIPVectorData[i * 3 + 2] = 0.0;
-  }
-
+  // Configure all the read data, then the write data
   int i;
   interface->numReadData = config->numReadData;
   if (config->numReadData > 0)
@@ -952,9 +931,9 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       printf("Read data '%s' found.\n", interface->forces);
     } else if (startsWith(config->readDataNames[i], "Displacement")) {
       PreciceInterface_EnsureValidRead(interface, DISPLACEMENTS);
-      interface->readData[i]       = DISPLACEMENTS;
-      interface->xbounIndices      = malloc(interface->numNodes * 3 * sizeof(int));
-      interface->displacementsData = strdup(config->readDataNames[i]);
+      interface->readData[i]   = DISPLACEMENTS;
+      interface->xbounIndices  = malloc(interface->numNodes * 3 * sizeof(int));
+      interface->displacements = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found.\n", config->readDataNames[i]);
       /* MICROMANAGER COUPLING */
