@@ -286,12 +286,19 @@ void Precice_FreeData(SimulationData *sim);
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config);
 
 /**
- * @brief * @brief Configures the face centers mesh and calls sendFaceCentersVertices,
+ * @brief Configures the face centers mesh and calls sendFaceCentersVertices,
  * who is responsible for calling preCICE
  * @param interface
  * @param sim
  */
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim);
+
+/**
+ * @brief Send the faces centers to preCICE.
+ *
+ * @param interface
+ */
+void sendFaceCentersVertices(PreciceInterface *interface);
 
 /**
  * @brief Configures the nodes mesh
@@ -312,6 +319,19 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
  * @param interface
  */
 void PreciceInterface_EnsureValidNodesMeshID(PreciceInterface *interface);
+
+/**
+ * @brief Terminate execution if the faces mesh ID is not valid
+ * @param type of data requiring mesh ID
+ */
+void PreciceInterface_EnsureValidFacesMeshID(PreciceInterface *interface, const char *type);
+
+/**
+ * @brief Terminate execution if this kind of data can't be read
+ * @param sim
+ * @param type of data to check
+ */
+void PreciceInterface_EnsureValidRead(SimulationData *sim, enum CouplingDataType type);
 
 /**
  * @brief Configures the faces mesh (for tetrahedral elements only)
