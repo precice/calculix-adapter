@@ -62,7 +62,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  Precice_ReadCouplingData(sim);
+  //Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -74,16 +74,18 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     fflush(stdout);
 
     // For steady-state simulations, we will always compute the converged steady-state solution in one coupling step
-    *sim->theta  = 0;
-    *sim->tper   = 1;
-    *sim->dtheta = 1;
+    //*sim->theta  = 0;
+    //*sim->tper   = 1;
+    //*sim->dtheta = 1;
 
+    printf("Step 1\n");
     // Set the solver time step to be the same as the coupling time step
     sim->solver_dt = precice_dt;
   } else {
     // Compute the time step size of CalculiX
     double solver_dt = (*sim->dtheta) * (*sim->tper);
 
+    printf("Step 2\n");
     // Synchronize CalculiX time step with preCICE time window end
     double dt = fmin(precice_dt, solver_dt);
 
@@ -197,7 +199,7 @@ void Precice_ReadCouplingData(SimulationData *sim)
 
   PreciceInterface **interfaces    = sim->preciceInterfaces;
   int                numInterfaces = sim->numPreciceInterfaces;
-  int                i, j, idx;
+  int                i, j;
 
   for (i = 0; i < numInterfaces; i++) {
 
@@ -266,111 +268,71 @@ void Precice_ReadCouplingData(SimulationData *sim)
         printf("Reading DISPLACEMENTS coupling data.\n");
         break;
       case CMAT1:
-        printf("Before reading MATERIAL TANGENT 1 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 0;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 1 coupling data.\n");
         break;
       case CMAT2:
-        printf("Before reading MATERIAL TANGENT 2 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 3;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 2 coupling data.\n");
         break;
       case CMAT3:
-        printf("Before reading MATERIAL TANGENT 3 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 6;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(6, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 3 coupling data.\n");
         break;
       case CMAT4:
-        printf("Before reading MATERIAL TANGENT 4 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 9;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(9, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 4 coupling data.\n");
         break;
       case CMAT5:
-        printf("Before reading MATERIAL TANGENT 5 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 12;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(12, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 5 coupling data.\n");
         break;
       case CMAT6:
-        printf("Before reading MATERIAL TANGENT 6 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 15;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
-        }
+        setElementsStiffness(15, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 6 coupling data.\n");
         break;
       case CMAT7:
-        printf("Before reading MATERIAL TANGENT 7 coupling data.\n");
         // READ MATERIAL MATRIX COMPONENTS -  C55, C56, C66
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent7Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idx                  = k * 27 + 18;
-          sim->xstiff[idx]     = interfaces[i]->elementIPVectorData[k * 3];
-          sim->xstiff[idx + 1] = interfaces[i]->elementIPVectorData[k * 3 + 1];
-          sim->xstiff[idx + 2] = interfaces[i]->elementIPVectorData[k * 3 + 2];
+          printf("CMAT7 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
         }
+        setElementsStiffness(18, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 7 coupling data.\n");
         break;
       case STRESS1TO3:
         // READ STRESS COMPONENTS - S11, S22, S33
-        idx = 1;
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        printf("After preCICE read command: Reading STRESS1TO3 coupling data.\n");
-        FORTRAN(setstresstensor, (sim->mi,
-                                  &idx,
-                                  &interfaces[i]->numElements,
-                                  interfaces[i]->elementIPVectorData,
-                                  sim->stx));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          printf("Stresses1to3 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
+        }
+        setElementsStress(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
+        int idxx;
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          idxx = k * 6;
+          printf("stx for %d = [%f,%f,%f]\n", idxx, sim->stx[idxx], sim->stx[idxx + 1], sim->stx[idxx + 2]);
+        }
         printf("Reading STRESS1TO3 coupling data.\n");
         break;
       case STRESS4TO6:
-        printf("Before reading STRESS4TO6 coupling data.\n");
         // READ STRESS COMPONENTS - S23, S13, S12
-        idx = 4;
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        FORTRAN(setstresstensor, (sim->mi,
-                                  &idx,
-                                  &interfaces[i]->numElements,
-                                  interfaces[i]->elementIPVectorData,
-                                  sim->stx));
+        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+          printf("Stresses4to6 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
+        }
+        setElementsStress(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
         printf("Reading STRESS4TO6 coupling data.\n");
         break;
       case DISPLACEMENTDELTAS:
@@ -411,7 +373,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
 
   PreciceInterface **interfaces    = sim->preciceInterfaces;
   int                numInterfaces = sim->numPreciceInterfaces;
-  int                i, j, idx;
+  int                i, j;
   int                iset;
 
   for (i = 0; i < numInterfaces; i++) {
@@ -533,16 +495,12 @@ void Precice_WriteCouplingData(SimulationData *sim)
         printf("Writing FORCES coupling data.\n");
         break;
       case STRAIN1TO3:
-        idx = 0;
-        getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
-        // printf("strain1to3 values: %d\n", interfaces[i]->elementIPVectorData[0]);
+        getElementStrain(0, interfaces[i]->numIPTotal, sim->eei, interfaces[i]->elementIPVectorData);
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
         printf("Writing STRAIN1TO3 coupling data.\n");
         break;
       case STRAIN4TO6:
-        idx = 3;
-        getElementStrain(idx, sim->mi, interfaces[i]->numElements, sim->eei, interfaces[i]->elementIPVectorData);
-        // printf("strain4to6 values: %d\n", interfaces[i]->elementIPVectorData[0]);
+        getElementStrain(3, interfaces[i]->numIPTotal, sim->eei, interfaces[i]->elementIPVectorData);
         precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->strain4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, interfaces[i]->elementIPVectorData);
         printf("Writing STRAIN4TO6 coupling data.\n");
         break;
@@ -735,7 +693,7 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
   // Find guass point coordinates of the element -> Serves as mesh for data transfer
-  interface->numIPTotal        = 8 * interface->numElements; // Gauss point mesh coordinate - each element 8 gauss points
+  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
   interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
   interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
 

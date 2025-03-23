@@ -265,12 +265,11 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
 /**
  * @brief Gets the strain values at each Gauss point of each element
  * @param strainIdx: CalculiX variable for the index of the strain values
- * @param mi: CalculiX variable for the number of integration points
- * @param nelem: CalculiX variable for the number of elements
+ * @param numIPTotal: CalculiX variable for the number of elements
  * @param eei: CalculiX array for the element integration information
  * @param strainData: CalculiX array for the strain values
  */
-void getElementStrain(int strainIdx, int *mi, int nelem, double *eei, double *strainData);
+void getElementStrain(int strainIdx, int numIPTotal, double *eei, double *strainData);
 
 /**
  * @brief Modifies the values of a DFLUX or FILM boundary condition
@@ -347,6 +346,18 @@ void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, dou
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
 void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun);
+
+/**
+ * @brief Modifies the values of stress of the elements at the interface
+ * @param TODO
+ */
+void setElementsStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff);
+
+/**
+ * @brief Modifies the values of stress of the elements at the interface
+ * @param TODO
+ */
+void setElementsStress(int stressIdx, int numIPTotal, double *stressData, double *stx);
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod
