@@ -493,7 +493,7 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
   }
 }
 
-void setElementsStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff)
+void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff)
 {
   int i, idx;
   // Loop through all element and respective gauss points
@@ -505,7 +505,7 @@ void setElementsStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessDat
   }
 }
 
-void setElementsStress(int stressIdx, int numIPTotal, double *stressData, double *stx)
+void setElementStress(int stressIdx, int numIPTotal, double *stressData, double *stx)
 {
   int i, idx;
   // Loop through all element and respective gauss points

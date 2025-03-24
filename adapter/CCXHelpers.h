@@ -351,13 +351,13 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
  * @brief Modifies the values of stress of the elements at the interface
  * @param TODO
  */
-void setElementsStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff);
+void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff);
 
 /**
  * @brief Modifies the values of stress of the elements at the interface
  * @param TODO
  */
-void setElementsStress(int stressIdx, int numIPTotal, double *stressData, double *stx);
+void setElementStress(int stressIdx, int numIPTotal, double *stressData, double *stx);
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod

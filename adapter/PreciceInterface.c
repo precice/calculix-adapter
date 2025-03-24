@@ -78,14 +78,12 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     //*sim->tper   = 1;
     //*sim->dtheta = 1;
 
-    printf("Step 1\n");
     // Set the solver time step to be the same as the coupling time step
     sim->solver_dt = precice_dt;
   } else {
     // Compute the time step size of CalculiX
     double solver_dt = (*sim->dtheta) * (*sim->tper);
 
-    printf("Step 2\n");
     // Synchronize CalculiX time step with preCICE time window end
     double dt = fmin(precice_dt, solver_dt);
 
@@ -309,30 +307,30 @@ void Precice_ReadCouplingData(SimulationData *sim)
         for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
           printf("CMAT7 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
         }
-        setElementsStiffness(18, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(18, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 7 coupling data.\n");
         break;
       case STRESS1TO3:
         // READ STRESS COMPONENTS - S11, S22, S33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          printf("Stresses1to3 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
-        }
-        setElementsStress(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
-        int idxx;
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          idxx = k * 6;
-          printf("stx for %d = [%f,%f,%f]\n", idxx, sim->stx[idxx], sim->stx[idxx + 1], sim->stx[idxx + 2]);
-        }
+        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+        //   printf("Stresses1to3 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
+        // }
+        setElementStress(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
+        // int idxx;
+        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+        //   idxx = k * 6;
+        //   printf("stx for %d = [%f,%f,%f]\n", idxx, sim->stx[idxx], sim->stx[idxx + 1], sim->stx[idxx + 2]);
+        // }
         printf("Reading STRESS1TO3 coupling data.\n");
         break;
       case STRESS4TO6:
         // READ STRESS COMPONENTS - S23, S13, S12
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-          printf("Stresses4to6 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
-        }
-        setElementsStress(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
+        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
+        //   printf("Stresses4to6 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
+        // }
+        setElementStress(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
         printf("Reading STRESS4TO6 coupling data.\n");
         break;
       case DISPLACEMENTDELTAS:
