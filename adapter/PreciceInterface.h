@@ -118,7 +118,7 @@ typedef struct SimulationData {
   ITG *   ielmat;
   ITG *   istartset;
   ITG *   iendset;
-  char ** lakon;
+  char *  lakon;
   ITG *   kon;
   ITG *   ipkon;
   ITG     nset;
@@ -134,7 +134,7 @@ typedef struct SimulationData {
   int     nload;
   char *  sideload;
   double  nk;
-  double  ne;
+  ITG     ne;
   ITG     mt;
   double *theta;
   double *dtheta;

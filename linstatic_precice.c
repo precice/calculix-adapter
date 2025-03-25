@@ -153,7 +153,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       .iendset   = iendset,
       .kon       = kon,
       .ipkon     = ipkon,
-      .lakon     = &lakon,
+      .lakon     = lakon,
       .co        = co,
       .set       = set,
       .nset      = *nset,

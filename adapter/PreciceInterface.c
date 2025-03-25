@@ -268,37 +268,37 @@ void Precice_ReadCouplingData(SimulationData *sim)
       case CMAT1:
         // READ MATERIAL MATRIX COMPONENTS - C11, C12, C13
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent1Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 1 coupling data.\n");
         break;
       case CMAT2:
         // READ MATERIAL MATRIX COMPONENTS -  C14, C15, C16
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent2Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 2 coupling data.\n");
         break;
       case CMAT3:
         // READ MATERIAL MATRIX COMPONENTS -  C22, C23, C24
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(6, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(6, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 3 coupling data.\n");
         break;
       case CMAT4:
         // READ MATERIAL MATRIX COMPONENTS -  C25, C26, C33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent4Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(9, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(9, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 4 coupling data.\n");
         break;
       case CMAT5:
         // READ MATERIAL MATRIX COMPONENTS -  C34, C35, C36
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent5Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(12, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(12, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 5 coupling data.\n");
         break;
       case CMAT6:
         // READ MATERIAL MATRIX COMPONENTS -  C44, C45, C46
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->materialTangent6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        setElementsStiffness(15, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
+        setElementStiffness(15, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->xstiff);
         printf("Reading MATERIAL TANGENT 6 coupling data.\n");
         break;
       case CMAT7:
@@ -663,12 +663,12 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
 
 static enum ElemType findSimulationMeshType(SimulationData *sim)
 {
-  // Assuming only tetrahedra are used, or only hexaedral, for faces meshes.
+  // Assuming only tetrahedra or hexahedra are used.
   // Return first non-zero mesh type.
   // lakon tab takes 8 chars per element
 
   const char *lakon_ptr = sim->lakon;
-  for (int i = 0; i < sim->ne; ++i) {
+  for (int i = 0; i < sim->ne + 1; ++i) { // +1 because ne starts from zero
     if (startsWith(lakon_ptr, "C3D4") || startsWith(lakon_ptr, "C3D10")) {
       return TETRAHEDRA;
     } else if (startsWith(lakon_ptr, "C3D8") || startsWith(lakon_ptr, "C3D20")) {
@@ -699,19 +699,30 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
     interface->elemIPID[j] = j;
   }
 
-  int    numElements = interface->numElements;
-  int    numIPTotal  = interface->numIPTotal;
-  char **lakon       = sim->lakon;
+  int numElements = interface->numElements;
+  int numIPTotal  = interface->numIPTotal;
 
-  FORTRAN(getc3d8elementgausspointcoords, (&numElements,
-                                           &numIPTotal,
-                                           interface->elementIDs,
-                                           sim->co,
-                                           &lakon,
-                                           sim->kon,
-                                           sim->ipkon,
-                                           interface->elemIPID,
-                                           interface->elemIPCoordinates));
+  enum ElemType elemType = findSimulationMeshType(sim);
+
+  if (elemType == TETRAHEDRA) {
+    FORTRAN(getc3d4elementgausspointcoords, (&numElements,
+                                             interface->elementIDs,
+                                             sim->co,
+                                             sim->kon,
+                                             sim->ipkon,
+                                             interface->elemIPID,
+                                             interface->elemIPCoordinates));
+  } else if (elemType == HEXAHEDRA) {
+    FORTRAN(getc3d8elementgausspointcoords, (&numElements,
+                                             interface->elementIDs,
+                                             sim->co,
+                                             sim->kon,
+                                             sim->ipkon,
+                                             interface->elemIPID,
+                                             interface->elemIPCoordinates));
+  } else {
+    supportedElementError();
+  }
 
   // debugging TODO: remove
   for (int i = 0; i < interface->numIPTotal; i++) {

@@ -18,7 +18,7 @@
 !
 !     This function is a copy of the function for calculation and printout of the lift and drag forces
 !
-      subroutine getc3d8elementgausspointcoords(nelem, elem_ids,
+      subroutine getc3d4elementgausspointcoords(nelem, elem_ids,
      &    co, kon, ipkon, elem_gp_id, elem_gp_coord)
 
          implicit none
@@ -30,20 +30,20 @@
          integer     :: kon(*)
          integer     :: ipkon(*)
 
-         integer     :: elem_gp_id(*)    ! GP ID
-         real(8)     :: elem_gp_coord(*) ! GP coords
+         integer     :: elem_gp_id(*)    ! Gauss point IDs
+         real(8)     :: elem_gp_coord(*) ! Gauss point coords
 
          ! Internal variables
          integer(4)     :: iel, el_id, indexe, i, j, k, l
-         integer(4)     :: iflag, idx, konl(8), gp_id
-         real(8)        :: xl(3,8), xi, et, ze, xsj, shp(4,20)
+         integer(4)     :: iflag, idx, konl(4), gp_id
+         REAL(8)        :: xl(3,4), xi, et, ze, xsj, shp(4,20)
 
          include "gauss.f"
 
          data iflag /1/
 
          ! Initialize gauss point coordinates to zero
-         do l = 1, nelem*8*3
+         do l = 1, nelem*4*3
             elem_gp_coord(l) = 0.0
          end do
 
@@ -53,33 +53,33 @@
             indexe=ipkon(el_id)
 
             ! connectivity
-            do i = 1, 8
+            do i = 1, 4
                konl(i)=kon(indexe+i)
             end do
 
             ! Local nodal coordinates
-            do i = 1, 8
+            do i = 1, 4
                do j = 1, 3
                   xl(j,i)=co(j,konl(i))
                end do
             end do
 
             ! Loop through gauss points of each element
-            do gp_id = 1, 8
-               elem_gp_id((el_id - 1)*8 + gp_id) =
-     &            (el_id - 1)*8 + gp_id - 1
+            do gp_id = 1, 4
+               elem_gp_id((el_id - 1)*4 + gp_id) =
+     &            (el_id - 1)*4 + gp_id - 1
 
-               ! gauss3d2: hex, 2-point integration (8 integration points)
-               xi = gauss3d2(1,gp_id)
-               et = gauss3d2(2,gp_id)
-               ze = gauss3d2(3,gp_id)
+               ! gauss3d5: tet, 4 integration points
+               xi = gauss3d5(1,gp_id)
+               et = gauss3d5(2,gp_id)
+               ze = gauss3d5(3,gp_id)
 
                ! Get the shape function
-               call shape8h(xi,et,ze,xl,xsj,shp,iflag)
+               call shape4tet(xi,et,ze,xl,xsj,shp,iflag)
 
                ! Calculate the Gauss point coordinates
                do k = 1, 3
-                  do l = 1, 8
+                  do l = 1, 4
                      idx = (el_id - 1)*24 + (gp_id - 1)*3 + k
                      elem_gp_coord(idx)=elem_gp_coord(idx)
      &                     +xl(k,l)*shp(4,l)
@@ -92,4 +92,4 @@
 
          return
 
-      end subroutine getc3d8elementgausspointcoords
+      end subroutine getc3d4elementgausspointcoords
