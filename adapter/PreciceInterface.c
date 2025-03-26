@@ -690,7 +690,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
-  // Find guass point coordinates of the element -> Serves as mesh for data transfer
   interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
   interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
   interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));

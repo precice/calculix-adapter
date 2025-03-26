@@ -79,8 +79,8 @@
 
                ! Calculate the Gauss point coordinates
                do k = 1, 3
+                  idx = (el_id - 1)*12 + (gp_id - 1)*3 + k
                   do l = 1, 4
-                     idx = (el_id - 1)*24 + (gp_id - 1)*3 + k
                      elem_gp_coord(idx)=elem_gp_coord(idx)
      &                     +xl(k,l)*shp(4,l)
                   end do
