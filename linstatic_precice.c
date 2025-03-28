@@ -181,7 +181,8 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       .fn      = fn,
       .cocon   = cocon,
       .ncocon  = ncocon,
-      .mi      = mi
+      .mi      = mi,
+      .ne     = *ne
   };
 
   /* preCICE Adapter: Initialize */

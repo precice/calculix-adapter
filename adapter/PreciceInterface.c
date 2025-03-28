@@ -668,7 +668,7 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
   // lakon tab takes 8 chars per element
 
   const char *lakon_ptr = sim->lakon;
-  for (int i = 0; i < sim->ne + 1; ++i) { // +1 because ne starts from zero
+  for (int i = 0; i < sim->ne; ++i) {
     if (startsWith(lakon_ptr, "C3D4") || startsWith(lakon_ptr, "C3D10")) {
       return TETRAHEDRA;
     } else if (startsWith(lakon_ptr, "C3D8") || startsWith(lakon_ptr, "C3D20")) {
@@ -676,14 +676,13 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
     }
     lakon_ptr += 8;
   }
-
   return INVALID_ELEMENT;
 }
 
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
 {
   printf("Entering ConfigureElementsMesh \n");
-  char *elementSetName    = interface->name; // toFaceSetName(interface->name);
+  char *elementSetName    = interface->name;
   interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
   interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
 
@@ -692,14 +691,13 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
   interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
-  interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
 
+  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
   for (int j = 0; j < interface->numIPTotal; j++) {
     interface->elemIPID[j] = j;
   }
 
   int numElements = interface->numElements;
-  int numIPTotal  = interface->numIPTotal;
 
   enum ElemType elemType = findSimulationMeshType(sim);
 
@@ -709,7 +707,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
                                              sim->co,
                                              sim->kon,
                                              sim->ipkon,
-                                             interface->elemIPID,
                                              interface->elemIPCoordinates));
   } else if (elemType == HEXAHEDRA) {
     FORTRAN(getc3d8elementgausspointcoords, (&numElements,
@@ -717,7 +714,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
                                              sim->co,
                                              sim->kon,
                                              sim->ipkon,
-                                             interface->elemIPID,
                                              interface->elemIPCoordinates));
   } else {
     supportedElementError();

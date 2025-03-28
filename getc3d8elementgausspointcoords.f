@@ -19,7 +19,7 @@
 !     This function is a copy of the function for calculation and printout of the lift and drag forces
 !
       subroutine getc3d8elementgausspointcoords(nelem, elem_ids,
-     &    co, kon, ipkon, elem_gp_id, elem_gp_coord)
+     &    co, kon, ipkon, elem_gp_coord)
 
          implicit none
 
@@ -30,7 +30,6 @@
          integer     :: kon(*)
          integer     :: ipkon(*)
 
-         integer     :: elem_gp_id(*)    ! GP ID
          real(8)     :: elem_gp_coord(*) ! GP coords
 
          ! Internal variables
@@ -66,9 +65,6 @@
 
             ! Loop through gauss points of each element
             do gp_id = 1, 8
-               elem_gp_id((el_id - 1)*8 + gp_id) =
-     &            (el_id - 1)*8 + gp_id - 1
-
                ! gauss3d2: hex, 2-point integration (8 integration points)
                xi = gauss3d2(1,gp_id)
                et = gauss3d2(2,gp_id)
