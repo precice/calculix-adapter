@@ -44,7 +44,9 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
+CFLAGS  = -Wall -O3 -fopenmp $(INCLUDES)
+CFLAGS += -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
