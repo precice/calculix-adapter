@@ -52,9 +52,11 @@ CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CC = clang
+	CXX = clang++
 	LIBS += -lc++
 else
 	CC = mpicc
+	CXX = g++
 	LIBS += -lstdc++
 endif
 
@@ -82,7 +84,7 @@ $(OBJDIR)/%.o : %.f
 $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	$(CXX) -std=c++11 $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
