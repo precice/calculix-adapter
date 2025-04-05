@@ -61,7 +61,10 @@ else
 endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
-# Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
+GCC_VERSION_MAJOR := $(shell $(CC) -dumpversion | cut -d. -f1)
+ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
+	FFLAGS += -fallow-argument-mismatch
+endif
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
