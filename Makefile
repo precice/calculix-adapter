@@ -48,6 +48,9 @@ CFLAGS  = -Wall -O3 -fopenmp $(INCLUDES)
 CFLAGS += -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
 CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 
+# yaml-cpp 0.6.0+ requires C++11
+CXXFLAGS += -std=c++11
+
 # OS-specific options
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -87,7 +90,7 @@ $(OBJDIR)/%.o : %.f
 $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	$(CXX) -std=c++11 $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CFLAGS) -c $< -o $@
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
