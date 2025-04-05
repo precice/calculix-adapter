@@ -51,7 +51,7 @@ CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 # OS-specific options
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CC = /usr/local/bin/gcc
+	CC = clang
 	LIBS += -lc++
 else
 	CC = mpicc
