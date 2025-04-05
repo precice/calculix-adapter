@@ -37,7 +37,6 @@ INCLUDES = \
 LIBS = \
 	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
-	-lstdc++ \
 	$(ARPACK_LIBS) \
 	-lpthread -lm -lc
 
@@ -51,8 +50,10 @@ CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATR
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CC = /usr/local/bin/gcc
+	LIBS += -lc++
 else
 	CC = mpicc
+	LIBS += -lstdc++
 endif
 
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
