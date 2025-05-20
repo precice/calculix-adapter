@@ -68,7 +68,7 @@ jobs:
 
       - name: Download CalculiX sources
         run: |
-          VERSION=$(echo "" | sed -E "s/^v([0-9]\.[0-9]+)\.[0-9]+/ccx_\1/" )
+          VERSION=$(echo "${{ github.event.inputs.release }}" | sed -E "s/^v([0-9]\.[0-9]+)\.[0-9]+/ccx_\1/" )
           wget http://www.dhondt.de/${VERSION}.src.tar.bz2
           # CalculiX/ccx_x.yy/src -> CalculiX_src
           tar --transform="s|/${VERSION}/|_|" -xjf ${VERSION}.src.tar.bz2
@@ -80,7 +80,7 @@ jobs:
         run: apt -y install lintian pandoc lsb-release
       - name: Create Debian Package
         run: |
-          REL=$( echo "${{matrix.flags}}" | sed "s/^v//" )
+          REL=$( echo "${{ github.event.inputs.release }}" | sed "s/^v//" )
           mkdir -p "packaging/calculix-precice3_${REL}-1_amd64/usr/bin"
           cp ./bin/ccx_preCICE ./packaging/calculix-precice3_${REL}-1_amd64/usr/bin/ccx_preCICE
           cd packaging
