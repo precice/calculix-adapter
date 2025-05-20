@@ -89,7 +89,7 @@ jobs:
 
       - name: Compute SHA256 checksum
         working-directory: packaging
-        run: sha256sum *.deb > "$(ls -1 *.deb)"
+        run: sha256sum *.deb > "$(ls -1 *.deb).sha256"
 
       - name: Upload debian package
         uses: svenstaro/upload-release-action@v2
