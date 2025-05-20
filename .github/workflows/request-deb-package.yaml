@@ -73,7 +73,7 @@ jobs:
           # CalculiX/ccx_x.yy/src -> CalculiX_src
           tar --transform="s|/${VERSION}/|_|" -xjf ${VERSION}.src.tar.bz2
       - name: make
-        run: make -j 4 CCX="./CalculiX_src" ADDITIONAL_FFLAGS="${{matrix.flags}}"
+        run: make -j 4 CCX="./CalculiX_src" ADDITIONAL_FFLAGS="${{ github.event.inputs.fflags }}"
       - name: Test run
         run: ./bin/ccx_preCICE -h
       - name: Download tools for packaging
