@@ -1,0 +1,101 @@
+name: Request Deb Package
+# This is a workflow to manually request an ubuntu package for an existing release.
+# To use:
+# - Go to the GitHub repository
+# - Go to the Actions tab
+# - Select the "Request Package" workflow
+# - On the top of the list, select "Run workflow"
+# - Select the adapter release tag to generate the package for. Example: v2.20.1
+# - Select the precice release tag to install the debian package from. Example: v3.2.0
+# - Select the ubuntu version to generate the package for. Example: 21.10
+# - Click "Run Workflow"
+#
+# This workflow uses the official docker images.
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release tag'
+        default: "v2.20.1"
+        required: true
+        type: string
+      distro:
+        description: 'Distribution/Container'
+        default: "ubuntu"
+        required: true
+        type: string
+      version:
+        description: 'Distribution version'
+        default: "24.04"
+        required: true
+        type: string
+      fflags:
+        description: 'Additional fflags'
+        default: "-fallow-argument-mismatch"
+        required: true
+        type: string
+      precice:
+        description: 'preCICE release tag'
+        default: "v3.2.0"
+        required: true
+        type: string
+
+jobs:
+  package:
+    name: 'Package ${{ github.event.inputs.release }} for ${{ github.event.inputs.distro }} ${{ github.event.inputs.version }}'
+    runs-on: ubuntu-latest
+    container: '${{ github.event.inputs.distro }}:${{ github.event.inputs.version }}'
+    steps:
+      - name: Install common dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: Europe/Berlin
+        run: |
+          apt update
+          apt -y upgrade
+          apt -y install git build-essential lsb-release cmake libeigen3-dev libxml2-dev libboost-all-dev python3-dev python3-numpy petsc-dev sed
+          apt -y install libarpack2-dev libspooles-dev libyaml-cpp-dev
+      - name: Install preCICE
+        uses: precice/setup-precice-action@main
+        with:
+          precice-version: ${{ github.event.inputs.precice }}
+      - name: preCICE version
+        run: precice-tools version
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release }}
+
+      - name: Download CalculiX sources
+        run: |
+          VERSION=$(echo "${{ github.event.inputs.release }}" | sed -E "s/^v([0-9]\.[0-9]+)\.[0-9]+/ccx_\1/" )
+          wget http://www.dhondt.de/${VERSION}.src.tar.bz2
+          # CalculiX/ccx_x.yy/src -> CalculiX_src
+          tar --transform="s|/${VERSION}/|_|" -xjf ${VERSION}.src.tar.bz2
+      - name: make
+        run: make -j 4 CCX="./CalculiX_src" ADDITIONAL_FFLAGS="${{ github.event.inputs.fflags }}"
+      - name: Test run
+        run: ./bin/ccx_preCICE -h
+      - name: Download tools for packaging
+        run: apt -y install lintian pandoc lsb-release
+      - name: Create Debian Package
+        run: |
+          REL=$( echo "${{ github.event.inputs.release }}" | sed "s/^v//" )
+          mkdir -p "packaging/calculix-precice3_${REL}-1_amd64/usr/bin"
+          cp ./bin/ccx_preCICE ./packaging/calculix-precice3_${REL}-1_amd64/usr/bin/ccx_preCICE
+          cd packaging
+          pwd
+          bash ./make_deb.sh $(lsb_release -sc)
+
+      - name: Compute SHA256 checksum
+        working-directory: packaging
+        run: sha256sum *.deb > "$(ls -1 *.deb).sha256"
+
+      - name: Upload debian package
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: packaging/calculix-precice*.deb*
+          file_glob: true
+          overwrite: true
+          tag: ${{ github.event.inputs.release }}
