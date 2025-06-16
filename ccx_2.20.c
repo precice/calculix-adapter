@@ -1469,7 +1469,7 @@ int main(int argc, char *argv[])
                 xbodyold, timepar, thicke, jobnamec, tieset, &ntie, &istep, &nmat,
                 ielprop, prop, typeboun, &mortar, mpcinfo, tietol, ics,
                 orname, itempuser, t0g, t1g,
-                /* PreCICE args */
+                /* preCICE args */
                 preciceParticipantName, configFilename);
 
         for (i = 0; i < 3; i++) {
@@ -1555,7 +1555,6 @@ int main(int argc, char *argv[])
                      t0g, t1g,
                      preciceParticipantName, configFilename);
       } else {
-        //printf("DEBUG: nmethod=%d, iperturb[0]=%d, iperturb[1]=%d\n", nmethod, iperturb[0], iperturb[1]);
         printf("ERROR: Only thermal coupling or FSI is available with preCICE");
         exit(0);
       }

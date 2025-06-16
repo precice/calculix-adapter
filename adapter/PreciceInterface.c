@@ -62,7 +62,7 @@ void Precice_Setup(char *configFilename, char *participantName, SimulationData *
   // Initialize coupling data
   printf("Initializing coupling data\n");
   fflush(stdout);
-  //Precice_ReadCouplingData(sim);
+  Precice_ReadCouplingData(sim);
 }
 
 void Precice_AdjustSolverTimestep(SimulationData *sim)
@@ -74,8 +74,8 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     fflush(stdout);
 
     // For steady-state simulations, we will always compute the converged steady-state solution in one coupling step
-    //*sim->theta  = 0;
-    //*sim->tper   = 1;
+    *sim->theta = 0;
+    *sim->tper  = 1;
     //*sim->dtheta = 1;
 
     // Set the solver time step to be the same as the coupling time step
@@ -313,23 +313,12 @@ void Precice_ReadCouplingData(SimulationData *sim)
       case STRESS1TO3:
         // READ STRESS COMPONENTS - S11, S22, S33
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress1to3Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-        //   printf("Stresses1to3 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
-        // }
         setElementStress(0, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
-        // int idxx;
-        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-        //   idxx = k * 6;
-        //   printf("stx for %d = [%f,%f,%f]\n", idxx, sim->stx[idxx], sim->stx[idxx + 1], sim->stx[idxx + 2]);
-        // }
         printf("Reading STRESS1TO3 coupling data.\n");
         break;
       case STRESS4TO6:
         // READ STRESS COMPONENTS - S23, S13, S12
         precicec_readData(interfaces[i]->couplingMeshName, interfaces[i]->stress4to6Data, interfaces[i]->numIPTotal, interfaces[i]->elemIPID, sim->solver_dt, interfaces[i]->elementIPVectorData);
-        // for (int k = 0; k < interfaces[i]->numIPTotal; k++) {
-        //   printf("Stresses4to6 read from preCICE: %f, %f, %f\n", interfaces[i]->elementIPVectorData[k * 3], interfaces[i]->elementIPVectorData[k * 3 + 1], interfaces[i]->elementIPVectorData[k * 3 + 2]);
-        // }
         setElementStress(3, interfaces[i]->numIPTotal, interfaces[i]->elementIPVectorData, sim->stx);
         printf("Reading STRESS4TO6 coupling data.\n");
         break;
@@ -717,11 +706,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
                                              interface->elemIPCoordinates));
   } else {
     supportedElementError();
-  }
-
-  // debugging TODO: remove
-  for (int i = 0; i < interface->numIPTotal; i++) {
-    printf("Gauss point coordinates: %f, %f, %f\n", interface->elemIPCoordinates[3 * i], interface->elemIPCoordinates[3 * i + 1], interface->elemIPCoordinates[3 * i + 2]);
   }
 
   precicec_setMeshVertices(interface->elementsMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);

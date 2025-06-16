@@ -145,6 +145,13 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
 
   ne0 = *ne;
 
+  /* allocating a field for the stiffness matrix */
+  NNEW(xstiff, double, (long long) 27 * mi[0] * *ne);
+  /* allocating a field for the stress tensor */
+  NNEW(stx, double, 6 * mi[0] * *ne);
+  /* allocating a field for the strain tensor */
+  NNEW(eei, double, 6 * mi[0] * *ne);  
+
   /* preCICE Adapter: Initialize the Calculix data structure */
   struct SimulationData simulationData = {
       .ialset    = ialset,
@@ -169,7 +176,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       .mt        = mt,
       .nk        = *nk,
       .theta     = &theta,
-      // .dtheta    = &dtheta,
+      //.dtheta    = &dtheta,
       .tper    = tper,
       .nmethod = nmethod,
       .xload   = xload,
@@ -182,7 +189,10 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
       .cocon   = cocon,
       .ncocon  = ncocon,
       .mi      = mi,
-      .ne     = *ne
+      .ne     = *ne,
+      .xstiff = xstiff,
+      .stx    = stx,
+      .eei   = eei
   };
 
   /* preCICE Adapter: Initialize */
@@ -405,10 +415,6 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
 
   NNEW(f, double, *neq);
 
-  /* allocating a field for the stiffness matrix */
-
-  NNEW(xstiff, double, (long long) 27 * mi[0] * *ne);
-
   /* for a *STATIC,PERTURBATION analysis with submodel boundary
      conditions from a *FREQUENCY analysis iperturb[0]=1 has to be
      temporarily set to iperturb[0]=0 in order for f to be calculated in
@@ -422,9 +428,7 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
   iout = -1;
   NNEW(v, double, mt **nk);
   NNEW(fn, double, mt **nk);
-  NNEW(stx, double, 6 * mi[0] * *ne);
   NNEW(inum, ITG, *nk);
-  NNEW(eei, double, 6 * mi[0] * *ne);
 
   results(co, nk, kon, ipkon, lakon, ne, v, stn, inum, stx,
           elcon, nelcon, rhcon, nrhcon, alcon, nalcon, alzero, ielmat,
@@ -450,9 +454,9 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
           labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
           &intscheme);
 
-  simulationData.xstiff = xstiff;
-  simulationData.eei    = eei;
-  simulationData.stx    = stx;
+  // simulationData.xstiff = xstiff;
+  // simulationData.eei    = eei;
+  // simulationData.stx    = stx;
 
   if (Precice_IsCouplingOngoing()) {
     printf("Write coupling data\n");
