@@ -53,8 +53,8 @@ void ConfigReader_Read(char const *configFilename, char const *participantName, 
       interface.facesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str());
     }
 
-    if (config["participants"][participantName]["interfaces"][i]["elements"]) {
-      interface.elementsMeshName = strdup(config["participants"][participantName]["interfaces"][i]["elements"].as<std::string>().c_str());
+    if (config["participants"][participantName]["interfaces"][i]["elements-mesh"]) {
+      interface.elementsMeshName = strdup(config["participants"][participantName]["interfaces"][i]["elements-mesh"].as<std::string>().c_str());
     }
 
     std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();

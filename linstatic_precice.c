@@ -454,19 +454,15 @@ void linstatic_precice(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lak
           labmpc2, ikboun2, ilboun2, ikmpc2, ilmpc2, &mortartrafoflag,
           &intscheme);
 
-  // simulationData.xstiff = xstiff;
-  // simulationData.eei    = eei;
-  // simulationData.stx    = stx;
-
   if (Precice_IsCouplingOngoing()) {
+    printf("Read coupling data\n");
+    Precice_ReadCouplingData(&simulationData);
+
     printf("Write coupling data\n");
     Precice_WriteCouplingData(&simulationData);
 
     printf("Advancing the coupling\n");
     Precice_Advance(&simulationData);
-
-    printf("Read the coupling\n");
-    Precice_ReadCouplingData(&simulationData);
   }
 
   simulationData.eei = NULL;
