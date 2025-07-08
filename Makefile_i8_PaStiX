@@ -4,7 +4,7 @@
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.20/src )
 CCX             = $(HOME)/CalculiX/ccx_2.20/src
 
-### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
+### Change these if you built SPOOLES, or ARPACK from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
 SPOOLES_INCLUDE   = -I/usr/include/spooles/
 # SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
@@ -15,11 +15,6 @@ ARPACK_INCLUDE    =
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
 ARPACK_LIBS       = $(HOME)/ARPACK/libarpack_INTEL.a 
 #ARPACK_LIBS       = -larpack -llapack -lblas
-#
-# yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
-YAML_INCLUDE      = -I/usr/include/
-# yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
-YAML_LIBS         = -lyaml-cpp
 
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
@@ -49,14 +44,12 @@ INCLUDES = \
 	$(SPOOLES_INCLUDE) \
 	$(PKGCONF_CFLAGS) \
 	$(ARPACK_INCLUDE) \
-	$(YAML_INCLUDE) \
 	$(PASTIX_INCLUDE)
 
 LIBS = \
 	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
 	-lstdc++ \
-	$(YAML_LIBS) \
 	$(ARPACK_LIBS) \
 	-lpthread -lm -lc \
 	$(PASTIX_LIBS) \
@@ -102,7 +95,7 @@ $(OBJDIR)/%.o : %.f
 $(OBJDIR)/%.o : adapter/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(YAML_INCLUDE) -c $< -o $@ $(LIBS)
+	g++ -std=c++11 -c $< -o $@ $(LIBS)
 	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
 
 # Source files in the $(CCX) folder
