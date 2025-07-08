@@ -3,7 +3,7 @@
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
 CCX_VERSION			= 2.20
-CCX             = CalculiX/ccx_$(CCX_VERSION)/src
+CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
 ### Change these if you built SPOOLES, or ARPACK from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
