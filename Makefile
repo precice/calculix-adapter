@@ -56,7 +56,7 @@ ifeq ($(UNAME_S),Darwin)
 	LIBS += -lc++
 else
 	CC = mpicc
-	CXX = g++
+	CXX = mpic++
 	LIBS += -lstdc++
 endif
 
