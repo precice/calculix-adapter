@@ -64,8 +64,7 @@ FC = mpifort
 # FC = mpif90
 # FC = gfortran
 FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
-FC_NAME := $(shell $(FC) --version 2>/dev/null | head -n 1 | cut -d' ' -f1)
-ifeq ($(FC_NAME),GNU)
+ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
   GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
   ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
     FFLAGS += -fallow-argument-mismatch
