@@ -81,7 +81,7 @@ You may also want to adjust the compiler `FC` from `mpifort` to `mpif90` or to a
 
 ### Compiling with GCC 10 or newer
 
-If you compile with GCC 10 or newer, you will get the following error, originating from CalculiX:
+If you compile the adapter (v2.20.1 or earlier) with GCC 10 or newer, you will get the following error, originating from CalculiX:
 
 ```text
 Error: Rank mismatch between actual argument at (1) and actual argument at (2) (rank-1 and scalar)
