@@ -37,7 +37,6 @@ INCLUDES = \
 LIBS = \
 	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
-	-lstdc++ \
 	$(ARPACK_LIBS) \
 	-lpthread -lm -lc
 
@@ -45,21 +44,32 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT -Wno-implicit-function-declaration
+CFLAGS  = -Wall -O3 -fopenmp $(INCLUDES)
+CFLAGS += -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CC = /usr/local/bin/gcc
+	CC = clang
+	CXX = clang++
+	LIBS += -lc++
 else
 	CC = mpicc
+	CXX = mpic++
+	LIBS += -lstdc++
 endif
 
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
-# Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
+ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
+  GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
+  ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
+    FFLAGS += -fallow-argument-mismatch
+  endif
+endif
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
@@ -77,10 +87,9 @@ $(OBJDIR)/%.o : %.c
 $(OBJDIR)/%.o : %.f
 	$(FC) $(FFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
-	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c

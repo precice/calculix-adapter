@@ -31,7 +31,6 @@ on:
         type: string
       fflags:
         description: 'Additional fflags'
-        default: "-fallow-argument-mismatch"
         required: true
         type: string
       precice:
