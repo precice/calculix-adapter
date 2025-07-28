@@ -18,10 +18,8 @@ jobs:
         include:
           - os: ubuntu-22.04
             name: jammy
-            flags: -fallow-argument-mismatch
           - os: ubuntu-24.04
             name: noble
-            flags: -fallow-argument-mismatch
 
     runs-on: ${{matrix.os}}
     container: precice/precice:develop
