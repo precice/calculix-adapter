@@ -420,9 +420,9 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
   }
 }
 
-void getElementStrain(int strainIdx, int numIPTotal, double *eei, double *strainData)
+void getElementStrain(ITG strainIdx, ITG numIPTotal, double *eei, double *strainData)
 {
-  int i, idx;
+  ITG i, idx;
   // Loop through all element and respective gauss points
   for (i = 0; i < numIPTotal; i++) {
     idx                   = i * 6 + strainIdx; //TODO: Add explanation for 6
@@ -493,9 +493,9 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
   }
 }
 
-void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff)
+void setElementStiffness(ITG stiffnessIdx, ITG numIPTotal, double *stiffnessData, double *xstiff)
 {
-  int i, idx;
+  ITG i, idx;
   // Loop through all element and respective gauss points
   for (i = 0; i < numIPTotal; i++) {
     idx             = i * 27 + stiffnessIdx; //TODO: Add explanation for 27
@@ -505,9 +505,9 @@ void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData
   }
 }
 
-void setElementStress(int stressIdx, int numIPTotal, double *stressData, double *stx)
+void setElementStress(ITG stressIdx, ITG numIPTotal, double *stressData, double *stx)
 {
-  int i, idx;
+  ITG i, idx;
   // Loop through all element and respective gauss points
   for (i = 0; i < numIPTotal; i++) {
     idx          = i * 6 + stressIdx; //TODO: Add explanation for 6
