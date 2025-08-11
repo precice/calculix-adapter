@@ -1308,11 +1308,19 @@ int main(int argc, char *argv[])
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
     if (preciceUsed) {
-      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) ;//&& (iperturb[0] > 1); Necessary to trigger isStaticorDynamic
+      printf("nmethod: %d\n", nmethod);
+      printf("iperturb[0]: %d\n", iperturb[0]);
+      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)); //&& (iperturb[0] > 1);
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
       int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
       int isStaticNLGEOM    = ((nmethod == 1) && (iperturb[0] > 1));
+
+      printf("isStaticOrDynamic: %d\n", isStaticOrDynamic);
+      printf("isDynamic: %d\n", isDynamic);
+      printf("isThermalAnalysis: %d\n", isThermalAnalysis);
+      printf("isModalDynamic: %d\n", isModalDynamic);
+      printf("isStaticNLGEOM: %d\n", isStaticNLGEOM);
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
@@ -1352,7 +1360,7 @@ int main(int argc, char *argv[])
         icascade  = mpcinfo[2];
         maxlenmpc = mpcinfo[3];
 
-      } else if (isDynamic && !isThermalAnalysis) {
+      } else if (isStaticOrDynamic && !isThermalAnalysis) {
 
         printf("Starting FSI analysis via preCICE");
 
@@ -1432,55 +1440,6 @@ int main(int argc, char *argv[])
           printf("ERROR: This simulation type is not available with preCICE");
           exit(0);
         }
-
-      } else if (isStaticOrDynamic) {
-
-        mpcinfo[0] = memmpc_;
-        mpcinfo[1] = mpcfree;
-        mpcinfo[2] = icascade;
-        mpcinfo[3] = maxlenmpc;
-
-        if (icascade != 0) {
-          printf(" *ERROR in CalculiX: the matrix structure may");
-          printf("        change due to nonlinear equations;");
-          printf("        a purely linear calculation is not");
-          printf("        feasible; use NLGEOM on the *STEP card.");
-          FORTRAN(stop, ());
-        }
-
-        printf("Starting multiscale linear static analysis via preCICE...\n");
-
-        linstatic_precice(co, &nk, &kon, &ipkon, &lakon, &ne, nodeboun, ndirboun, xboun,
-                &nboun,
-                ipompc, nodempc, coefmpc, labmpc, &nmpc, nodeforc, ndirforc, xforc,
-                &nforc, nelemload, sideload, xload, &nload,
-                nactdof, &icol, jq, &irow, neq, &nzl, &nmethod, ikmpc,
-                ilmpc, ikboun, ilboun, elcon, nelcon, rhcon, nrhcon,
-                alcon, nalcon, alzero, &ielmat, &ielorien, &norien, orab, &ntmat_,
-                t0, t1, t1old, ithermal, prestr, &iprestr, vold, iperturb, sti, nzs,
-                &kode, filab, eme, &iexpl, plicon,
-                nplicon, plkcon, nplkcon, &xstate, &npmat_, matname,
-                &isolver, mi, &ncmat_, &nstate_, cs, &mcs, &nkon, &ener,
-                xbounold, xforcold, xloadold, amname, amta, namta,
-                &nam, iamforc, iamload, iamt1, iamboun, &ttime,
-                output, set, &nset, istartset, iendset, ialset, &nprint, prlab,
-                prset, &nener, trab, inotr, &ntrans, fmpc, ipobody, ibody, xbody,
-                &nbody,
-                xbodyold, timepar, thicke, jobnamec, tieset, &ntie, &istep, &nmat,
-                ielprop, prop, typeboun, &mortar, mpcinfo, tietol, ics,
-                orname, itempuser, t0g, t1g,
-                /* preCICE args */
-                preciceParticipantName, configFilename);
-
-        for (i = 0; i < 3; i++) {
-          nzsprevstep[i] = nzs[i];
-        }
-
-        memmpc_   = mpcinfo[0];
-        mpcfree   = mpcinfo[1];
-        icascade  = mpcinfo[2];
-        maxlenmpc = mpcinfo[3];  
-
       } else if (isStaticNLGEOM) {
 
         printf("Starting STATIC analysis via preCICE...\n");

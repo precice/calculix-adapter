@@ -350,7 +350,9 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .eigenDOFs            = NULL,
       .eigenDOFsDerivatives = NULL,
       .stored_iinc          = iinc,
-      .stored_jprint        = jprint};
+      .stored_jprint        = jprint,
+      .stx                  = stx,
+      .eei                  = eei};
 
   if (*ithermal == 4) {
     uncoupled = 1;
