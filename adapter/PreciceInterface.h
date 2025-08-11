@@ -305,7 +305,7 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
 /**
  * @brief Configures the elements mesh and calls setMeshVertices on preCICE
  * @param interface
- * @param sim
+ * @param sim: Structure with CalculiX data
  */
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim);
 

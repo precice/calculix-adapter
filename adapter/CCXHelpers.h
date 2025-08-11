@@ -266,8 +266,8 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
  * @brief Gets the strain values at each Gauss point of each element
  * @param strainIdx: CalculiX variable for the index of the strain values
  * @param numIPTotal: CalculiX variable for the number of elements
- * @param eei: CalculiX array for the element integration information
- * @param strainData: CalculiX array for the strain values
+ * @param eei: CalculiX array for the element strain values
+ * @param strainData: Adapter array for the strain values
  */
 void getElementStrain(int strainIdx, int numIPTotal, double *eei, double *strainData);
 
@@ -348,14 +348,20 @@ void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, dou
 void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun);
 
 /**
- * @brief Modifies the values of stress of the elements at the interface
- * @param TODO
+ * @brief Modifies the values of stiffness of the elements
+ * @param stiffnessIdx: index of the stiffness entry to modify
+ * @param numIPTotal: total number of integration points
+ * @param stiffnessData: new stiffness values
+ * @param xstiff: CalculiX array for the stiffness values
  */
 void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff);
 
 /**
- * @brief Modifies the values of stress of the elements at the interface
- * @param TODO
+ * @brief Modifies the values of stress of the elements
+ * @param stressIdx: index of the stress entry to modify
+ * @param numIPTotal: total number of integration points
+ * @param stressData: new stress values
+ * @param stx: CalculiX array for the stress values
  */
 void setElementStress(int stressIdx, int numIPTotal, double *stressData, double *stx);
 
