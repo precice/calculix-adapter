@@ -18,10 +18,8 @@ jobs:
         include:
           - os: ubuntu-22.04
             name: jammy
-            flags: -fallow-argument-mismatch
           - os: ubuntu-24.04
             name: noble
-            flags: -fallow-argument-mismatch
 
     runs-on: ${{matrix.os}}
     container: precice/precice:develop
@@ -39,7 +37,7 @@ jobs:
       with:
         ref: ${{ github.ref }}
     - name: install dependencies
-      run: sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev -y
+      run: sudo apt install libarpack2-dev libspooles-dev -y
     - name: Download CalculiX
       run: wget http://www.dhondt.de/ccx_2.20.src.tar.bz2
     - name: Unpack Calculix
