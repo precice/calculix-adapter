@@ -18,18 +18,22 @@ You don't need to build the "vanilla" CalculiX before building the adapter. But 
 
 CalculiX itself depends on [SPOOLES2.2](http://www.netlib.org/linalg/spooles/spooles.2.2.html) and [ARPACK](https://en.wikipedia.org/wiki/ARPACK).
 
-Additionally, our adapter also depends on [yaml-cpp](https://github.com/jbeder/yaml-cpp).
+{% version %}
+Up to version v2.20.1, the adapter also requires [yaml-cpp](https://github.com/jbeder/yaml-cpp) to be installed.
+In later versions, a header-only variant of this library is included with the adapter source code.
+You can get this on Ubuntu by installing the `libyaml-cpp-dev` package with APT, or on Arch/Manjaro by installing the `yaml-cpp` package with pacman.
+{% endversion %}
 
 These can be found in many distributions as binary packages. For example, in Ubuntu, do:
 
 ```bash
-sudo apt install libarpack2-dev libspooles-dev libyaml-cpp-dev
+sudo apt install libarpack2-dev libspooles-dev
 ```
 
-For example, in Arch or Manjaro, install `arpack` and `yaml-cpp`, and compile `spooles` using an AUR helper (e.g. `yay`):
+For example, in Arch or Manjaro, install `arpack`, and compile `spooles` using an AUR helper (e.g. `yay`):
 
 ```bash
-sudo pacman -S arpack yaml-cpp
+sudo pacman -S arpack
 yay spooles
 ```
 
@@ -115,6 +119,10 @@ Now we are ready to build the library with `make lib`
 </details>
 
 ### Building yaml-cpp from source
+
+{% version %}
+Only required up to the adapter v2.20.1.
+{% endversion %}
 
 <details markdown="1"><summary>If you cannot get a binary for yaml-cpp, try these instructions.</summary>
 

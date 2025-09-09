@@ -22,7 +22,7 @@ In installing ARPACK, the HOME directory needs to be specified in the "ARmake.in
 
 Any problems with the installation of SPOOLES and ARPACK can be searched in the installation [instructions](http://www.dhondt.de/INST_CCX_2_8_MAC_02_10_2015.pdf).
 
-To install yaml-cpp, run in the source directory:
+To install yaml-cpp (up to adapter v2.20.1), run in the source directory:
 
 ```bash
 mkdir build

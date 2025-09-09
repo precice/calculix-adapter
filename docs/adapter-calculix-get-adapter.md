@@ -42,7 +42,7 @@ We started offering Debian packages for the CalculiX adapter since v2.19.0. Plea
 
 2. Edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
-   - Otherwise, set `CCX` and, if built from source, the include and lib flags for SPOOLES, ARPACK, and yaml-cpp.
+   - Otherwise, set `CCX` and, if built from source, the include and lib flags for the dependencies.
    - Read below if you are [using GCC 10 or later](#compiling-with-gcc-10-or-newer).
 3. Clean any previous builds with `make clean`.
 4. Build with `make` (e.g. `make -j 4` for parallel).
@@ -55,6 +55,10 @@ Since version 2.17 of CalculiX, it is possible to link the PaStiX solver for inc
 ### Makefile options
 
 The adapter is built using GNU Make. The `Makefile` contains a few variables on top, which need to be adapted to your system:
+
+{% version %}
+The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter v2.20.1.
+{% endversion %}
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
     - Example: `$(HOME)/CalculiX/ccx_{{site.calculix_version}}/src`
