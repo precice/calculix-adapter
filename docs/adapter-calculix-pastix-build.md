@@ -20,6 +20,10 @@ This page was built following CalculiX' documentation with adaptations for preCI
 Make sure you have a working installation of preCICE. Also run these installation commands, (after a call to `sudo apt update` and `sudo apt upgrade`) :
 `sudo apt install build-essential cmake git gfortran flex bison zlib1g-dev nvidia-cuda-toolkit-gcc libspooles-dev libyaml-cpp-dev`
 
+{% version %}
+Up to the adapter v2.20.1, the dependency package `libyaml-cpp-dev` was also required.
+{% endversion %}
+
 {% note %}
 You can get these elsewhere or build them from source. In particular, it is probably wise to have a more up to date CUDA installation than the one provided on the Ubuntu repository. Again, feedback is appreciated!
 {% endnote %}
