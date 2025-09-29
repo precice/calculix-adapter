@@ -35,11 +35,11 @@ typedef struct PreciceInterface {
   char *       nodesMeshName;
   char *       elementsMeshName;
 
-  // Interface elements
   int     numElements;
   int *   elementIDs;
   int *   elemIPID;
   double *elemIPCoordinates;
+  int     numIPTotal;
 
   int *   faceIDs;
   double *faceCenterCoordinates;
