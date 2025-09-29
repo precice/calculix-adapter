@@ -450,8 +450,8 @@ void Precice_FreeData(SimulationData *sim)
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config)
 {
   // Deduce configured dimensions
-  if (config->nodesMeshName == NULL && config->facesMeshName == NULL) {
-    printf("ERROR: You need to define either a face or a nodes mesh. Check the adapter configuration file.\n");
+  if (config->nodesMeshName == NULL && config->facesMeshName == NULL && config->elementsMeshName == NULL) {
+    printf("ERROR: You need to define either a face, nodes, or elements mesh. Check the adapter configuration file.\n");
     exit(EXIT_FAILURE);
   }
   if (config->nodesMeshName && config->facesMeshName) {
@@ -473,6 +473,8 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
 
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
+  interface->elemIPID              = NULL;
+  interface->elemIPCoordinates     = NULL;
   interface->faceIDs               = NULL;
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
@@ -545,6 +547,14 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->couplingMeshName = interface->faceCentersMeshName;
   }
 
+  // Element mesh
+  interface->elementsMeshName = NULL;
+  if (config->elementsMeshName) {
+    interface->elementsMeshName = strdup(config->elementsMeshName);
+    PreciceInterface_ConfigureElementsMesh(interface, sim);
+    interface->couplingMeshName = interface->elementsMeshName;
+  }
+
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
 }
 
@@ -565,6 +575,48 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
   }
 
   return INVALID_ELEMENT;
+}
+
+void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
+{
+  char *elementSetName    = interface->name;
+  interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
+  interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
+
+  interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
+  getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
+
+  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
+  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
+
+  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    interface->elemIPID[j] = j;
+  }
+
+  int numElements = interface->numElements;
+
+  enum ElemType elemType = findSimulationMeshType(sim);
+
+  if (elemType == TETRAHEDRA) {
+    FORTRAN(getc3d4elementgausspointcoords, (&numElements,
+                                             interface->elementIDs,
+                                             sim->co,
+                                             sim->kon,
+                                             sim->ipkon,
+                                             interface->elemIPCoordinates));
+  } else if (elemType == HEXAHEDRA) {
+    FORTRAN(getc3d8elementgausspointcoords, (&numElements,
+                                             interface->elementIDs,
+                                             sim->co,
+                                             sim->kon,
+                                             sim->ipkon,
+                                             interface->elemIPCoordinates));
+  } else {
+    supportedElementError();
+  }
+
+  precicec_setMeshVertices(interface->elementsMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
@@ -803,7 +855,10 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->readData);
   free(preciceInterface->writeData);
   free(preciceInterface->elementIDs);
+  free(preciceInterface->elemIPID);
+  free(preciceInterface->elemIPCoordinates);
   free(preciceInterface->faceIDs);
+  free(preciceInterface->nodeIDs);
   free(preciceInterface->preciceFaceCenterIDs);
   free(preciceInterface->faceCenterCoordinates);
   free(preciceInterface->nodeCoordinates);
@@ -822,6 +877,7 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
+  free(preciceInterface->elementsMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);
