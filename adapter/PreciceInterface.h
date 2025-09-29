@@ -38,6 +38,7 @@ typedef struct PreciceInterface {
   int     numElements;
   int *   elementIDs;
   int *   elemIPID;
+  int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
 
