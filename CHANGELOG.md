@@ -10,9 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Extended velocities writing for the 2D3D case ([#137](https://github.com/precice/calculix-adapter/pull/137)).
+- Added Ubuntu 24.04 to the CI ([#140](https://github.com/precice/calculix-adapter/pull/140)).
+
 ### Changed
 
+- Improved Makefile with respect to compiler flags and version-aware flags ([#139](https://github.com/precice/calculix-adapter/pull/139)).
+- Migrated to header-only yaml-cpp ([#143](https://github.com/precice/calculix-adapter/pull/143)).
+
 ### Fixed
+
+### Removed
+
+- Removed Ubuntu 24.04 from the CI ([#140](https://github.com/precice/calculix-adapter/pull/140)).
 
 ## [v2.20.1] 2024-03-20
 
