@@ -64,6 +64,8 @@ CC = gcc
 #CC = /usr/lang-4.0/bin/cc 
 ```
 
+With recent compilers, [more patches might be needed](https://github.com/precice/precice.github.io/issues/608).
+
 Now build the library:
 
 ```bash
