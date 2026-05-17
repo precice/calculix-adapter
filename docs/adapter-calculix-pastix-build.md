@@ -178,4 +178,4 @@ Once the build is successful, the adapter should be in `./bin/ccx_preCICE`.
 
 ### Updating shared libraries
 
-Running the adapter at this point should fail because of a missing shared library: `libparsec.so.2`. You can fix this by adding its path to the environment variable `LD_LIBRARY_PATH`: `export LD_LIBRARY_PATH=:$LD_LIBRARY_PATH:~/PaStiX/parsec_i8/lib`. You may have to do this everytime you load a new terminal, which is why we advise you to make this change permanent, for instance by adding this export commande at the end of your `.bashrc` file.
+Running the adapter at this point should fail because of a missing shared library: `libparsec.so.2`. You can fix this by adding its path to the environment variable `LD_LIBRARY_PATH`: `export LD_LIBRARY_PATH=:$LD_LIBRARY_PATH:~/PaStiX/parsec_i8/lib`. You may have to do this every time you load a new terminal, which is why we advise you to make this change permanent, for instance by adding this export command at the end of your `.bashrc` file.

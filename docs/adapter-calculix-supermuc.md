@@ -18,7 +18,7 @@ To install SPOOLES, some changes are necessary.
 1. `makefile`: `~/SPOOLES.2.2/Tree/src/makeGlobalLib` contains an error: file `drawTree.c` does not exist and should be replaced by `tree.c`.
 2. Changes to the `Make.inc` file must be done according to the CalculiX install [Manual](http://www.dhondt.de/INST_CCX_2_8_MAC_02_10_2015.pdf), page 16 and 17.
 
-In installing ARPACK, the HOME directory needs to be specified in the "ARmake.inc" file. No changes are necessary for the Makefile. To install ARPACK, run "make lib" in the ARPACk directory.
+In installing ARPACK, the HOME directory needs to be specified in the "ARmake.inc" file. No changes are necessary for the Makefile. To install ARPACK, run "make lib" in the ARPACK directory.
 
 Any problems with the installation of SPOOLES and ARPACK can be searched in the installation [instructions](http://www.dhondt.de/INST_CCX_2_8_MAC_02_10_2015.pdf).
 

@@ -142,7 +142,7 @@ The input file for this example would be `flap.inp`. Note that the suffix `.inp`
 
 The preCICE CalculiX adapter should support most elements when using `nodes-meshes`. It has been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8, C3D8I, and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. There is however a restriction when using nearest-projection mapping: in that case, you have to use tetrahedral elements.
 
-When using face meshes, only tetrahedra and hexaedra are supported.
+When using face meshes, only tetrahedra and hexahedra are supported.
 
 ### Coupling to 2D simulations
 
@@ -186,7 +186,7 @@ Note that an error will only occur if nodes-mesh-with-connectivity is specified 
 
 ### Modal dynamic simulations
 
-The adapter supports modal dynamic simulations. In this type of simulation, eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a time dependent linear combination of these eigenmodes; this reduces the number of degrees of freedom of the sytem. Therefore, the simulation is faster, although its accuracy is dependent on the nonlinearity of the response. This method is very attractive in cases in which the solid dynamics is linear since, if you need many runs of the simulation, the `*FREQUENCY*` extraction step needs to be run only once.
+The adapter supports modal dynamic simulations. In this type of simulation, eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a time dependent linear combination of these eigenmodes; this reduces the number of degrees of freedom of the system. Therefore, the simulation is faster, although its accuracy is dependent on the nonlinearity of the response. This method is very attractive in cases in which the solid dynamics is linear since, if you need many runs of the simulation, the `*FREQUENCY*` extraction step needs to be run only once.
 
 To run a case with a `*MODAL DYNAMIC` analysis, the adapter has a special requirement. The `*FREQUENCY` step and the `*MODAL DYNAMIC` step must be run in different input files, as it is a requirement of the adapter to extract the frequency and modal data with a dedicated `.inp` file and then run the modal dynamic analysis without adding the frequency extraction step. The first run creates a `.eig` file with the modal information needed for the second run.
 
