@@ -280,3 +280,48 @@ Make sure to replace `[CalculiX input file]` and `[CalculiX participant name]` w
 
 CalculiX comes with OpenMP and the SPOOLES library which itself can use OpenMP. The adapter also supports this and parallel runs can be used in the same way as with the uncoupled version of CalculiX. You can specify the number of threads via the `OMP_NUM_THREADS` environment variable. For a finer configuration, look at the CalculiX documentation.
 You can also try [GPU acceleration with PaStiX](adapter-calculix-pastix-build.html).
+
+## Restarting
+
+To restart a CalculiX simulation, we need to enable restart files (`<name>.rout`), run the first simulation, and then restart the second simulation from that using a modified input file and renaming the `<name>.rout` to `<name>.rin`. See an [example from the community](https://pawel-lojek.medium.com/resuming-fsi-simulations-with-openfoam-calculix-896088861ae).
+
+{% note %}
+This section might be incomplete or contain inaccuracies. Help improve this page: Click "Edit me" to draft your suggestions.
+{% endnote %}
+
+1. In the `<name>.inp`, modify the end time in the following section:
+
+   ```text
+   *DYNAMIC, ALPHA=0.0, DIRECT
+   1.E-2, 0.1
+   ```
+
+   The first number is the time step size, the second number is the end time.
+2. Under the section specifying the time step size and end time, enable writing restart files (in this case, for every step):
+
+   ```text
+   *RESTART,WRITE,FREQUENCY=1
+   ```
+
+   At the very end of the simulation, and after a normal exit, a file `<name>.rout` will be generated.
+   Rename this file to `<name>.rin`.
+3. To restart the simulation, we need the following line in the input file, before the `STEP` definition:
+
+  ```text
+  *RESTART,READ,STEP=1
+  ```
+
+  For every new step of restarting the simulation, increase the respective number: when you restart again to go further beyond in time, set `STEP=2`.
+4. Since all the rest of the configuration is included in the restart file, we need to remove the rest of the definitions. In the end, the input file should look like this:
+
+   ```text
+   *RESTART,READ,STEP=1
+   *STEP, INC=1000000
+   *DYNAMIC, ALPHA=0.0, DIRECT
+   1.E-2, 0.1
+   *RESTART,WRITE,FREQUENCY=1
+   *END STEP
+   ```
+
+   Note that, in CalculiX configuration files, you can add comment lines with two asterisks: `** comment`.
+5. Make the respective adjustments in the other participants as well. For example, see [notes on restarting OpenFOAM simulations](https://precice.org/adapter-openfoam-config.html#restarting-fsi-simulations). Search also the [preCICE forum](https://precice.discourse.group/search?q=restarting%20order%3Alatest) and help improve this documentation.
