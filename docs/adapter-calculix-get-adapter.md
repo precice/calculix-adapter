@@ -5,7 +5,7 @@ keywords: adapter, calculix, building
 summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can get the adapter either from a Debian package (on Ubuntu), or build it from source."
 ---
 
-After [installing preCICE](installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e. a modified CCX executable.
+After [installing preCICE](https://precice.org/installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e. a modified CCX executable.
 
 There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), or (b) build it from source. The latest adapter version is v{{ site.calculix_adapter_version }} and the versioning format is `<CalculiX major.minor version>.<adapter revision>`.
 
@@ -27,7 +27,7 @@ Replace `noble` with `jammy` to get the package for Ubuntu 22.04 (Jammy Jellyfis
 {% endtip  %}
 
 {% note %}
-We started offering Debian packages for the CalculiX adapter since v2.19.0. Please [give us your feedback](community-channels.html)!
+We started offering Debian packages for the CalculiX adapter since v2.19.0. Please [give us your feedback](https://precice.org/community-channels.html)!
 {% endnote %}
 
 ## Building the adapted CalculiX
