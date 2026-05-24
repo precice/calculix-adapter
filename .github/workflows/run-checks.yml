@@ -19,7 +19,7 @@ jobs:
           python-version: '3.14'
           check-latest: true
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install setuptools pre-commit
       - name: Run checks
         run: pre-commit run -a -v
       - name: Git status
