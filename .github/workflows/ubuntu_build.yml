@@ -33,7 +33,7 @@ jobs:
         apt-get -qq update
         apt-get -qq install sudo
         sudo apt update && sudo apt upgrade -y
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
       with:
         ref: ${{ github.ref }}
     - name: install dependencies
@@ -54,14 +54,14 @@ jobs:
         cp ./bin/ccx_preCICE ./packaging/calculix-precice3_2.20.1-1_amd64/usr/bin/ccx_preCICE &&
         cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
         path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb"
     - name: Compute SHA256 checksum
       run: sha256sum "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb" > "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
     - name: Store SHA256 checksum as artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
         path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
