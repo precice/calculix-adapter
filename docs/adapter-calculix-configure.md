@@ -25,10 +25,18 @@ precice-config-file: ../precice-config.xml
 The adapter allows us to use several participants in one simulation (e.g., several instances of Calculix if several solid objects are taken into account). The name of the participant `Calculix` must match the specification of the participant on the command line when running the executable of `CCX` with the adapter being used (this is described later). Also, the name must be the same as the one used in the preCICE configuration file `precice-config.xml`.  
 
 One participant may have several coupling interfaces. Note that each interface specification starts with a dash.
-Depending on the data you need to read and write, the interface should define either a `faces-mesh` (or `mesh` as a synonym) where the data points are centers of faces (computed by the adapter) or a mesh made of CalculiX vertices, with the keyword `nodes-mesh`. An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command, whereas meshes with nodes should define these nodes using `*NSET`. Using the wrong family of mesh (e.g. reading forces on faces) throws an error. If you need both kinds of meshes, you should define more than one interface.
+Depending on the data you need to read and write, the interface should define a mesh of the following types
+
+* a `faces-mesh` (or `mesh` as a synonym) where the data points are centers of faces (computed by the adapter). An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command.
+* a `nodes-mesh` where the data points are the nodal vertices. An interface made of nodes should define these nodes using `*NSET`.
+* a `elements-mesh` where the data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`.
+
+Using the wrong family of mesh (e.g. reading forces on faces) throws an error. If you need both kinds of meshes, you should define more than one interface.
 
 For FSI simulations the mesh type of an interface is always `nodes-mesh`, as forces and displacement are defined on nodes. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file. In CHT simulations, `faces-meshes` are usually chosen, as they are needed to apply heat fluxes or convective heat transfer.
 For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (here: "interface").  
+
+For multiscale mechanics simulations, the mesh type is always `elements-mesh`. The stresses, strains, and the material stiffness are defined on the quadrature points.
 
 In the current FSI example, the adapter reads forces from preCICE and feeds displacement deltas (not absolute displacements, but the change of the displacements relative to the last time step) to preCICE. This is defined with the keywords `read-data` and `write-data`, respectively. The names (here: `Forces` and `DisplacementDeltas`) again need to match the specifications in the preCICE configuration file. In the current example, the coupled fluid solver expects displacement deltas instead of displacements. However, the adapter is capable of writing either type. Just use `write-data: [Displacements]` for absolute displacements rather than relative changes being transferred in each time step. Valid `readData` keywords in CalculiX are:
 
@@ -44,6 +52,18 @@ On nodes-mesh:
 * Forces (Use a `*CLOAD`)
 * Displacements (Use `*BOUNDARY`)
 * Temperature (Use `*BOUNDARY`)
+
+On elements-mesh:
+
+* stresses1to3 (components (1,1), (2,2), (3,3) of the stress tensor)
+* stresses4to6 (components (2,3), (1,3), (1,2) of the stress tensor)
+* cmat1 (components (1,1), (1,2), (1,3) of the material stiffness tensor)
+* cmat2 (components (1,4), (1,5), (1,6) of the material stiffness tensor)
+* cmat3 (components (2,2), (2,3), (2,4) of the material stiffness tensor)
+* cmat4 (components (2,5), (2,5), (3,3) of the material stiffness tensor)
+* cmat5 (components (3,4), (3,5), (3,6) of the material stiffness tensor)
+* cmat6 (components (4,4), (4,5), (4,6) of the material stiffness tensor)
+* cmat7 (components (5,5), (5,6), (6,6) of the material stiffness tensor)
 
 Have a look at the CalculiX documentation for a detailed description of each of these commands. There is an [online (but outdated) version](https://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node1.html) and an [up-to-date PDF version](http://www.dhondt.de/ccx_2.19.pdf).
 
@@ -69,6 +89,11 @@ From CalculiX version 2.15, additional `writeData` keywords are available:
 * Positions
 * Velocities
 ```
+
+On elements-mesh:
+
+* strains1to3 (components (1,1), (2,2), (3,3) of the strain tensor)
+* strains4to6 (components (2,3), (1,3), (1,2) of the strain tensor)
 
 Note that the square brackets imply that several read- and write-data types can be used on a single interface. This is not needed for FSI simulations (but for CHT simulations). Lastly, the `precice-config-file` needs to be identified including its location. In this example, the file is called `precice-config.xml` and is located one directory above the folder, in which the YAML configuration file lies.
 
@@ -143,6 +168,8 @@ The input file for this example would be `flap.inp`. Note that the suffix `.inp`
 The preCICE CalculiX adapter should support most elements when using `nodes-meshes`. It has been used with both linear and quadratic tetrahedral (C3D4 and C3D10) and hexahedral (C3D8, C3D8I, and [C3D20](http://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node29.html)) elements. There is however a restriction when using nearest-projection mapping: in that case, you have to use tetrahedral elements.
 
 When using face meshes, only tetrahedra and hexahedra are supported.
+
+When using `elements-mesh`, linear tetrahedral (C3D4) and hexahedral (C3D8) elements are supported.
 
 ### Coupling to 2D simulations
 
