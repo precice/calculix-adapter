@@ -1,7 +1,7 @@
 repos:
 # Official repo for the clang-format hook
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v11.1.0'
+  rev: 'v12.0.1'
   hooks:
   - id: clang-format
     files: "^adapter"
