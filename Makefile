@@ -63,7 +63,7 @@ endif
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
   GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
   ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
