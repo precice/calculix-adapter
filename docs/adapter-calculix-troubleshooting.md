@@ -1,6 +1,7 @@
 ---
 title: Troubleshooting the CalculiX adapter
 permalink: adapter-calculix-troubleshooting.html
+url: /adapter-calculix-troubleshooting.html
 keywords: adapter, calculix, error
 summary: "While working with the CalculiX adapter, you may run onto common issues. This is a collection of what we know could go wrong."
 ---

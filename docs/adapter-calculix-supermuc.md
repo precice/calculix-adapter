@@ -1,6 +1,7 @@
 ---
 title: Building the CalculiX adapter on SuperMUC
 permalink: adapter-calculix-supermuc.html
+url: /adapter-calculix-supermuc.html
 keywords: adapter, calculix, cluster, modules
 summary: "This page explains how to build the CalculiX adapter on SuperMUC. Even though SuperMUC was shut down in 2019, this page may still be useful for other clusters."
 ---
