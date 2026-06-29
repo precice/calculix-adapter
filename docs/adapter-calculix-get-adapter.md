@@ -1,7 +1,8 @@
 ---
 title: Get the CalculiX adapter
 permalink: adapter-calculix-get-adapter.html
-url: /adapter-calculix-get-adapter.html
+aliases:
+  - /adapter-calculix-get-adapter.html
 keywords: adapter, calculix, building
 summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can get the adapter either from a Debian package (on Ubuntu), or build it from source."
 ---

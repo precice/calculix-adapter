@@ -1,7 +1,8 @@
 ---
 title: Get CalculiX
 permalink: adapter-calculix-get-calculix.html
-url: /adapter-calculix-get-calculix.html
+aliases:
+  - /adapter-calculix-get-calculix.html
 keywords: adapter, calculix, building, spooles, arpack, yaml-cpp
 summary: "Building CalculiX itself can already be quite a challenge. That's why we collected here some recipe."
 ---

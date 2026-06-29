@@ -1,8 +1,8 @@
 ---
 title: The CalculiX adapter
 permalink: adapter-calculix-overview.html
-url: /adapter-calculix-overview.html
 aliases:
+  - /adapter-calculix-overview.html
   - /adapter-calculix.html
 redirect_from: adapter-calculix.html
 keywords: adapter, calculix

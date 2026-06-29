@@ -1,7 +1,8 @@
 ---
 title: Building the Calculix adapter with PaStiX (and CalculiX 2.17)
 permalink: adapter-calculix-pastix-build.html
-url: /adapter-calculix-pastix-build.html
+aliases:
+  - /adapter-calculix-pastix-build.html
 keywords: adapter, calculix, pastix
 summary: "Since version 2.17, CalculiX can be built with the PaStiX library to increase performance with CUDA. Building the preCICE adapter
 is somehow harder with this version. This page gives a detailed walkthrough to build the modified adapter."
