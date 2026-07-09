@@ -1,6 +1,9 @@
 ---
 title: The CalculiX adapter
 permalink: adapter-calculix-overview.html
+aliases:
+  - /adapter-calculix-overview.html
+  - /adapter-calculix.html
 redirect_from: adapter-calculix.html
 keywords: adapter, calculix
 summary: "The CalculiX adapter can be used to couple CalculiX to CFD solvers for FSI or CHT application or even to couple CalculiX to itself."

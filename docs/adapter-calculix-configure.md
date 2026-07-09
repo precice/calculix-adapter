@@ -1,6 +1,8 @@
 ---
 title: Configure the CalculiX adapter
 permalink: adapter-calculix-config.html
+aliases:
+  - /adapter-calculix-config.html
 keywords: adapter, calculix, configuration, config.yml
 summary: "Write a config.yml, write a CalculiX case input file, and run an adapted CalculiX executable."
 ---
