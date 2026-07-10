@@ -67,10 +67,8 @@ void ConfigReader_Read(char const *configFilename, char const *participantName, 
     std::transform(patchName.begin(), patchName.end(), patchName.begin(), toupper);
     interface.patchName = strdup(patchName.c_str());
 
-    interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
-    interface.numReadData  = config["participants"][participantName]["interfaces"][i]["read-data"].size();
-
     if (config["participants"][participantName]["interfaces"][i].contains("write-data")) {
+      interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
       if (interface.numWriteData == 0) {
         // write-data is a string
         interface.numWriteData      = 1;
@@ -87,6 +85,7 @@ void ConfigReader_Read(char const *configFilename, char const *participantName, 
     }
 
     if (config["participants"][participantName]["interfaces"][i].contains("read-data")) {
+      interface.numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
       if (interface.numReadData == 0) {
         // read-data is a string
         interface.numReadData      = 1;

@@ -61,7 +61,7 @@ jobs:
       - name: preCICE version
         run: precice-tools version
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.release }}
 
