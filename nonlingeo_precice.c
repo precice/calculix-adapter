@@ -1655,7 +1655,8 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       .stored_jprint        = jprint,
       .stx                  = stx,
       .eei                  = eei,
-      .xstiff              = xstiff};
+      .xstiff              = xstiff
+    };
 
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
