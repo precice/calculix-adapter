@@ -1,0 +1,13 @@
+name: System tests
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  run-system-tests:
+    if: ${{ github.event.label.name == 'trigger-system-tests' }}
+    uses: precice/tutorials/.github/workflows/system-tests.yml@develop
+    with:
+      suites: calculix-adapter
+      build_args: CALCULIX_ADAPTER_PR:${{ github.event.number }},CALCULIX_ADAPTER_REF:${{ github.event.pull_request.head.sha }}
