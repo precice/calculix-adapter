@@ -307,13 +307,19 @@ This section might be incomplete or contain inaccuracies. Help improve this page
 
    At the very end of the simulation, and after a normal exit, a file `<name>.rout` will be generated.
    Rename this file to `<name>.rin`.
-3. To restart the simulation, we need the following line in the input file, before the `STEP` definition:
-
-  ```text
-  *RESTART,READ,STEP=1
-  ```
-
-  For every new step of restarting the simulation, increase the respective number: when you restart again to go further beyond in time, set `STEP=2`.
+3. To restart a simulation, remove the mesh, material, and *INCLUDE sections from the input (.inp) file, keep/adapt the *STEP section(s), and add the following line as the first line of the file:
+   
+   ```text
+   *RESTART,READ
+   ```
+  
+   or
+  
+   ```text
+   *RESTART,READ,STEP=1
+   ```
+   
+   For every new step of restarting the simulation, increase the respective number: when you restart again to go further beyond in time, set `STEP=2`.
 4. Since all the rest of the configuration is included in the restart file, we need to remove the rest of the definitions. In the end, the input file should look like this:
 
    ```text
