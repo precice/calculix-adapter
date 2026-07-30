@@ -291,14 +291,14 @@ To restart a CalculiX simulation, we need to enable restart files (`<name>.rout`
 This section might be incomplete or contain inaccuracies. Help improve this page: Click "Edit me" to draft your suggestions.
 {% endnote %}
 
-1. In the `<name>.inp`, modify the end time in the following section:
+1. In the `<name>.inp`, modify the end time in the following section (if needed):
 
    ```text
    *DYNAMIC, ALPHA=0.0, DIRECT
    1.E-2, 0.1
    ```
 
-   The first number is the time step size, the second number is the end time.
+   The first number specifies the time step size, while the second specifies the duration of the current STEP. When restarting with the same number of time steps per STEP, the second number should not be modified.
 2. Under the section specifying the time step size and end time, enable writing restart files (in this case, for every step):
 
    ```text
