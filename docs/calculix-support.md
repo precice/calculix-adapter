@@ -1,8 +1,8 @@
 ---
 title: CalculiX support
-permalink: adapter-calculix-calculix-support.html
+permalink: adapter-calculix-support.html
 aliases:
-  - /adapter-calculix-calculix-support.html
+  - /adapter-calculix-support.html
 keywords: adapter, calculix, support, versions
 summary: "Supported CalculiX versions and porting the CalculiX adapter to a different CalculiX version."
 ---
