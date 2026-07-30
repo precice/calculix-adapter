@@ -15,17 +15,17 @@ There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), o
 
 You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, open it in your software center.
 
-Alternatively, download & install it from the command line. For Ubuntu 24.04 (Noble Numbat):
+Alternatively, download & install it from the command line. For Ubuntu 26.04 (Resolute Raccoon):
 
 ```bash
-wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_noble.deb
-sudo apt install ./calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_noble.deb
+wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
+sudo apt install ./calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
 ```
 
 This requires that also preCICE itself has been installed from a Debian package.
 
 {% tip %}
-Replace `noble` with `jammy` to get the package for Ubuntu 22.04 (Jammy Jellyfish).
+Replace `resolute` with `noble` to get the package for Ubuntu 24.04 (Noble Numbat), or with `jammy` for Ubuntu 22.04 (Jammy Jellyfish).
 {% endtip  %}
 
 {% note %}
