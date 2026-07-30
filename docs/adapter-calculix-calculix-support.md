@@ -48,6 +48,6 @@ Once again, copy the corresponding file, and add the adapter-specific changes, a
 - Parse command line arguments to see if and how preCICE is being used
 - If preCICE is being used, use the adapter-specific solver loop. This takes the form `if (preciceUsed) {custom loop} else if (some CCX code){...}`, replacing `if (some CCX code) {...}`.
 
-## Making a new release
+## Bumping versions
 
 There are several files where the CalculiX version or the adapter version and other details need to be updated. See the pull request template `.github/PULL_REQUEST_TEMPLATE/release.md` for a checklist.
