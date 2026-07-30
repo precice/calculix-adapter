@@ -27,7 +27,7 @@ jobs:
     container: precice/precice:develop
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
-      PACKAGE_NAME: "calculix-precice3_2.20.1-1_amd64"
+      PACKAGE_NAME: "calculix-precice3_2.20.2-1_amd64"
 
     steps:
     - name: Update system

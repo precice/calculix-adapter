@@ -5,9 +5,9 @@ name: Request Deb Package
 # - Go to the Actions tab
 # - Select the "Request Package" workflow
 # - On the top of the list, select "Run workflow"
-# - Select the adapter release tag to generate the package for. Example: v2.20.1
-# - Select the precice release tag to install the debian package from. Example: v3.2.0
-# - Select the ubuntu version to generate the package for. Example: 21.10
+# - Select the adapter release tag to generate the package for
+# - Select the precice release tag to install the debian package from
+# - Select the ubuntu version to generate the package for
 # - Click "Run Workflow"
 #
 # This workflow uses the official docker images.
@@ -16,7 +16,7 @@ on:
     inputs:
       release:
         description: 'Release tag'
-        default: "v2.20.1"
+        default: "v2.20.2"
         required: true
         type: string
       distro:
@@ -35,7 +35,7 @@ on:
         type: string
       precice:
         description: 'preCICE release tag'
-        default: "v3.2.0"
+        default: "v3.4.1"
         required: true
         type: string
 
