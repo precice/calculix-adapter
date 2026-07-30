@@ -26,9 +26,9 @@ The adapter has a versioning scheme inherited from CalculiX: It is of the form `
 
 Compatibility with preCICE:
 
-- preCICE v3 is supported since the adapter release `v2.20.1`
-- preCICE v2 was supported in the branches `v2.16`, `v2.17` and the releases `v2.19.0` and `v2.20.0`
-- preCICE v1 was supported in the branches `v2.10`, `v2.12`, `v2.13`, `v2.15`
+- preCICE v3 is supported since the adapter release `v2.20.1`.
+- preCICE v2 was supported in the branches `v2.16`, `v2.17` and the releases `v2.19.0` and `v2.20.0`.
+- preCICE v1 was supported in the branches `v2.10`, `v2.12`, `v2.13`, `v2.15`.
 
 ## History
 
