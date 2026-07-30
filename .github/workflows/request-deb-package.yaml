@@ -26,7 +26,7 @@ on:
         type: string
       version:
         description: 'Distribution version'
-        default: "24.04"
+        default: "26.04"
         required: true
         type: string
       fflags:
