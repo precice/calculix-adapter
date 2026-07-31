@@ -629,6 +629,8 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
   interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
 
+  free(nodeSetName);
+
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);
 
@@ -824,6 +826,9 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->xforcIndices);
 
   freeMapping(preciceInterface->mappingQuasi2D3D);
+
+  // Patch name
+  free(preciceInterface->name);
 
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
