@@ -100,6 +100,22 @@ To work around this, you need to add `-fallow-argument-mismatch` to the `FFLAGS`
 + FFLAGS = -Wall -O3 -fopenmp -fallow-argument-mismatch $(INCLUDES)
 ```
 
+### Compiling with Intel OneAPI
+
+If you compile the adapter with Intel OneAPI, you will get the following error at link time, originating from CalculiX:
+
+```text
+undefined reference to MAIN__
+```
+
+To work around this, you need to add the `-nofor-main` to the `FFLAGS` inside `Makefile`. The easiest way is to define `ADDITIONAL_FFLAGS`:
+
+```shell
+ADDITIONAL_FFLAGS="-nofor-main` make
+```
+
+to specify that the main program is not written in Fortran. Read more in the [Intel compiler reference](https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2026-1/nofor-main.html).
+
 ### Notes on preCICE versions
 
 <details markdown="1"><summary>In case you are using some very old preCICE version, please upgrade. Our <a href="https://precice.discourse.group/" title="preCICE forum">community</a> is happy to help you. Click here and keep reading if you loved preCICE v1.x and (optionally) wish The Beatles were still around.</summary>
