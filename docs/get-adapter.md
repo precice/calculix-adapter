@@ -116,6 +116,8 @@ ADDITIONAL_FFLAGS="-nofor-main` make
 
 to specify that the main program is not written in Fortran. Read more in the [Intel compiler reference](https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2026-1/nofor-main.html).
 
+You might also get undefined references to SPOOLES. In that case, you need to modify `SPOOLES_LIBS` in the `Makefile` to include the paths to both `spoolesMT.a` (multithreading, if available), and to `spooles.a`, in this order.
+
 ### Notes on preCICE versions
 
 <details markdown="1"><summary>In case you are using some very old preCICE version, please upgrade. Our <a href="https://precice.discourse.group/" title="preCICE forum">community</a> is happy to help you. Click here and keep reading if you loved preCICE v1.x and (optionally) wish The Beatles were still around.</summary>

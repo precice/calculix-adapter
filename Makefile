@@ -9,6 +9,7 @@ CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
 SPOOLES_INCLUDE   = -I/usr/include/spooles/
 # SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
+# If available, you might need to define both spoolesMT.a and spooles.a, in this order.
 SPOOLES_LIBS      = -lspooles
 #
 # ARPACK include flags (e.g. -I$(HOME)/ARPACK)
