@@ -85,25 +85,4 @@ The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter
 
 You may also want to adjust the compiler `FC` from `mpifort` to `mpif90` or to any other compiler your system uses.
 
-### Compiling with GCC 10 or newer
-
-If you compile the adapter (v2.20.1 or earlier) with GCC 10 or newer, you will get the following error, originating from CalculiX:
-
-```text
-Error: Rank mismatch between actual argument at (1) and actual argument at (2) (rank-1 and scalar)
-```
-
-To work around this, you need to add `-fallow-argument-mismatch` to the `FFLAGS` inside `Makefile`:
-
-```diff
-- FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
-+ FFLAGS = -Wall -O3 -fopenmp -fallow-argument-mismatch $(INCLUDES)
-```
-
-### Notes on preCICE versions
-
-<details markdown="1"><summary>In case you are using some very old preCICE version, please upgrade. Our <a href="https://precice.discourse.group/" title="preCICE forum">community</a> is happy to help you. Click here and keep reading if you loved preCICE v1.x and (optionally) wish The Beatles were still around.</summary>
-
-1. This adapter uses the preCICE C bindings via pkg-config. In other words, this assumes that preCICE (at least v1.5.0) has been built & installed with CMake (e.g. using a Debian package). In case you want to keep using preCICE built with SCons, see the changes invoked by [Pull Request #14](https://github.com/precice/calculix-adapter/pull/14).
-
-</details>
+See also the [troubleshooting](adapter-calculix-troubleshooting.html) page for further known issues.
