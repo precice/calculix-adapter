@@ -1511,7 +1511,7 @@ int main(int argc, char *argv[])
                      t0g, t1g,
                      preciceParticipantName, configFilename);
       } else {
-        printf("ERROR: Only thermal coupling or FSI is available with preCICE");
+        printf("ERROR: No compatible simulation type was detected. Consult the adapter documentation and check your CalculiX input file for keywords indicating simulation types only supported by the uncoupled CalculiX (e.g., FREQUENCY).");
         exit(0);
       }
     } else if ((nmethod <= 1) || (nmethod == 11) || ((iperturb[0] > 1) && (nmethod < 8))) {
