@@ -52,4 +52,4 @@ to specify that the main program is not written in Fortran. Read more in the [In
 
 ## Undefined references to SPOOLES functions
 
-On systems where both `spoolesMT.a` (multithreading) and `spooles.a` are available, you might get undefined references to SPOOLES. In that case, you might need to modify `SPOOLES_LIBS` in the `Makefile` to include the paths to both `spoolesMT.a` and to `spooles.a`, in this order.
+On systems where both `spoolesMT.a` (multithreading) and `spooles.a` are available, you might get undefined references to SPOOLES. In that case, you might need to modify `SPOOLES_LIBS` in the `Makefile` to include the paths to both `spoolesMT.a` and to `spooles.a`, in this order. See the [`Makefile_MT` file of CalculiX](https://github.com/g0mb4/CalculiX/blob/58c684679097132eda8bb827f186b5feeaa1281f/src/Makefile_MT).
