@@ -471,6 +471,12 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     }
   }
 
+  // Initialize counters
+  interface->numNodes    = 0;
+  interface->nodeSetID   = 0;
+  interface->numElements = 0;
+  interface->faceSetID   = 0;
+
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
   interface->faceIDs               = NULL;
