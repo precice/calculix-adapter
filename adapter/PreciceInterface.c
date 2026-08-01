@@ -585,6 +585,9 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
 
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
 {
+  printf("WARNING: Elements-mesh support is experimental. Use with caution.\n");
+  fflush(stdout);
+
   char *elementSetName    = interface->name;
   interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
   interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
