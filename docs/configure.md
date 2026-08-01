@@ -31,7 +31,7 @@ Depending on the data you need to read and write, the interface should define a 
 
 * a `faces-mesh` (or `mesh` as a synonym) where the data points are centers of faces (computed by the adapter). An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command.
 * a `nodes-mesh` where the data points are the nodal vertices. An interface made of nodes should define these nodes using `*NSET`.
-* a `elements-mesh` where the data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`.
+* a `elements-mesh` where the data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is still experimental.
 
 Using the wrong family of mesh (e.g. reading forces on faces) throws an error. If you need both kinds of meshes, you should define more than one interface.
 
@@ -54,18 +54,6 @@ On nodes-mesh:
 * Forces (Use a `*CLOAD`)
 * Displacements (Use `*BOUNDARY`)
 * Temperature (Use `*BOUNDARY`)
-
-On elements-mesh:
-
-* stresses1to3 (components (1,1), (2,2), (3,3) of the stress tensor)
-* stresses4to6 (components (2,3), (1,3), (1,2) of the stress tensor)
-* cmat1 (components (1,1), (1,2), (1,3) of the material stiffness tensor)
-* cmat2 (components (1,4), (1,5), (1,6) of the material stiffness tensor)
-* cmat3 (components (2,2), (2,3), (2,4) of the material stiffness tensor)
-* cmat4 (components (2,5), (2,5), (3,3) of the material stiffness tensor)
-* cmat5 (components (3,4), (3,5), (3,6) of the material stiffness tensor)
-* cmat6 (components (4,4), (4,5), (4,6) of the material stiffness tensor)
-* cmat7 (components (5,5), (5,6), (6,6) of the material stiffness tensor)
 
 Have a look at the CalculiX documentation for a detailed description of each of these commands. There is an [online (but outdated) version](https://web.mit.edu/calculix_v2.7/CalculiX/ccx_2.7/doc/ccx/node1.html) and an [up-to-date PDF version](http://www.dhondt.de/ccx_2.19.pdf).
 
@@ -91,11 +79,6 @@ From CalculiX version 2.15, additional `writeData` keywords are available:
 * Positions
 * Velocities
 ```
-
-On elements-mesh:
-
-* strains1to3 (components (1,1), (2,2), (3,3) of the strain tensor)
-* strains4to6 (components (2,3), (1,3), (1,2) of the strain tensor)
 
 Note that the square brackets imply that several read- and write-data types can be used on a single interface. This is not needed for FSI simulations (but for CHT simulations). Lastly, the `precice-config-file` needs to be identified including its location. In this example, the file is called `precice-config.xml` and is located one directory above the folder, in which the YAML configuration file lies.
 

@@ -32,7 +32,7 @@ Compatibility with preCICE:
 
 ## History
 
-The adapter was initially developed for conjugate heat transfer (CHT) simulations via preCICE by Lucia Cheung in the scope of her master’s thesis[^1], in cooperation with [SimScale](https://www.simscale.com/). For running the adapter for CHT simulations refer to this thesis. The adapter was extended to fluid-structure interaction by Alexander Rusch[^2]. The adapter was further extended for volumetric coupling of multiscale mechanics problems by Ibrahim Kaleel and Ishaan Desai.
+The adapter was initially developed for conjugate heat transfer (CHT) simulations via preCICE by Lucia Cheung in the scope of her master’s thesis[^1], in cooperation with [SimScale](https://www.simscale.com/). For running the adapter for CHT simulations refer to this thesis. The adapter was extended to fluid-structure interaction by Alexander Rusch[^2]. The adapter was further extended for volumetric coupling by Ibrahim Kaleel and Ishaan Desai.
 
 ## References
 
