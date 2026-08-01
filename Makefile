@@ -78,7 +78,7 @@ SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
-SCCXF += getflux.f getkdeltatemp.f getc3d8elementgausspointcoords.f getc3d4elementgausspointcoords.f
+SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 
 

@@ -604,23 +604,23 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   enum ElemType elemType = findSimulationMeshType(sim);
 
+  // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
+  int nodesPerElement;
   if (elemType == TETRAHEDRA) {
-    FORTRAN(getc3d4elementgausspointcoords, (&numElements,
-                                             interface->elementIDs,
-                                             sim->co,
-                                             sim->kon,
-                                             sim->ipkon,
-                                             interface->elemIPCoordinates));
+    nodesPerElement = 4;
   } else if (elemType == HEXAHEDRA) {
-    FORTRAN(getc3d8elementgausspointcoords, (&numElements,
-                                             interface->elementIDs,
-                                             sim->co,
-                                             sim->kon,
-                                             sim->ipkon,
-                                             interface->elemIPCoordinates));
+    nodesPerElement = 8;
   } else {
     supportedElementError();
   }
+
+  FORTRAN(getelementgausspointcoords, (&numElements,
+                                       interface->elementIDs,
+                                       &nodesPerElement,
+                                       sim->co,
+                                       sim->kon,
+                                       sim->ipkon,
+                                       interface->elemIPCoordinates));
 
   precicec_setMeshVertices(interface->elementsMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
