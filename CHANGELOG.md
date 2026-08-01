@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Moved `struct SimulationData` in `nonlingeo_precice.h` to just before `Precice_Setup` ([#154](https://github.com/precice/calculix-adapter/pull/154))
 - Improved Makefile with respect to compiler flags and version-aware flags ([#139](https://github.com/precice/calculix-adapter/pull/139)).
 - Migrated to header-only yaml-cpp ([#143](https://github.com/precice/calculix-adapter/pull/143)).
 

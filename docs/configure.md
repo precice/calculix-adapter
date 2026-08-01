@@ -1,6 +1,8 @@
 ---
 title: Configure the CalculiX adapter
 permalink: adapter-calculix-config.html
+aliases:
+  - /adapter-calculix-config.html
 keywords: adapter, calculix, configuration, config.yml
 summary: "Write a config.yml, write a CalculiX case input file, and run an adapted CalculiX executable."
 ---
@@ -316,14 +318,14 @@ To restart a CalculiX simulation, we need to enable restart files (`<name>.rout`
 This section might be incomplete or contain inaccuracies. Help improve this page: Click "Edit me" to draft your suggestions.
 {% endnote %}
 
-1. In the `<name>.inp`, modify the end time in the following section:
+1. In the `<name>.inp`, modify the end time in the following section (if needed):
 
    ```text
    *DYNAMIC, ALPHA=0.0, DIRECT
    1.E-2, 0.1
    ```
 
-   The first number is the time step size, the second number is the end time.
+   The first number specifies the time step size, while the second specifies the duration of the current STEP. When restarting with the same number of time steps per STEP, the second number should not be modified.
 2. Under the section specifying the time step size and end time, enable writing restart files (in this case, for every step):
 
    ```text
@@ -332,13 +334,19 @@ This section might be incomplete or contain inaccuracies. Help improve this page
 
    At the very end of the simulation, and after a normal exit, a file `<name>.rout` will be generated.
    Rename this file to `<name>.rin`.
-3. To restart the simulation, we need the following line in the input file, before the `STEP` definition:
-
-  ```text
-  *RESTART,READ,STEP=1
-  ```
-
-  For every new step of restarting the simulation, increase the respective number: when you restart again to go further beyond in time, set `STEP=2`.
+3. To restart a simulation, remove the mesh, material, and *INCLUDE sections from the input (.inp) file, keep/adapt the *STEP section(s), and add the following line as the first line of the file:
+   
+   ```text
+   *RESTART,READ
+   ```
+  
+   or
+  
+   ```text
+   *RESTART,READ,STEP=1
+   ```
+   
+   For every new step of restarting the simulation, increase the respective number: when you restart again to go further beyond in time, set `STEP=2`.
 4. Since all the rest of the configuration is included in the restart file, we need to remove the rest of the definitions. In the end, the input file should look like this:
 
    ```text

@@ -1,6 +1,8 @@
 ---
 title: Get the CalculiX adapter
 permalink: adapter-calculix-get-adapter.html
+aliases:
+  - /adapter-calculix-get-adapter.html
 keywords: adapter, calculix, building
 summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can get the adapter either from a Debian package (on Ubuntu), or build it from source."
 ---
@@ -13,17 +15,17 @@ There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), o
 
 You can download version-specific Ubuntu (Debian) packages from each [adapter release](https://github.com/precice/calculix-adapter/releases/latest). To install, open it in your software center.
 
-Alternatively, download & install it from the command line. For Ubuntu 24.04 (Noble Numbat):
+Alternatively, download & install it from the command line. For Ubuntu 26.04 (Resolute Raccoon):
 
 ```bash
-wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_noble.deb
-sudo apt install ./calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_noble.deb
+wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
+sudo apt install ./calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
 ```
 
 This requires that also preCICE itself has been installed from a Debian package.
 
 {% tip %}
-Replace `noble` with `jammy` to get the package for Ubuntu 22.04 (Jammy Jellyfish).
+Replace `resolute` with `noble` to get the package for Ubuntu 24.04 (Noble Numbat), or with `jammy` for Ubuntu 22.04 (Jammy Jellyfish).
 {% endtip  %}
 
 {% note %}
@@ -83,25 +85,4 @@ The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter
 
 You may also want to adjust the compiler `FC` from `mpifort` to `mpif90` or to any other compiler your system uses.
 
-### Compiling with GCC 10 or newer
-
-If you compile the adapter (v2.20.1 or earlier) with GCC 10 or newer, you will get the following error, originating from CalculiX:
-
-```text
-Error: Rank mismatch between actual argument at (1) and actual argument at (2) (rank-1 and scalar)
-```
-
-To work around this, you need to add `-fallow-argument-mismatch` to the `FFLAGS` inside `Makefile`:
-
-```diff
-- FFLAGS = -Wall -O3 -fopenmp $(INCLUDES)
-+ FFLAGS = -Wall -O3 -fopenmp -fallow-argument-mismatch $(INCLUDES)
-```
-
-### Notes on preCICE versions
-
-<details markdown="1"><summary>In case you are using some very old preCICE version, please upgrade. Our <a href="https://precice.discourse.group/" title="preCICE forum">community</a> is happy to help you. Click here and keep reading if you loved preCICE v1.x and (optionally) wish The Beatles were still around.</summary>
-
-1. This adapter uses the preCICE C bindings via pkg-config. In other words, this assumes that preCICE (at least v1.5.0) has been built & installed with CMake (e.g. using a Debian package). In case you want to keep using preCICE built with SCons, see the changes invoked by [Pull Request #14](https://github.com/precice/calculix-adapter/pull/14).
-
-</details>
+See also the [troubleshooting](adapter-calculix-troubleshooting.html) page for further known issues.
