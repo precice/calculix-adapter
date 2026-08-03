@@ -68,6 +68,16 @@ void getSurfaceElementsAndFaces(ITG setID, ITG *ialset, ITG *istartset, ITG *ien
   }
 }
 
+void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements)
+{
+  ITG i, k = 0;
+
+  for (i = istartset[setID] - 1; i < iendset[setID]; i++) {
+    elements[k] = ialset[i];
+    k++;
+  }
+}
+
 void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v, int mt, double *coordinates)
 {
 
@@ -218,15 +228,6 @@ void getHexaFaceCenters(ITG *elements, ITG *faces, ITG numElements, ITG *kon, IT
     faceCenters[i * 3 + 2] = z / 4;
   }
 }
-
-/*
-   void getSurfaceGaussPoints(int setID, ITG * co, ITG istartset, ITG iendset, ITG * ipkon, ITG * lakon, ITG * kon, ITG * ialset, double * coords) {
-
-        int iset = setID + 1; // plus one because of fortran indices
-        FORTRAN(getgausspointscoords,(co,&iset,istartset,iendset,ipkon,lakon,kon,ialset, coords));
-
-   }
- */
 
 void getTetraFaceNodes(ITG *elements, ITG *faces, ITG *nodes, ITG numElements, ITG numNodes, ITG *kon, ITG *ipkon, int *tetraFaceNodes)
 {

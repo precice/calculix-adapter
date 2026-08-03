@@ -33,10 +33,15 @@ typedef struct PreciceInterface {
   int          nodeSetID;
   int *        preciceNodeIDs;
   char *       nodesMeshName;
+  char *       elementsMeshName;
 
-  // Interface face elements
   int     numElements;
   int *   elementIDs;
+  int *   elemIPID;
+  int     elementSetID;
+  double *elemIPCoordinates;
+  int     numIPTotal;
+
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
@@ -276,6 +281,13 @@ void sendFaceCentersVertices(PreciceInterface *interface);
  * @param sim: Structure with CalculiX data
  */
 void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, SimulationData *sim);
+
+/**
+ * @brief Configures the elements mesh and calls setMeshVertices on preCICE
+ * @param interface
+ * @param sim: Structure with CalculiX data
+ */
+void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim);
 
 /**
  * @brief Terminate execution if the nodes mesh ID is not valid

@@ -92,6 +92,16 @@ ITG getSetID(char const *setName, char const *set, ITG nset);
 ITG getNumSetElements(ITG setID, ITG *istartset, ITG *iendset);
 
 /**
+ * @brief Gets the element IDs given a set ID
+ * @param setID: input set id
+ * @param ialset: CalculiX variable
+ * @param istartset: CalculiX variable
+ * @param iendset: CalculiX variable
+ * @param elements: output element IDs
+ */
+void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements);
+
+/**
  * @brief Gets the element and face IDs given a set ID
  * @param setID: input set id
  * @param ialset: CalculiX variable
