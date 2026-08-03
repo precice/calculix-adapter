@@ -47,12 +47,17 @@ Depending on the data you need to read and write, the interface should define a 
 
 - `faces-mesh` (or `mesh` as a synonym): The data points are centers of faces (computed by the adapter). An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command.
 - `nodes-mesh`: The data points are the nodal vertices. An interface made of nodes should define these nodes using `*NSET`.
-- `elements-mesh`: The data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is still experimental.
+- `elements-mesh`: The data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is experimental.
 
 Using the wrong family of mesh (e.g., reading forces on faces) throws an error. If you need both kinds of meshes, you should define one interface for each.
 
 In FSI simulations, the mesh type for an interface is always `nodes-mesh`, as forces and displacement are defined on nodes. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file. In CHT simulations, `faces-mesh` is used.
 For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (in this example, `interface`).
+
+{% info %}
+Patch names in CalculiX follow a naming convention where nodes sets start with `N` and surface sets with `S`.
+The adapter automatically adds these prefixes to the configured patch name.
+{% endinfo %}
 
 For multiscale mechanics simulations, the mesh type is always `elements-mesh`. The stresses, strains, and material stiffness are defined on the quadrature points.
 
@@ -124,9 +129,9 @@ CalculiX is designed to be compatible with the Abaqus file format. Here is an ex
 *END STEP
 ```
 
-The adapter internally uses the CalculiX data format for point forces to apply the FSI forces at the coupling interface. This data structure is only initialized for those nodes, which are loaded at the beginning of a CalculiX analysis step via the input file. Thus, it is necessary to load all nodes of the node set, which defines the FSI interface in CalculiX (referring to the above example, the nodes of set `interface` (Note that in CalculiX a node set always begins with an `N` followed by the actual name of the set, which is here `interface`.) are loaded via the `CLOAD` keyword.), in each spatial direction. However, the values of these initial forces can (and should) be chosen to zero, such that the simulation result is not affected.
+The adapter internally uses the CalculiX data format for point forces to apply the FSI forces at the coupling interface. This data structure is only initialized for those nodes, which are loaded at the beginning of a CalculiX analysis step via the input file. Thus, it is necessary to load all nodes of the node set, which defines the FSI interface in CalculiX, in each spatial direction. Referring to the above example, the nodes of set `interface` are loaded via the `CLOAD` keyword. However, the values of these initial forces can (and should) be chosen to zero, such that the simulation result is not affected.
 
-When using `faces-meshes`, instead of a node set (`*NSET`), a `*SURFACE` must be sent, defined by a list of elements and face numbers. Instead of starting with an `N`, the name must start with a `S`.
+When using `faces-meshes`, instead of a node set (`*NSET`), the `*SURFACE` keyword defines the list of elements and face numbers to couple. Instead of starting with an `N`, the name must start with a `S`.
 
 CalculiX CCX offers both a geometrically linear and a geometrically non-linear solver, and both are supported by the adapter. The keyword `NLGEOM` (as shown in the example) selects the geometrically non-linear solver. It is also automatically triggered if material non-linearities are included in the analysis. In case the keyword `NLGEOM` does not appear in the CalculiX case input file and the chosen materials are linear, the geometrically linear CalculiX solver is used. In any case, for FSI simulations, the keyword `DYNAMIC` (enabling a dynamic computation) must appear in the CalculiX input file.
 
