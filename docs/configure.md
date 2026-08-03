@@ -41,10 +41,18 @@ precice-config-file: ../precice-config.xml
 
 The name of the participant `Calculix` must match the command-line argument `-precice-participant` for `CCX_preCICE` (read below) and the one used in the preCICE configuration file `precice-config.xml`. One participant may have several coupling interfaces. Note that each interface specification starts with a dash (new YAML list entry).
 
-Depending on the data you need to read and write, the interface should define either a `faces-mesh` (or `mesh` as a synonym) where the data points are centers of faces (computed by the adapter) or a mesh made of CalculiX mesh vertices, with the keyword `nodes-mesh`. An interface made of faces should be defined in the CalculiX case input file using the `*SURFACE` command, whereas meshes with nodes should define these nodes using `*NSET`. Using the wrong family of mesh (e.g., reading forces on faces) throws an error. If you need both kinds of meshes, you should define one interface for each.
+Depending on the data you need to read and write, the interface should define a mesh of one of the following types:
+
+- a `faces-mesh` (or `mesh` as a synonym), where the data points are centers of faces (computed by the adapter). An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command.
+- a `nodes-mesh`, where the data points are the nodal vertices. An interface made of nodes should define these nodes using `*NSET`.
+- an `elements-mesh`, where the data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is still experimental.
+
+Using the wrong family of mesh (e.g. reading forces on faces) throws an error. If you need both kinds of meshes, you should define more than one interface.
 
 In FSI simulations, the mesh type for an interface is always `nodes-mesh`, as forces and displacement are defined on nodes. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file. In CHT simulations, `faces-mesh` is used.
 For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (in this example, `interface`).
+
+For multiscale mechanics simulations, the mesh type is always `elements-mesh`. The stresses, strains, and the material stiffness are defined on the quadrature points.
 
 In this FSI example, the adapter reads forces from preCICE and feeds displacement deltas (not absolute displacements, but the change of the displacements relative to the last time step) to preCICE. This is defined with the keywords `read-data` and `write-data`, respectively. The names (here: `Forces` and `DisplacementDeltas`) again need to match the specifications in the preCICE configuration file. Absolute displacements can be configured with `Displacements`. 
 
@@ -136,6 +144,8 @@ More input files that you may find in the CalculiX tutorial cases:
 The CalculiX adapter supports most elements when using `nodes-mesh`. It has been used with both linear and quadratic tetrahedral (`C3D4` and `C3D10`) and hexahedral (`C3D8`, `C3D8I`, and `C3D20`) elements. For nearest-projection mapping, mesh connectivity is only provided when using tetrahedral elements.
 
 For `faces-mesh`, tetrahedral and hexahedral meshes are supported.
+
+When using `elements-mesh`, linear tetrahedral (C3D4) and hexahedral (C3D8) elements are supported.
 
 ### Coupling to 2D simulations
 

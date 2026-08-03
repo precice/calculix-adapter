@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added preliminary functionality to support volumetric coupling by extracting integration points from an element mesh ([#146](https://github.com/precice/calculix-adapter/pull/146)).
 - Extended velocities writing for the 2D3D case ([#137](https://github.com/precice/calculix-adapter/pull/137)).
 - Added Ubuntu 24.04 to the CI ([#140](https://github.com/precice/calculix-adapter/pull/140)).
 
