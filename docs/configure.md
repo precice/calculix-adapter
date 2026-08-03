@@ -50,30 +50,30 @@ In this FSI example, the adapter reads forces from preCICE and feeds displacemen
 
 Valid `readData` keywords in CalculiX are (with the corresponding boundary types; see the CalculiX documentation):
 
-* On `faces-mesh`:
-  * `Pressure` (Use a `*DLOAD`)
-  * `Heat-Flux` (Use a `*DFLUX`)
-  * `Sink-Temperature` (Use `*FILM`)
-  * `Heat-Transfer-Coefficient` (Use `*FILM`)
-* On `nodes-mesh`:
-  * `Forces` (Use a `*CLOAD`)
-  * `Displacements` (Use `*BOUNDARY`)
-  * `Temperature` (Use `*BOUNDARY`)
+- On `faces-mesh`:
+  - `Pressure` (Use a `*DLOAD`)
+  - `Heat-Flux` (Use a `*DFLUX`)
+  - `Sink-Temperature` (Use `*FILM`)
+  - `Heat-Transfer-Coefficient` (Use `*FILM`)
+- On `nodes-mesh`:
+  - `Forces` (Use a `*CLOAD`)
+  - `Displacements` (Use `*BOUNDARY`)
+  - `Temperature` (Use `*BOUNDARY`)
 
 Valid `writeData` keywords are:
 
-* On `faces-mesh`:
-  * `Pressure`
-  * `Heat-Flux`
-  * `Sink-Temperature`
-  * `Heat-Transfer-Coefficient`
-* On `nodes-mesh`:
-  * `Forces`
-  * `Displacements`
-  * `DisplacementDeltas`
-  * `Temperature`
-  * `Positions`
-  * `Velocities`
+- On `faces-mesh`:
+  - `Pressure`
+  - `Heat-Flux`
+  - `Sink-Temperature`
+  - `Heat-Transfer-Coefficient`
+- On `nodes-mesh`:
+  - `Forces`
+  - `Displacements`
+  - `DisplacementDeltas`
+  - `Temperature`
+  - `Positions`
+  - `Velocities`
 
 Note that the square brackets imply that several read- and write-data types can be used on a single interface (YAML list). This is mainly useful in CHT Robin coupling simulations.
 
@@ -122,12 +122,12 @@ CalculiX CCX offers both a geometrically linear and a geometrically non-linear s
 
 More input files that you may find in the CalculiX tutorial cases:
 
-* `<name>.inp`: The main case configuration file. Through this, several other files are included.
-* `<name>.msh`: The mesh file.
-* `<name>.flm`: Films
-* `<name>.nam`: Names, e.g., indices of boundary nodes
-* `<name>.sur`: Surfaces
-* `<name>.dfl`: DFlux
+- `<name>.inp`: The main case configuration file. Through this, several other files are included.
+- `<name>.msh`: The mesh file.
+- `<name>.flm`: Films
+- `<name>.nam`: Names, e.g., indices of boundary nodes
+- `<name>.sur`: Surfaces
+- `<name>.dfl`: DFlux
 
 ### Supported elements
 
