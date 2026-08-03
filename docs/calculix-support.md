@@ -10,9 +10,7 @@ summary: "Supported CalculiX versions and porting the CalculiX adapter to a diff
 The CalculiX adapter directly modifies the source files of CalculiX and, as such, is made for a specific version of CalculiX.
 This page includes some hints on porting the adapter to different versions.
 
-{% tip %}
 Have you upgraded the supported CalculiX version to a newer one? Contribute back to the repository and make it available for everyone!
-{% endtip  %}
 
 ## Porting the adapter to a new CalculiX version
 

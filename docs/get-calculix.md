@@ -144,6 +144,8 @@ make
 
 After building, make sure that you make yaml-cpp discoverable by setting e.g. your `LD_LIBRARY_PATH`. You don't need this for the CalculiX adapter, but you would need it e.g. for the OpenFOAM adapter.
 
+**Note:**: While v0.6.2 is known to work, try the latest available version first. Newer compilers might only be supported by newer versions.
+
 **Note**: If you use Boost 1.67 or newer, then you also need to install yaml-cpp 0.6 or newer. Similarly, for an older Boost version, you also need an older yaml-cpp. Unfortunately, this is not related to the adapter's code.
 </details>
 
@@ -151,19 +153,21 @@ After building, make sure that you make yaml-cpp discoverable by setting e.g. yo
 
 ### Get the source
 
-Once the libraries are installed, you can finally install Calculix with preCICE adapter. Note that the adapter version needs to be the same as the CalculiX version (replace `{{site.calculix_version}}` below).
+Once the libraries are installed, you can finally install Calculix with preCICE adapter. Note that the adapter version needs to be the same as the CalculiX version (replace `2.20` below).
 
 ```bash
 cd ~
-wget http://www.dhondt.de/ccx_{{site.calculix_version}}.src.tar.bz2
-tar xvjf ccx_{{site.calculix_version}}.src.tar.bz2
+wget http://www.dhondt.de/ccx_2.20.src.tar.bz2
+tar xvjf ccx_2.20.src.tar.bz2
 ```
 
-The source code is now in the `~/CalculiX/ccx_{{site.calculix_version}}/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
+The source code is now in the `~/CalculiX/ccx_2.20/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
 
 ### Building the "vanilla" CalculiX (optional)
 
-If you want to build the "vanilla" (i.e. without preCICE) CalculiX, you can now run `make` inside the `src/` directory. Depending on how you installed the dependencies above (using `apt` or from source), you might get compilation errors, such as `spooles.h:26:10: fatal error: misc.h: No such file or directory`. Often these errors can be easily fixed by modifying CalculiX `Makefile`. Please refer to [our adapter's makefile options](adapter-calculix-get-adapter.html#makefile-options) for a list of library and include flag you might have to set depending on your installation procedure.
+If you want to build the "vanilla" (i.e., without preCICE) CalculiX, you can now run `make` inside the `src/` directory.
+
+Depending on how you installed the dependencies above (using `apt` or from source), you might get compilation errors, such as `spooles.h:26:10: fatal error: misc.h: No such file or directory`. Often these errors can be easily fixed by modifying CalculiX `Makefile`. Please refer to [the Makefile options of the adapter](adapter-calculix-get-adapter.html#makefile-options) for a list of library and include flags you might have to set depending on your installation procedure.
 
 ### Building the modified CalculiX
 
