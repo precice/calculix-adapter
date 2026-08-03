@@ -9,6 +9,7 @@ CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
 SPOOLES_INCLUDE   = -I/usr/include/spooles/
 # SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
+# If available, you might need to define both spoolesMT.a and spooles.a, in this order.
 SPOOLES_LIBS      = -lspooles
 #
 # ARPACK include flags (e.g. -I$(HOME)/ARPACK)
@@ -63,7 +64,7 @@ endif
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS} -Wno-implicit-function-declaration
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
   GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
   ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
@@ -77,7 +78,7 @@ SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
-SCCXF += getflux.f getkdeltatemp.f getc3d8elementgausspointcoords.f getc3d4elementgausspointcoords.f
+SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 
 
