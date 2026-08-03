@@ -47,7 +47,7 @@ Depending on the data you need to read and write, the interface should define a 
 
 - `faces-mesh` (or `mesh` as a synonym): The data points are centers of faces (computed by the adapter). An interface made of faces should be defined in the CalculiX case using the `*SURFACE` command.
 - `nodes-mesh`: The data points are the nodal vertices. An interface made of nodes should define these nodes using `*NSET`.
-- `elements-mesh`: The data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is experimental.
+- `elements-mesh`: The data points are the quadrature points of the elements of a mesh. The mesh should be defined by nodes using `*NEST`. **Note**: `elements-mesh` is still experimental.
 
 Using the wrong family of mesh (e.g., reading forces on faces) throws an error. If you need both kinds of meshes, you should define one interface for each.
 
