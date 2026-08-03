@@ -17,9 +17,6 @@ I updated the adapter version in the following:
 
 Outside this repository:
 
-- [ ] [website](https://github.com/precice/precice.github.io): Update the variables:
-  - `calculix_adapter_version`
-  - `calculix_version`
 - [ ] [tutorials](https://github.com/precice/tutorials/tree/develop/tools/tests): Update the default CalculiX version in the system tests:
   - `components.yaml`
   - `reference_versions.yaml` (if the reference results need to be updated)
