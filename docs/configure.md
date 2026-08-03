@@ -56,7 +56,7 @@ For defining which nodes of the CalculiX domain belong to the FSI interface, a n
 
 {% info %}
 Patch names in CalculiX follow a naming convention where nodes sets start with `N` and surface sets with `S`.
-The adapter automatically adds these prefixes to the configured patch name.
+The adapter automatically adds these prefixes to the configured patch name, depending on the configured mesh type.
 {% endinfo %}
 
 For multiscale mechanics simulations, the mesh type is always `elements-mesh`. The stresses, strains, and material stiffness are defined on the quadrature points.
