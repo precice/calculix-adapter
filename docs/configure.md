@@ -54,10 +54,10 @@ Using the wrong family of mesh (e.g., reading forces on faces) throws an error. 
 In FSI simulations, the mesh type for an interface is always `nodes-mesh`, as forces and displacement are defined on nodes. The name of this mesh, `Calculix_Mesh`, must match the mesh name given in the preCICE configuration file. In CHT simulations, `faces-mesh` is used.
 For defining which nodes of the CalculiX domain belong to the FSI interface, a node set needs to be defined in the CalculiX input files. The name of this node set must match the name of the patch (in this example, `interface`).
 
-{% info %}
+{% note %}
 Patch names in CalculiX follow a naming convention where nodes sets start with `N` and surface sets with `S`.
 The adapter automatically adds these prefixes to the configured patch name, depending on the configured mesh type.
-{% endinfo %}
+{% endnote %}
 
 For multiscale mechanics simulations, the mesh type is always `elements-mesh`. The stresses, strains, and material stiffness are defined on the quadrature points.
 
