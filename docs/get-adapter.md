@@ -7,9 +7,9 @@ keywords: adapter, calculix, building
 summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can get the adapter either from a Debian package (on Ubuntu), or build it from source."
 ---
 
-After [installing preCICE](https://precice.org/installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e. a modified CCX executable.
+After [installing preCICE](https://precice.org/installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e., a modified CalculiX executable.
 
-There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), or (b) build it from source. The latest adapter version is v2.20.1 and the versioning format is `<CalculiX major.minor version>.<adapter revision>`.
+There are two ways to get the adapter: (a) get a binary package (Ubuntu-only) or (b) build it from source. The adapter follows the versioning format `<CalculiX major.minor version>.<adapter revision>`.
 
 ## Get a binary package
 
@@ -24,17 +24,13 @@ sudo apt install ./calculix-precice3_2.20.1-1_amd64_resolute.deb
 
 This requires that also preCICE itself has been installed from a Debian package.
 
-{% tip %}
+{% important %}
 Replace `resolute` with `noble` to get the package for Ubuntu 24.04 (Noble Numbat), or with `jammy` for Ubuntu 22.04 (Jammy Jellyfish).
-{% endtip  %}
-
-{% note %}
-We started offering Debian packages for the CalculiX adapter since v2.19.0. Please [give us your feedback](https://precice.org/community-channels.html)!
-{% endnote %}
+{% endimportant  %}
 
 ## Building the adapted CalculiX
 
-1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), currently supporting CalculiX v2.20:
+1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), and see the `README.md` for the supported CalculiX version:
 
     ```bash
     wget https://github.com/precice/calculix-adapter/archive/refs/heads/master.tar.gz
@@ -44,23 +40,18 @@ We started offering Debian packages for the CalculiX adapter since v2.19.0. Plea
 
 2. Edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
-   - Otherwise, set `CCX` and, if built from source, the include and lib flags for the dependencies.
-   - Read below if you are [using GCC 10 or later](#compiling-with-gcc-10-or-newer).
+   - Otherwise, set `CCX` and the include and lib flags for the dependencies.
 3. Clean any previous builds with `make clean`.
-4. Build with `make` (e.g. `make -j 4` for parallel).
+4. Build with `make` (e.g., `make -j 4` for parallel).
 5. You should now have a new executable `ccx_preCICE` in the `bin/` folder of the adapter. You may move this file to a path known by your system, or [add this to your `PATH`](https://unix.stackexchange.com/a/26059/36693) (careful when doing this!).
 
 ### Building the adapter with PaStiX
 
-Since version 2.17 of CalculiX, it is possible to link the PaStiX solver for increased performance, mostly through GPUs. Building the adapter with PaStiX is quite tedious, as most dependencies of PaStiX and PaStiX itself must be built from source. Check our [detailed instructions on building the adapter with PaStiX](adapter-calculix-pastix-build.html).
+CalculiX can link to the PaStiX solver for increased performance using GPUs. Building the adapter with PaStiX is quite tedious, as most dependencies of PaStiX and PaStiX itself must be built from source. Check some [instructions on building the adapter with PaStiX](adapter-calculix-pastix-build.html).
 
 ### Makefile options
 
 The adapter is built using GNU Make. The `Makefile` contains a few variables on top, which need to be adapted to your system:
-
-{% version %}
-The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter v2.20.1.
-{% endversion %}
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
     - Example: `$(HOME)/CalculiX/ccx_2.20/src`
@@ -82,6 +73,10 @@ The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter
  7. `YAML_LIBS`: Library flags for yaml-cpp
     - Example 1: `YAML_LIBS         = -lyaml-cpp` (installed)
     - Example 2: `YAML_LIBS         = -L$(HOME)/yaml-cpp/build -lyaml-cpp` (source)
+
+{% version %}
+The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter v2.20.1.
+{% endversion %}
 
 You may also want to adjust the compiler `FC` from `mpifort` to `mpif90` or to any other compiler your system uses.
 
