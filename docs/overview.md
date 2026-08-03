@@ -20,7 +20,7 @@ Are you encountering an unexpected error? Have a look at our [Troubleshooting](a
 
 ## Versions
 
-The latest supported CalculiX version is {{site.calculix_version}}. If you already have a copy of the adapter, check the [adapter README](https://github.com/precice/calculix-adapter/blob/master/README.md) for the CalculiX version it was made for.
+The latest supported CalculiX version is v2.20. If you already have a copy of the adapter, check the [adapter README](https://github.com/precice/calculix-adapter/blob/master/README.md) for the CalculiX version it was made for.
 
 The adapter has a versioning scheme inherited from CalculiX: It is of the form `CCX_MAJOR.CCX_MINOR.ADAPTER_PATCH`. For instance, the release `v2.20.0` modifies the source code of CalculiX `2.20`. Further adapter releases for the same CalculiX version increase the `ADAPTER_PATCH` (e.g., `2.20.1`), independent of whether it includes bug fixes, new features, or compatibility with a different preCICE version.
 

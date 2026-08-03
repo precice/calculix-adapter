@@ -9,7 +9,7 @@ summary: "The CalculiX adapter provides the executable `ccx_preCICE`. You can ge
 
 After [installing preCICE](https://precice.org/installation-overview.html) and [getting the CalculiX source and the required dependencies](adapter-calculix-get-calculix.html), you can now build the adapter, i.e. a modified CCX executable.
 
-There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), or (b) build it from source. The latest adapter version is v{{ site.calculix_adapter_version }} and the versioning format is `<CalculiX major.minor version>.<adapter revision>`.
+There are two ways to get the adapter: (a) get a binary package (Ubuntu-only), or (b) build it from source. The latest adapter version is v2.20.1 and the versioning format is `<CalculiX major.minor version>.<adapter revision>`.
 
 ## Get a binary package
 
@@ -18,8 +18,8 @@ You can download version-specific Ubuntu (Debian) packages from each [adapter re
 Alternatively, download & install it from the command line. For Ubuntu 26.04 (Resolute Raccoon):
 
 ```bash
-wget https://github.com/precice/calculix-adapter/releases/download/v{{ site.calculix_adapter_version }}/calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
-sudo apt install ./calculix-precice3_{{ site.calculix_adapter_version }}-1_amd64_resolute.deb
+wget https://github.com/precice/calculix-adapter/releases/download/v2.20.1/calculix-precice3_2.20.1-1_amd64_resolute.deb
+sudo apt install ./calculix-precice3_2.20.1-1_amd64_resolute.deb
 ```
 
 This requires that also preCICE itself has been installed from a Debian package.
@@ -34,7 +34,7 @@ We started offering Debian packages for the CalculiX adapter since v2.19.0. Plea
 
 ## Building the adapted CalculiX
 
-1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), currently supporting CalculiX v{{site.calculix_version}}:
+1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), currently supporting CalculiX v2.20:
 
     ```bash
     wget https://github.com/precice/calculix-adapter/archive/refs/heads/master.tar.gz
@@ -63,7 +63,7 @@ The variables `YAML_INCLUDE` and `YAML_LIBS` are only relevant up to the adapter
 {% endversion %}
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
-    - Example: `$(HOME)/CalculiX/ccx_{{site.calculix_version}}/src`
+    - Example: `$(HOME)/CalculiX/ccx_2.20/src`
  2. `SPOOLES_INCLUDE`: Include flags for SPOOLES
     - Example 1: `SPOOLES_INCLUDE   = -I/usr/include/spooles/` (installed)
     - Example 2: `SPOOLES_INCLUDE   = -I$(HOME)/SPOOLES.2.2/` (source)

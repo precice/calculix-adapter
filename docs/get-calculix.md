@@ -151,15 +151,15 @@ After building, make sure that you make yaml-cpp discoverable by setting e.g. yo
 
 ### Get the source
 
-Once the libraries are installed, you can finally install Calculix with preCICE adapter. Note that the adapter version needs to be the same as the CalculiX version (replace `{{site.calculix_version}}` below).
+Once the libraries are installed, you can finally install Calculix with preCICE adapter. Note that the adapter version needs to be the same as the CalculiX version (replace `2.20` below).
 
 ```bash
 cd ~
-wget http://www.dhondt.de/ccx_{{site.calculix_version}}.src.tar.bz2
-tar xvjf ccx_{{site.calculix_version}}.src.tar.bz2
+wget http://www.dhondt.de/ccx_2.20.src.tar.bz2
+tar xvjf ccx_2.20.src.tar.bz2
 ```
 
-The source code is now in the `~/CalculiX/ccx_{{site.calculix_version}}/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
+The source code is now in the `~/CalculiX/ccx_2.20/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
 
 ### Building the "vanilla" CalculiX (optional)
 
