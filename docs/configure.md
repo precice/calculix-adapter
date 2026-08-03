@@ -23,6 +23,8 @@ ccx_preCICE -i flap -precice-participant Calculix
 
 The input file for this example would be `flap.inp`. Note that the suffix `.inp` needs to be omitted on the command line. The flag `-precice-participant` triggers the usage of the preCICE adapter. If the flag is not used, the original unmodified solver of CalculiX is executed, allowing CalculiX-only runs. Note that as mentioned above, the participant name used on the command line must match the name given in the YAML configuration file and in the preCICE configuration file.
 
+Besides this page, see also a [step-by-step guide on setting up CalculiX-preCICE simulations](https://doi.org/10.5281/zenodo.13961370) and some [visualization tips](https://precice.org/tutorials-visualization.html).
+
 ## Adapter configuration file
 
 The adapter looks for a YAML-based configuration file named `config.yml`, which, for historical reasons, starts by defining a list of participants. For example, for an FSI simulation:
