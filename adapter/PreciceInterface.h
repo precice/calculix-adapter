@@ -33,27 +33,22 @@ typedef struct PreciceInterface {
   int          nodeSetID;
   int *        preciceNodeIDs;
   char *       nodesMeshName;
-  char *       elementsMeshName;
 
+  // Interface elements
   int     numElements;
   int *   elementIDs;
   int *   elemIPID;
   int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
+  char *  elementsMeshName;
 
+  // Interface faces
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   char *  faceCentersMeshName;
   int *   preciceFaceCenterIDs;
-
-  // Interface volumetric elements
-  char *  elementsMeshName;
-  int     elementSetID;
-  int     numIPTotal;
-  double *elemIPCoordinates;
-  int *   elemIPID;
 
   // Arrays to store the coupling data
   double *nodeScalarData;
