@@ -610,7 +610,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   }
   int numGaussPointsPerElement = sim->mi[0];
 
-  // Keep GP counts aligned with getelementgausspointcoords.f (tet:1, hex:8)
   interface->numIPTotal        = numGaussPointsPerElement * interface->numElements;
   interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
   interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
