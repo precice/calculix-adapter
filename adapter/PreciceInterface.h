@@ -27,7 +27,7 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  ITG *        nodeIDs;
+  int *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
   int          nodeSetID;
@@ -36,13 +36,13 @@ typedef struct PreciceInterface {
   char *       elementsMeshName;
 
   int     numElements;
-  ITG *   elementIDs;
+  int *   elementIDs;
   int *   elemIPID;
   int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
 
-  ITG *   faceIDs;
+  int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   char *  faceCentersMeshName;
