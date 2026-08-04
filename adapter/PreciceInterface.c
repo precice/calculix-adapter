@@ -601,16 +601,14 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
   int nodesPerElement;
-  int numGaussPointsPerElement;
   if (elemType == TETRAHEDRA) {
-    nodesPerElement          = 4;
-    numGaussPointsPerElement = 1;
+    nodesPerElement = 4;
   } else if (elemType == HEXAHEDRA) {
-    nodesPerElement          = 8;
-    numGaussPointsPerElement = 8;
+    nodesPerElement = 8;
   } else {
     supportedElementError();
   }
+  int numGaussPointsPerElement = sim->mi[0];
 
   // Keep GP counts aligned with getelementgausspointcoords.f (tet:1, hex:8)
   interface->numIPTotal        = numGaussPointsPerElement * interface->numElements;
