@@ -83,8 +83,16 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     // Compute the time step size of CalculiX
     double solver_dt = (*sim->dtheta) * (*sim->tper);
 
-    // Synchronize CalculiX time step with preCICE time window end
-    double dt = fmin(precice_dt, solver_dt);
+    // Synchronize CalculiX time step with preCICE time window end.
+    // The main idea is min(precice_dt, solver_dt),
+    // but if the last time window would leave a too small remainder, prefer the solver_dt.
+    double dt;
+    double min_dt = 1e-12;
+    if (precice_dt - solver_dt < min_dt) {
+      dt = precice_dt;
+    } else {
+      dt = solver_dt;
+    }
 
     // Normalize the agreed-on time step size
     double new_dtheta = dt / (*sim->tper);
