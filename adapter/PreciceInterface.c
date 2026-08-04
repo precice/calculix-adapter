@@ -682,7 +682,7 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
+  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1];
 
   free(nodeSetName);
 
@@ -869,7 +869,6 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->elemIPID);
   free(preciceInterface->elemIPCoordinates);
   free(preciceInterface->faceIDs);
-  free(preciceInterface->nodeIDs);
   free(preciceInterface->preciceFaceCenterIDs);
   free(preciceInterface->faceCenterCoordinates);
   free(preciceInterface->nodeCoordinates);
