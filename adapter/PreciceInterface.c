@@ -595,6 +595,14 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
+  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
+  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
+
+  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    interface->elemIPID[j] = j;
+  }
+
   int numElements = interface->numElements;
 
   enum ElemType elemType = findSimulationMeshType(sim);
@@ -607,14 +615,6 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
     nodesPerElement = 8;
   } else {
     supportedElementError();
-  }
-  int numGaussPointsPerElement = sim->mi[0];
-
-  interface->numIPTotal        = numGaussPointsPerElement * interface->numElements;
-  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
-  interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
-  for (int j = 0; j < interface->numIPTotal; j++) {
-    interface->elemIPID[j] = j;
   }
 
   FORTRAN(getelementgausspointcoords, (&numElements,
