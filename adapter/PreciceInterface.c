@@ -595,26 +595,29 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
   interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
-  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
-  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
-
-  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
-  for (int j = 0; j < interface->numIPTotal; j++) {
-    interface->elemIPID[j] = j;
-  }
-
   int numElements = interface->numElements;
 
   enum ElemType elemType = findSimulationMeshType(sim);
 
   // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
   int nodesPerElement;
+  int numGaussPointsPerElement;
   if (elemType == TETRAHEDRA) {
-    nodesPerElement = 4;
+    nodesPerElement          = 4;
+    numGaussPointsPerElement = 1;
   } else if (elemType == HEXAHEDRA) {
-    nodesPerElement = 8;
+    nodesPerElement          = 8;
+    numGaussPointsPerElement = 8;
   } else {
     supportedElementError();
+  }
+
+  // Keep GP counts aligned with getelementgausspointcoords.f (tet:1, hex:8)
+  interface->numIPTotal        = numGaussPointsPerElement * interface->numElements;
+  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
+  interface->elemIPID          = malloc(interface->numIPTotal * sizeof(int));
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    interface->elemIPID[j] = j;
   }
 
   FORTRAN(getelementgausspointcoords, (&numElements,
@@ -682,7 +685,8 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
+  interface->nodeIDs   = malloc(interface->numNodes * sizeof(ITG));
+  getElementsIDs(interface->nodeSetID, sim->ialset, sim->istartset, sim->iendset, interface->nodeIDs);
 
   free(nodeSetName);
 
