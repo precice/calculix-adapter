@@ -1,5 +1,4 @@
 calculix-precice3 (2.20.2-1) unstable; urgency=medium
-
   * Removed the yaml-cpp package dependency
   * Added new features and bugfixes (see upstream CHANGELOG.mg)
   * Added support for Ubuntu 24.04 and 26.04, removed support for Ubuntu 20.04
@@ -7,7 +6,6 @@ calculix-precice3 (2.20.2-1) unstable; urgency=medium
  -- The preCICE team (precice.org) <info@precice.org>  Tue, 4 Aug 2026 20:30:00 +0200
 
 calculix-precice3 (2.20.1-1) unstable; urgency=medium
-
   * Update to preCICE v3
 
  -- The preCICE team (precice.org) <info@precice.org>  Wed, 20 Mar 2024 19:40:00 +0200
