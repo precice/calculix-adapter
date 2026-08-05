@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+set -e -u
 
 DISTRIBUTION="_$1"
 ADAPTER_VERSION="2.20.2"
