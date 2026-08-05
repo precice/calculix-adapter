@@ -22,8 +22,8 @@ chmod 644 ccx_preCICE.1.gz
 mv ccx_preCICE.1.gz debian/usr/share/man/man1
 
 # Copy to a folder with appropriate postfix
-
-cp -r debian/ "$PACKAGE_FOLDER$DISTRIBUTION"
+mkdir -p "$PACKAGE_FOLDER$DISTRIBUTION"
+cp -r debian/* "$PACKAGE_FOLDER$DISTRIBUTION"
 
 dpkg-deb --build --root-owner-group "$PACKAGE_FOLDER$DISTRIBUTION"
 lintian ./*.deb
