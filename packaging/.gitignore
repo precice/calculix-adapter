@@ -1,0 +1,4 @@
+**/*.deb
+**/*.Debian.gz
+**/ccx_preCICE.1.gz
+calculix-precice*/
