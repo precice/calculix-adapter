@@ -92,6 +92,16 @@ ITG getSetID(char const *setName, char const *set, ITG nset);
 ITG getNumSetElements(ITG setID, ITG *istartset, ITG *iendset);
 
 /**
+ * @brief Gets the element IDs given a set ID
+ * @param setID: input set id
+ * @param ialset: CalculiX variable
+ * @param istartset: CalculiX variable
+ * @param iendset: CalculiX variable
+ * @param elements: output element IDs
+ */
+void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements);
+
+/**
  * @brief Gets the element and face IDs given a set ID
  * @param setID: input set id
  * @param ialset: CalculiX variable
@@ -357,58 +367,6 @@ bool isDoubleEqual(const double a, const double b);
  * @param quasi2D3D is an integer toggled during initialization
  */
 bool isQuasi2D3D(const int quasi2D3D);
-
-/**
- * @brief Set all values of an array to 0
- * @param values is the array carrying double values
- * @param length is the number of elements in array
- * @param dim is the dimension of the array data
- */
-void setDoubleArrayZero(double *values, const int length, const int dim);
-
-/**
- * @brief Maps vector data from 2D mesh nodes to 3D mesh nodes
- * @param values2D is the array of vector values on 2D mesh nodes
- * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
- * @param numNodes3D the number of nodes on 3D mesh
- * @param values3D is the array of vector values on 3D mesh nodes
- */
-void mapData2Dto3DVector(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D);
-
-/**
- * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
- * @param values3D is the array of vector values on 3D mesh nodes
- * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
- * @param numNodes3D the number of nodes on 3D mesh
- * @param values2D is the array of vector values on 2D mesh nodes
- */
-void mapData3Dto2DVector(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D);
-
-/**
- * @brief Maps data from 2D mesh nodes to 3D mesh nodes
- * @param values2D is the array of values on 2D mesh nodes
- * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
- * @param numNodes3D the number of nodes on 3D mesh
- * @param values3D is the array of values on 3D mesh nodes
- */
-void mapData2Dto3DScalar(const double *values2D, const int *mapping2D3D, const int numNodes3D, double *values3D);
-
-/**
- * @brief Maps vector data from 3D mesh nodes to 2D mesh nodes
- * @param values3D is the array of values on 3D mesh nodes
- * @param mapping2D3D is a mapping between indices of 2D mesh and 3D mesh
- * @param numNodes3D the number of nodes on 3D mesh
- * @param values2D is the array of values on 2D mesh nodes
- */
-void mapData3Dto2DScalar(const double *values3D, const int *mapping2D3D, const int numNodes3D, double *values2D);
-
-/**
- * @brief Prints contents of a multi-dimension array
- * @param values is the array carrying double values
- * @param length is the number of elements in array
- * @param dim is the dimension of the array data
- */
-void printVectorData(const double *values, const int nv, const int dim);
 
 /* Error messages */
 

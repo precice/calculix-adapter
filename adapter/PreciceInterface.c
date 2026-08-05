@@ -83,8 +83,16 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
     // Compute the time step size of CalculiX
     double solver_dt = (*sim->dtheta) * (*sim->tper);
 
-    // Synchronize CalculiX time step with preCICE time window end
-    double dt = fmin(precice_dt, solver_dt);
+    // Synchronize CalculiX time step with preCICE time window end.
+    // The main idea is min(precice_dt, solver_dt),
+    // but if the last time window would leave a too small remainder, prefer the solver_dt.
+    double dt;
+    double min_dt = 1e-12;
+    if (precice_dt - solver_dt < min_dt) {
+      dt = precice_dt;
+    } else {
+      dt = solver_dt;
+    }
 
     // Normalize the agreed-on time step size
     double new_dtheta = dt / (*sim->tper);
@@ -394,8 +402,13 @@ void Precice_WriteCouplingData(SimulationData *sim)
         printf("Writing DISPLACEMENTDELTAS coupling data.\n");
         break;
       case VELOCITIES:
-        getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dim, sim->veold, sim->mt, interfaces[i]->nodeVectorData);
-        precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->velocities, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
+        if (isQuasi2D3D(interfaces[i]->quasi2D3D)) {
+          getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->veold, sim->mt, interfaces[i]->mappingQuasi2D3D->bufferVector3D);
+          consistentVectorWrite(interfaces[i]->mappingQuasi2D3D, interfaces[i]->couplingMeshName, interfaces[i]->velocities);
+        } else {
+          getNodeVelocities(interfaces[i]->nodeIDs, interfaces[i]->numNodes, interfaces[i]->dimCCX, sim->veold, sim->mt, interfaces[i]->nodeVectorData);
+          precicec_writeData(interfaces[i]->couplingMeshName, interfaces[i]->velocities, interfaces[i]->numNodes, interfaces[i]->preciceNodeIDs, interfaces[i]->nodeVectorData);
+        }
         printf("Writing VELOCITIES coupling data.\n");
         break;
       case POSITIONS:
@@ -445,8 +458,8 @@ void Precice_FreeData(SimulationData *sim)
 void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, InterfaceConfig const *config)
 {
   // Deduce configured dimensions
-  if (config->nodesMeshName == NULL && config->facesMeshName == NULL) {
-    printf("ERROR: You need to define either a face or a nodes mesh. Check the adapter configuration file.\n");
+  if (config->nodesMeshName == NULL && config->facesMeshName == NULL && config->elementsMeshName == NULL) {
+    printf("ERROR: You need to define either a face, nodes, or elements mesh. Check the adapter configuration file.\n");
     exit(EXIT_FAILURE);
   }
   if (config->nodesMeshName && config->facesMeshName) {
@@ -466,8 +479,16 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     }
   }
 
+  // Initialize counters
+  interface->numNodes    = 0;
+  interface->nodeSetID   = 0;
+  interface->numElements = 0;
+  interface->faceSetID   = 0;
+
   // Initialize pointers as NULL
   interface->elementIDs            = NULL;
+  interface->elemIPID              = NULL;
+  interface->elemIPCoordinates     = NULL;
   interface->faceIDs               = NULL;
   interface->faceCenterCoordinates = NULL;
   interface->preciceFaceCenterIDs  = NULL;
@@ -540,6 +561,14 @@ void PreciceInterface_Create(PreciceInterface *interface, SimulationData *sim, I
     interface->couplingMeshName = interface->faceCentersMeshName;
   }
 
+  // Element mesh
+  interface->elementsMeshName = NULL;
+  if (config->elementsMeshName) {
+    interface->elementsMeshName = strdup(config->elementsMeshName);
+    PreciceInterface_ConfigureElementsMesh(interface, sim);
+    interface->couplingMeshName = interface->elementsMeshName;
+  }
+
   PreciceInterface_ConfigureCouplingData(interface, sim, config);
 }
 
@@ -560,6 +589,51 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
   }
 
   return INVALID_ELEMENT;
+}
+
+void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
+{
+  printf("WARNING: Elements-mesh support is experimental. Use with caution.\n");
+  fflush(stdout);
+
+  char *elementSetName    = interface->name;
+  interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
+  interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
+
+  interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
+  getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
+
+  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
+  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
+
+  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
+  for (int j = 0; j < interface->numIPTotal; j++) {
+    interface->elemIPID[j] = j;
+  }
+
+  int numElements = interface->numElements;
+
+  enum ElemType elemType = findSimulationMeshType(sim);
+
+  // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
+  int nodesPerElement;
+  if (elemType == TETRAHEDRA) {
+    nodesPerElement = 4;
+  } else if (elemType == HEXAHEDRA) {
+    nodesPerElement = 8;
+  } else {
+    supportedElementError();
+  }
+
+  FORTRAN(getelementgausspointcoords, (&numElements,
+                                       interface->elementIDs,
+                                       &nodesPerElement,
+                                       sim->co,
+                                       sim->kon,
+                                       sim->ipkon,
+                                       interface->elemIPCoordinates));
+
+  precicec_setMeshVertices(interface->elementsMeshName, interface->numIPTotal, interface->elemIPCoordinates, interface->elemIPID);
 }
 
 void PreciceInterface_ConfigureFaceCentersMesh(PreciceInterface *interface, SimulationData *sim)
@@ -616,7 +690,9 @@ void PreciceInterface_ConfigureNodesMesh(PreciceInterface *interface, Simulation
   char *nodeSetName    = toNodeSetName(interface->name);
   interface->nodeSetID = getSetID(nodeSetName, sim->set, sim->nset);
   interface->numNodes  = getNumSetElements(interface->nodeSetID, sim->istartset, sim->iendset);
-  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1]; // Lucia: make a copy
+  interface->nodeIDs   = &sim->ialset[sim->istartset[interface->nodeSetID] - 1];
+
+  free(nodeSetName);
 
   interface->nodeCoordinates = malloc(interface->numNodes * interface->dimCCX * sizeof(double));
   getNodeCoordinates(interface->nodeIDs, interface->numNodes, interface->dimCCX, sim->co, sim->vold, sim->mt, interface->nodeCoordinates);
@@ -798,6 +874,8 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
   free(preciceInterface->readData);
   free(preciceInterface->writeData);
   free(preciceInterface->elementIDs);
+  free(preciceInterface->elemIPID);
+  free(preciceInterface->elemIPCoordinates);
   free(preciceInterface->faceIDs);
   free(preciceInterface->preciceFaceCenterIDs);
   free(preciceInterface->faceCenterCoordinates);
@@ -814,9 +892,13 @@ void PreciceInterface_FreeData(PreciceInterface *preciceInterface)
 
   freeMapping(preciceInterface->mappingQuasi2D3D);
 
+  // Patch name
+  free(preciceInterface->name);
+
   // Mesh names
   free(preciceInterface->faceCentersMeshName);
   free(preciceInterface->nodesMeshName);
+  free(preciceInterface->elementsMeshName);
 
   // Data names
   free(preciceInterface->displacementDeltas);

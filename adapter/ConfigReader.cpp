@@ -12,16 +12,22 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
+#include <fstream>
 #include <iterator>
 #include "ConfigReader.h"
-#include "yaml-cpp/yaml.h"
+#include "fkYAML.hpp"
+
+fkyaml::node load_yaml(char const *configFilename)
+{
+  std::ifstream ifs(configFilename);
+  return fkyaml::node::deserialize(ifs);
+}
 
 void ConfigReader_Read(char const *configFilename, char const *participantName, AdapterConfig *adapterConfig)
 {
-  YAML::Node config = YAML::LoadFile(configFilename);
+  auto config = load_yaml(configFilename);
 
-  adapterConfig->preciceConfigFilename = strdup(config["precice-config-file"].as<std::string>().c_str());
+  adapterConfig->preciceConfigFilename = strdup(config["precice-config-file"].get_value<std::string>().c_str());
 
   int numInterfaces            = config["participants"][participantName]["interfaces"].size();
   adapterConfig->numInterfaces = numInterfaces;
@@ -33,61 +39,64 @@ void ConfigReader_Read(char const *configFilename, char const *participantName, 
     new (currentInterfacePointer) InterfaceConfig();
     InterfaceConfig &interface = *currentInterfacePointer;
 
-    if (config["participants"][participantName]["interfaces"][i]["nodes-mesh"]) {
-      interface.nodesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["nodes-mesh"].as<std::string>().c_str());
+    if (config["participants"][participantName]["interfaces"][i].contains("nodes-mesh")) {
+      interface.nodesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["nodes-mesh"].get_value<std::string>().c_str());
       interface.map           = 0;
-    } else if (config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"]) {
-      interface.nodesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].as<std::string>().c_str());
+    } else if (config["participants"][participantName]["interfaces"][i].contains("nodes-mesh-with-connectivity")) {
+      interface.nodesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["nodes-mesh-with-connectivity"].get_value<std::string>().c_str());
       interface.map           = 1;
     } else {
       interface.nodesMeshName = NULL;
     }
 
-    if (config["participants"][participantName]["interfaces"][i]["faces-mesh"]) {
-      interface.facesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["faces-mesh"].as<std::string>().c_str());
+    if (config["participants"][participantName]["interfaces"][i].contains("faces-mesh")) {
+      interface.facesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["faces-mesh"].get_value<std::string>().c_str());
     } else {
       interface.facesMeshName = NULL;
     }
 
-    if (config["participants"][participantName]["interfaces"][i]["mesh"]) {
-      interface.facesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["mesh"].as<std::string>().c_str());
+    if (config["participants"][participantName]["interfaces"][i].contains("elements-mesh")) {
+      interface.elementsMeshName = strdup(config["participants"][participantName]["interfaces"][i]["elements-mesh"].get_value<std::string>().c_str());
     }
 
-    std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].as<std::string>();
+    if (config["participants"][participantName]["interfaces"][i].contains("mesh")) {
+      interface.facesMeshName = strdup(config["participants"][participantName]["interfaces"][i]["mesh"].get_value<std::string>().c_str());
+    }
+
+    std::string patchName = config["participants"][participantName]["interfaces"][i]["patch"].get_value<std::string>();
     std::transform(patchName.begin(), patchName.end(), patchName.begin(), toupper);
     interface.patchName = strdup(patchName.c_str());
 
-    interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
-    interface.numReadData  = config["participants"][participantName]["interfaces"][i]["read-data"].size();
-
-    if (config["participants"][participantName]["interfaces"][i]["write-data"]) {
+    if (config["participants"][participantName]["interfaces"][i].contains("write-data")) {
+      interface.numWriteData = config["participants"][participantName]["interfaces"][i]["write-data"].size();
       if (interface.numWriteData == 0) {
         // write-data is a string
         interface.numWriteData      = 1;
         interface.writeDataNames    = (char **) malloc(sizeof(char *) * interface.numWriteData);
-        interface.writeDataNames[0] = strdup(config["participants"][participantName]["interfaces"][i]["write-data"].as<std::string>().c_str());
+        interface.writeDataNames[0] = strdup(config["participants"][participantName]["interfaces"][i]["write-data"].get_value<std::string>().c_str());
       } else {
         // write-data is an array
         interface.writeDataNames = (char **) malloc(sizeof(char *) * interface.numWriteData);
 
         for (int j = 0; j < interface.numWriteData; j++) {
-          interface.writeDataNames[j] = strdup(config["participants"][participantName]["interfaces"][i]["write-data"][j].as<std::string>().c_str());
+          interface.writeDataNames[j] = strdup(config["participants"][participantName]["interfaces"][i]["write-data"][j].get_value<std::string>().c_str());
         }
       }
     }
 
-    if (config["participants"][participantName]["interfaces"][i]["read-data"]) {
+    if (config["participants"][participantName]["interfaces"][i].contains("read-data")) {
+      interface.numReadData = config["participants"][participantName]["interfaces"][i]["read-data"].size();
       if (interface.numReadData == 0) {
         // read-data is a string
         interface.numReadData      = 1;
         interface.readDataNames    = (char **) malloc(sizeof(char *) * interface.numReadData);
-        interface.readDataNames[0] = strdup(config["participants"][participantName]["interfaces"][i]["read-data"].as<std::string>().c_str());
+        interface.readDataNames[0] = strdup(config["participants"][participantName]["interfaces"][i]["read-data"].get_value<std::string>().c_str());
       } else {
         // read-data is an array
         interface.readDataNames = (char **) malloc(sizeof(char *) * interface.numReadData);
 
         for (int j = 0; j < interface.numReadData; j++) {
-          interface.readDataNames[j] = strdup(config["participants"][participantName]["interfaces"][i]["read-data"][j].as<std::string>().c_str());
+          interface.readDataNames[j] = strdup(config["participants"][participantName]["interfaces"][i]["read-data"][j].get_value<std::string>().c_str());
         }
       }
     }

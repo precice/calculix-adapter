@@ -1,0 +1,30 @@
+name: Run checks for pre-commit
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  precommit:
+    name: pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          check-latest: true
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run checks
+        run: pre-commit run -a -v
+      - name: Git status
+        if: always()
+        run: git status
+      - name: Full diff
+        if: always()
+        run: git diff

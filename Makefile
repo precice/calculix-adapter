@@ -5,21 +5,17 @@
 CCX_VERSION			= 2.20
 CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
-### Change these if you built SPOOLES, ARPACK, or yaml-cpp from source ###
+### Change these if you built SPOOLES, or ARPACK from source ###
 # SPOOLES include flags (e.g. -I$(HOME)/SPOOLES.2.2 )
 SPOOLES_INCLUDE   = -I/usr/include/spooles/
 # SPOOLES library flags (e.g. $(HOME)/SPOOLES.2.2/spooles.a)
+# If available, you might need to define both spoolesMT.a and spooles.a, in this order.
 SPOOLES_LIBS      = -lspooles
 #
 # ARPACK include flags (e.g. -I$(HOME)/ARPACK)
 ARPACK_INCLUDE    =
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
 ARPACK_LIBS       = -larpack -llapack -lblas
-#
-# yaml-cpp include flags (e.g. -I$(HOME)/yaml-cpp/include)
-YAML_INCLUDE      = -I/usr/include/
-# yaml-cpp library flags (e.g. -L$(HOME)/yaml-cpp/build -lyaml-cpp)
-YAML_LIBS         = -lyaml-cpp
 
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
@@ -37,14 +33,11 @@ INCLUDES = \
 	-I$(CCX) \
 	$(SPOOLES_INCLUDE) \
 	$(PKGCONF_CFLAGS) \
-	$(ARPACK_INCLUDE) \
-	$(YAML_INCLUDE)
+	$(ARPACK_INCLUDE)
 
 LIBS = \
 	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
-	-lstdc++ \
-	$(YAML_LIBS) \
 	$(ARPACK_LIBS) \
 	-lpthread -lm -lc
 
@@ -52,21 +45,32 @@ LIBS = \
 #CFLAGS = -g -Wall -std=c++11 -O0 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE
 #FFLAGS = -g -Wall -O0 -fopenmp $(INCLUDES)
 
-CFLAGS = -Wall -O3 -fopenmp $(INCLUDES) -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS  = -Wall -O3 -fopenmp $(INCLUDES)
+CFLAGS += -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT
+CFLAGS += -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
 
 # OS-specific options
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	CC = /usr/local/bin/gcc
+	CC = clang
+	CXX = clang++
+	LIBS += -lc++
 else
 	CC = mpicc
+	CXX = mpic++
+	LIBS += -lstdc++
 endif
 
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
-# Note for GCC 10 or newer: add -fallow-argument-mismatch in the above flags
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
+FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
+ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
+  GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
+  ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
+    FFLAGS += -fallow-argument-mismatch
+  endif
+endif
 
 # Include a list of all the source files
 include $(CCX)/Makefile.inc
@@ -74,7 +78,7 @@ SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
 SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
-SCCXF += getflux.f getkdeltatemp.f
+SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 
 
@@ -84,10 +88,9 @@ $(OBJDIR)/%.o : %.c
 $(OBJDIR)/%.o : %.f
 	$(FC) $(FFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/%.o : adapter/%.cpp
-	g++ -std=c++11 $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
-	#$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LIBS)
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 # Source files in the $(CCX) folder
 $(OBJDIR)/%.o : $(CCX)/%.c
