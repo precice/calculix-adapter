@@ -16,8 +16,8 @@ strip --strip-unneeded debian/usr/bin/ccx_preCICE
 #Compile and compress the manual
 
 pandoc manpage.md -s -t man -o ccx_preCICE.1
-mkdir -p debian/usr/share/man/man1
 chmod 644 ccx_preCICE.1
+mkdir -p debian/usr/share/man/man1
 gzip -9 -n -f ccx_preCICE.1
 mv ccx_preCICE.1.gz debian/usr/share/man/man1
 
