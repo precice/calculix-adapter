@@ -31,7 +31,8 @@ on:
         type: string
       fflags:
         description: 'Additional fflags'
-        required: true
+        default: ""
+        required: false
         type: string
       precice:
         description: 'preCICE release tag'
