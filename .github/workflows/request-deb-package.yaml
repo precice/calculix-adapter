@@ -31,7 +31,8 @@ on:
         type: string
       fflags:
         description: 'Additional fflags'
-        required: true
+        default: ""
+        required: false
         type: string
       precice:
         description: 'preCICE release tag'
@@ -80,8 +81,8 @@ jobs:
       - name: Create Debian Package
         run: |
           REL=$( echo "${{ github.event.inputs.release }}" | sed "s/^v//" )
-          mkdir -p "packaging/calculix-precice3_${REL}-1_amd64/usr/bin"
-          cp ./bin/ccx_preCICE ./packaging/calculix-precice3_${REL}-1_amd64/usr/bin/ccx_preCICE
+          mkdir -p "packaging/debian/usr/bin"
+          cp ./bin/ccx_preCICE ./packaging/debian/usr/bin/ccx_preCICE
           cd packaging
           pwd
           bash ./make_deb.sh $(lsb_release -sc)
