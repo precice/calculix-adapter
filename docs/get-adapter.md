@@ -18,8 +18,8 @@ You can download version-specific Ubuntu (Debian) packages from each [adapter re
 Alternatively, download & install it from the command line. For Ubuntu 26.04 (Resolute Raccoon):
 
 ```bash
-wget https://github.com/precice/calculix-adapter/releases/download/v2.20.1/calculix-precice3_2.20.1-1_amd64_resolute.deb
-sudo apt install ./calculix-precice3_2.20.1-1_amd64_resolute.deb
+wget https://github.com/precice/calculix-adapter/releases/download/v2.20.2/calculix-precice3_2.20.2-1_amd64_resolute.deb
+sudo apt install ./calculix-precice3_2.20.2-1_amd64_resolute.deb
 ```
 
 This requires that also preCICE itself has been installed from a Debian package.
