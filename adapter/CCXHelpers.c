@@ -410,6 +410,18 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
   }
 }
 
+void getElementStrain(ITG strainIdx, ITG numIPTotal, double *eei, double *strainData)
+{
+  ITG i, idx;
+  // Loop through all element and respective gauss points
+  for (i = 0; i < numIPTotal; i++) {
+    idx                   = i * 6 + strainIdx; //TODO: Add explanation for 6
+    strainData[i * 3]     = eei[idx];
+    strainData[i * 3 + 1] = eei[idx + 1];
+    strainData[i * 3 + 2] = eei[idx + 2];
+  }
+}
+
 void setXload(double *xload, int *xloadIndices, double *values, int numValues, enum xloadVariable xloadVar)
 {
   ITG i;
@@ -468,6 +480,30 @@ void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbo
     for (j = 0; j < dim; j++) {
       xboun[xbounIndices[3 * i + j]] = displacements[dim * i + j];
     }
+  }
+}
+
+void setElementStiffness(ITG stiffnessIdx, ITG numIPTotal, double *stiffnessData, double *xstiff)
+{
+  ITG i, idx;
+  // Loop through all element and respective gauss points
+  for (i = 0; i < numIPTotal; i++) {
+    idx             = i * 27 + stiffnessIdx; //TODO: Add explanation for 27
+    xstiff[idx]     = stiffnessData[i * 3];
+    xstiff[idx + 1] = stiffnessData[i * 3 + 1];
+    xstiff[idx + 2] = stiffnessData[i * 3 + 2];
+  }
+}
+
+void setElementStress(ITG stressIdx, ITG numIPTotal, double *stressData, double *stx)
+{
+  ITG i, idx;
+  // Loop through all element and respective gauss points
+  for (i = 0; i < numIPTotal; i++) {
+    idx          = i * 6 + stressIdx; //TODO: Add explanation for 6
+    stx[idx]     = stressData[i * 3];
+    stx[idx + 1] = stressData[i * 3 + 1];
+    stx[idx + 2] = stressData[i * 3 + 2];
   }
 }
 

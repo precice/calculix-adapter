@@ -33,15 +33,17 @@ typedef struct PreciceInterface {
   int          nodeSetID;
   int *        preciceNodeIDs;
   char *       nodesMeshName;
-  char *       elementsMeshName;
 
+  // Interface elements
   int     numElements;
   int *   elementIDs;
   int *   elemIPID;
   int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
+  char *  elementsMeshName;
 
+  // Interface faces
   int *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
@@ -54,6 +56,7 @@ typedef struct PreciceInterface {
   double *nodeVectorData;   // Forces, displacements, velocities, positions and displacementDeltas are vector quantities
   double *node2DVectorData; // Vector quantities in 2D in case quasi 2D-3D coupling is done
   double *faceCenterData;
+  double *elementIPVectorData; // Vector quantities at the integration points
 
   // preCICE mesh name
   char *couplingMeshName;
@@ -71,6 +74,17 @@ typedef struct PreciceInterface {
   char *velocities;
   char *forces;
   char *pressure;
+  char *strain1to3Data;
+  char *strain4to6Data;
+  char *stress1to3Data;
+  char *stress4to6Data;
+  char *materialTangent1Data;
+  char *materialTangent2Data;
+  char *materialTangent3Data;
+  char *materialTangent4Data;
+  char *materialTangent5Data;
+  char *materialTangent6Data;
+  char *materialTangent7Data;
 
   // Indices that indicate where to apply the boundary conditions / forces
   int *xloadIndices;
@@ -99,6 +113,7 @@ typedef struct PreciceInterface {
 typedef struct SimulationData {
 
   // CalculiX data
+  ITG *   iset;
   ITG *   ialset;
   ITG *   ielmat;
   ITG *   istartset;
@@ -135,6 +150,11 @@ typedef struct SimulationData {
   double *cocon;
   ITG *   ncocon;
   ITG *   mi;
+  ITG *   nea;    // element bounds in each thread - start
+  ITG *   neb;    // element bounds in each thread - end
+  double *eei;    // Strain tensor values
+  double *stx;    // Stress tensor values
+  double *xstiff; // Stiffness matrix values
 
   // Interfaces
   int                numPreciceInterfaces;

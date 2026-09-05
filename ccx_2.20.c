@@ -1313,11 +1313,19 @@ int main(int argc, char *argv[])
     /* Adapter: if preCICE is used, override the main loop and use our own. */
 
     if (preciceUsed) {
-      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)) && (iperturb[0] > 1);
+      printf("nmethod: %d\n", nmethod);
+      printf("iperturb[0]: %d\n", iperturb[0]);
+      int isStaticOrDynamic = ((nmethod == 1) || (nmethod == 4)); //&& (iperturb[0] > 1);
       int isDynamic         = ((nmethod == 4) && (iperturb[0] > 1));
       int isThermalAnalysis = ithermal[0] >= 2;
       int isModalDynamic    = ((nmethod == 4) && (iperturb[0] < 2));
       int isStaticNLGEOM    = ((nmethod == 1) && (iperturb[0] > 1));
+
+      printf("isStaticOrDynamic: %d\n", isStaticOrDynamic);
+      printf("isDynamic: %d\n", isDynamic);
+      printf("isThermalAnalysis: %d\n", isThermalAnalysis);
+      printf("isModalDynamic: %d\n", isModalDynamic);
+      printf("isStaticNLGEOM: %d\n", isStaticNLGEOM);
 
       if (isStaticOrDynamic && isThermalAnalysis) {
 
@@ -1357,7 +1365,7 @@ int main(int argc, char *argv[])
         icascade  = mpcinfo[2];
         maxlenmpc = mpcinfo[3];
 
-      } else if (isDynamic && !isThermalAnalysis) {
+      } else if (isStaticOrDynamic && !isThermalAnalysis) {
 
         printf("Starting FSI analysis via preCICE");
 

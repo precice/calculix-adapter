@@ -51,7 +51,18 @@ enum CouplingDataType { TEMPERATURE,
                         DISPLACEMENTS,
                         DISPLACEMENTDELTAS,
                         VELOCITIES,
-                        POSITIONS };
+                        POSITIONS,
+                        STRAIN1TO3,
+                        STRAIN4TO6,
+                        STRESS1TO3,
+                        STRESS4TO6,
+                        CMAT1,
+                        CMAT2,
+                        CMAT3,
+                        CMAT4,
+                        CMAT5,
+                        CMAT6,
+                        CMAT7 };
 
 /**
  * @brief Type of element used for faces mesh, where we assume only one type of element is used.
@@ -111,6 +122,16 @@ void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *e
  * @param faces: output face IDs (local IDs: e.g. 1, 2, 3, 4 for tetrahedral elements)
  */
 void getSurfaceElementsAndFaces(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements, ITG *faces);
+
+/**
+ * @brief Gets the element IDs given a set ID
+ * @param setID: input set id
+ * @param ialset: CalculiX variable
+ * @param istartset: CalculiX variable
+ * @param iendset: CalculiX variable
+ * @param elements: output element IDs
+ */
+void getElementsIDs(ITG setID, ITG *ialset, ITG *istartset, ITG *iendset, ITG *elements);
 
 /**
  * @brief Gets the coordinates of a list of input node IDs
@@ -252,6 +273,15 @@ void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilbo
 void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilforc, int *xforcIndices);
 
 /**
+ * @brief Gets the strain values at each Gauss point of each element
+ * @param strainIdx: CalculiX variable for the index of the strain values
+ * @param numIPTotal: CalculiX variable for the number of elements
+ * @param eei: CalculiX array for the element strain values
+ * @param strainData: Adapter array for the strain values
+ */
+void getElementStrain(int strainIdx, int numIPTotal, double *eei, double *strainData);
+
+/**
  * @brief Modifies the values of a DFLUX or FILM boundary condition
  * @param xload: CalculiX array for the loads
  * @param xloadIndices: list of indices where the values must be set in the xload array
@@ -326,6 +356,24 @@ void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, dou
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
 void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun);
+
+/**
+ * @brief Modifies the values of stiffness of the elements
+ * @param stiffnessIdx: index of the stiffness entry to modify
+ * @param numIPTotal: total number of integration points
+ * @param stiffnessData: new stiffness values
+ * @param xstiff: CalculiX array for the stiffness values
+ */
+void setElementStiffness(int stiffnessIdx, int numIPTotal, double *stiffnessData, double *xstiff);
+
+/**
+ * @brief Modifies the values of stress of the elements
+ * @param stressIdx: index of the stress entry to modify
+ * @param numIPTotal: total number of integration points
+ * @param stressData: new stress values
+ * @param stx: CalculiX array for the stress values
+ */
+void setElementStress(int stressIdx, int numIPTotal, double *stressData, double *stx);
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod
