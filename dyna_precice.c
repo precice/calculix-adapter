@@ -142,7 +142,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
          *shcon = NULL, *xmr = NULL, *xmi = NULL, *xnoels = NULL, *pslavsurf = NULL,
          *pmastsurf = NULL, *cdnr = NULL, *cdni = NULL, *tinc, *tper, *tmin, *tmax,
          *energyini = NULL, *energy = NULL, alea, *fext = NULL, *smscale = NULL,
-         *autloc = NULL, *xboun2 = NULL, *coefmpc2 = NULL, *fnext = NULL;
+         *autloc = NULL, *xboun2 = NULL, *coefmpc2 = NULL, *fnext = NULL,
+         *aanew_ckp = NULL;
 
   FILE *f1;
 
@@ -1136,6 +1137,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
   NNEW(aa, double, nev);
   NNEW(aanew, double, nev);
+  /* Adapter: checkpoint of the modal load at the start of the time window */
+  NNEW(aanew_ckp, double, nev);
   NNEW(aamech, double, nev);
 
   /* linear coefficient of the linear amplitude function */
@@ -1443,6 +1446,8 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     }
     if (Precice_requiresWritingCheckpoint()) {
       Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
+      /* Adapter: save the modal load at the start of the time window (F(t_n)) */
+      memcpy(&aanew_ckp[0], &aanew[0], sizeof(double) * nev);
       // Otherwise, each iteration in implicit coupling would be written as a new step
       iinc++;
       jprint++;
@@ -1696,8 +1701,10 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
 
         aanew[i] = aamech[i];
 
-        bb[i] = (aanew[i] - aa[i]) / dtime;
-        aa[i] = aanew[i] - bb[i] * time;
+        /* Adapter: the load is applied as constant equal to
+           the average of F_n and F_{n+1} */
+        bb[i] = 0.;
+        aa[i] = 0.5 * (aa[i] + aanew[i]);
       }
     } else {
       for (i = 0; i < nev; i++) {
@@ -1723,9 +1730,10 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         }
       }
       memcpy(&aanew[0], &aamech[0], sizeof(double) * nev);
+      /* Adapter: constant average load over the increment, as above */
       for (i = 0; i < nev; i++) {
-        bb[i] = (aanew[i] - aa[i]) / (dtime);
-        aa[i] = aanew[i] - bb[i] * time;
+        bb[i] = 0.;
+        aa[i] = 0.5 * (aa[i] + aanew[i]);
       }
     }
 
@@ -2088,6 +2096,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
+        memcpy(&aanew[0], &aanew_ckp[0], sizeof(double) * nev);
         *kode = simulationData.kode_value;
       }
       BufferClear(out_buffer);
@@ -2251,6 +2260,7 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   SFREE(aa);
   SFREE(bb);
   SFREE(aanew);
+  SFREE(aanew_ckp);
   SFREE(ampli);
   SFREE(xbodyact);
   SFREE(bjp);
