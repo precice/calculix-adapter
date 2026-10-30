@@ -17,6 +17,12 @@ ARPACK_INCLUDE    =
 # ARPACK library flags (e.g. $(HOME)/ARPACK/libarpack_INTEL.a)
 ARPACK_LIBS       = -larpack -llapack -lblas
 
+# PARDISO/Intel MKL include flags (e.g., -I"${MKLROOT}/include")
+PARDISO_INCLUDE =
+# PARDISO/Intel MKL library flags (e.g., -L${MKLROOT}/lib -lmkl_rt)
+PARDISO_LIBS    =
+# To compile with PARDISO support, add -DPARDISO to the CFLAGS below. 
+
 # Get the CFLAGS and LIBS from pkg-config (preCICE version >= 1.4.0).
 # If pkg-config cannot find the libprecice.pc meta-file, you may need to set the
 # path where this is stored into PKG_CONFIG_PATH when building the adapter.
@@ -33,12 +39,14 @@ INCLUDES = \
 	-I$(CCX) \
 	$(SPOOLES_INCLUDE) \
 	$(PKGCONF_CFLAGS) \
-	$(ARPACK_INCLUDE)
+	$(ARPACK_INCLUDE) \
+	$(PARDISO_INCLUDE)
 
 LIBS = \
 	$(SPOOLES_LIBS) \
 	$(PKGCONF_LIBS) \
 	$(ARPACK_LIBS) \
+	$(PARDISO_LIBS) \
 	-lpthread -lm -lc
 
 # Compilers and flags

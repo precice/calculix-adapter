@@ -40,6 +40,7 @@ Replace `resolute` with `noble` to get the package for Ubuntu 24.04 (Noble Numba
 
 2. Edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
+   - If you want to compile with PARDISO support, add the `-DPARDISO` flag to the `CFLAGS`.
    - Otherwise, set `CCX` and the include and lib flags for the dependencies.
 3. Clean any previous builds with `make clean`.
 4. Build with `make` (e.g., `make -j 4` for parallel).
@@ -67,10 +68,14 @@ The adapter is built using GNU Make. The `Makefile` contains a few variables on 
  5. `ARPACK_LIBS`: Library flags for ARPACK
     - Example 1: `ARPACK_LIBS       = -larpack -llapack -lblas` (installed)
     - Example 2: `ARPACK_LIBS       = $(HOME)/ARPACK/libarpack_INTEL.a` (source)
- 6. `YAML_INCLUDE`: Include flags for yaml-cpp
+ 6. `PARDISO_INCLUDE`: Include flags for PARDISO
+    - Example: `PARDISO_INCLUDE     = -I"${MKLROOT}/include"`
+ 7. `PARDISO_LIBS`: Library flags for PARDISO
+    - Example: `PARDISO_LIBS        = -L${MKLROOT}/lib -lmkl_rt`
+ 8. `YAML_INCLUDE`: Include flags for yaml-cpp
     - Example 1: `YAML_INCLUDE      = -I/usr/include/` (installed)
     - Example 2: `YAML_INCLUDE      = -I$(HOME)/yaml-cpp/include` (source)
- 7. `YAML_LIBS`: Library flags for yaml-cpp
+ 9. `YAML_LIBS`: Library flags for yaml-cpp
     - Example 1: `YAML_LIBS         = -lyaml-cpp` (installed)
     - Example 2: `YAML_LIBS         = -L$(HOME)/yaml-cpp/build -lyaml-cpp` (source)
 
