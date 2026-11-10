@@ -3752,18 +3752,30 @@ void nonlingeo_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **l
       SFREE(islavactdof);
     }
 
-    /* Adapter: Copy necessary data for coupling */
-    simulationData.fn = fn;
+    /* Adapter: exchange data and advance the coupling only if the increment
+       converged. If CalculiX did not converge (icutb != 0), the increment is
+       repeated below with a smaller size starting from the old solution, so
+       nothing must be written or advanced: the non-converged solution would be
+       sent to the other participant and preCICE time would run ahead of the
+       CalculiX time by the size of the failed increment. The repeated, smaller
+       increment then subcycles inside the same time window. */
+    if (icutb == 0) {
+      /* Adapter: Copy necessary data for coupling */
+      simulationData.fn = fn;
 
-    Precice_WriteCouplingData(&simulationData);
-    /* Adapter: Advance the coupling */
-    Precice_Advance(&simulationData);
-    /* Adapter: If the coupling does not converge, read the checkpoint */
-    if (Precice_requiresReadingCheckpoint()) {
-      if (*nmethod == 4) {
-        Precice_ReadIterationCheckpoint(&simulationData, vold);
-        icutb++;
+      Precice_WriteCouplingData(&simulationData);
+      /* Adapter: Advance the coupling */
+      Precice_Advance(&simulationData);
+      /* Adapter: If the coupling does not converge, read the checkpoint */
+      if (Precice_requiresReadingCheckpoint()) {
+        if (*nmethod == 4) {
+          Precice_ReadIterationCheckpoint(&simulationData, vold);
+          icutb++;
+        }
       }
+    } else {
+      printf("Adapter: increment did not converge, it is repeated without advancing the coupling\n");
+      fflush(stdout);
     }
     /* printing the energies (only for dynamic calculations) */
 

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 <!-- markdownlint-configure-file {"MD024": { "siblings_only": true } } -->
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the coupling running ahead of CalculiX when an increment does not converge and is repeated with a smaller size (automatic incrementation): the adapter now writes data and calls `advance()` only for converged increments, so the time lost per cutback and the exchange of non-converged data are avoided.
+
 ## [v2.20.2] 2026-08-05
 
 ### Added
