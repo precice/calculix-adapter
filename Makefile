@@ -2,7 +2,7 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
-CCX_VERSION			= 2.20
+CCX_VERSION			= 2.24
 CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
 ### Change these if you built SPOOLES, or ARPACK from source ###
@@ -64,7 +64,7 @@ endif
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
+FFLAGS = -cpp -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
   GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
   ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
@@ -77,7 +77,7 @@ include $(CCX)/Makefile.inc
 SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
-SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
+SCCXC += buildinfo.c nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
 SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 

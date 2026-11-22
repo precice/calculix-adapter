@@ -1,3 +1,9 @@
+calculix-precice3 (2.24.0-1) unstable; urgency=medium
+
+  * Port the adapter to CalculiX 2.24.
+
+ -- failed33 <failed33@users.noreply.github.com>  Sun, 22 Nov 2026 14:33:08 -0000
+
 calculix-precice3 (2.20.2-1) unstable; urgency=medium
   * Removed the yaml-cpp package dependency
   * Added new features and bugfixes (see upstream CHANGELOG.mg)

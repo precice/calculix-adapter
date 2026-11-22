@@ -1,4 +1,4 @@
-name: Calculix 2.20 with preCICE adapter test build
+name: Calculix 2.24 with preCICE adapter test build
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
     container: precice/precice:develop
     continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
-      PACKAGE_NAME: "calculix-precice3_2.20.2-1_amd64"
+      PACKAGE_NAME: "calculix-precice3_2.24.0-1_amd64"
 
     steps:
     - name: Update system
@@ -41,11 +41,11 @@ jobs:
     - name: install dependencies
       run: sudo apt install libarpack2-dev libspooles-dev -y
     - name: Download CalculiX
-      run: wget http://www.dhondt.de/ccx_2.20.src.tar.bz2
+      run: wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
     - name: Unpack Calculix
-      run: tar -xjf ccx_2.20.src.tar.bz2
+      run: tar -xjf ccx_2.24.src.tar.bz2
     - name: make
-      run: make -j 4 CCX="./CalculiX/ccx_2.20/src" ADDITIONAL_FFLAGS="${{matrix.flags}}"
+      run: make -j 4 CCX="./CalculiX/ccx_2.24/src" ADDITIONAL_FFLAGS="${{matrix.flags}}"
     - name: Test run
       run: ./bin/ccx_preCICE -h
     - name: Download tools for packaging

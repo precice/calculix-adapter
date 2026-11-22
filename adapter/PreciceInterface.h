@@ -27,7 +27,7 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int *        nodeIDs;
+  ITG *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
   int          nodeSetID;
@@ -36,13 +36,13 @@ typedef struct PreciceInterface {
   char *       elementsMeshName;
 
   int     numElements;
-  int *   elementIDs;
+  ITG *   elementIDs;
   int *   elemIPID;
   int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
 
-  int *   faceIDs;
+  ITG *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   char *  faceCentersMeshName;
@@ -73,9 +73,9 @@ typedef struct PreciceInterface {
   char *pressure;
 
   // Indices that indicate where to apply the boundary conditions / forces
-  int *xloadIndices;
-  int *xbounIndices;
-  int *xforcIndices;
+  ITG *xloadIndices;
+  ITG *xbounIndices;
+  ITG *xforcIndices;
 
   // Mapping type if nearest-projection mapping
   int mapNPType;

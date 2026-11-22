@@ -54,7 +54,7 @@ CalculiX can link to the PaStiX solver for increased performance using GPUs. Bui
 The adapter is built using GNU Make. The `Makefile` contains a few variables on top, which need to be adapted to your system:
 
  1. `CCX`: Location of the original CalculiX solver (CCX) source code ("src" directory)
-    - Example: `$(HOME)/CalculiX/ccx_2.20/src`
+    - Example: `$(HOME)/CalculiX/ccx_2.24/src`
  2. `SPOOLES_INCLUDE`: Include flags for SPOOLES
     - Example 1: `SPOOLES_INCLUDE   = -I/usr/include/spooles/` (installed)
     - Example 2: `SPOOLES_INCLUDE   = -I$(HOME)/SPOOLES.2.2/` (source)

@@ -238,7 +238,7 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
  * @param xbounIndices: output list of indices of the xboun array
  * @param couplDataType: indicates whether indices must be for temperature or displacement BC
  */
-void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilboun, int *xbounIndices, enum CouplingDataType couplDataType);
+void getXbounIndices(ITG *nodes, ITG numNodes, ITG nboun, ITG *ikboun, ITG *ilboun, ITG *xbounIndices, enum CouplingDataType couplDataType);
 
 /**
  * @brief Gets the indices of the xforc array where the forces must be applied
@@ -249,7 +249,7 @@ void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilbo
  * @param ilforc: CalculiX auxiliary array for dealing with the indices of the point loads
  * @param xforcIndices: output list of indices of the xforc array
  */
-void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilforc, int *xforcIndices);
+void getXforcIndices(ITG *nodes, ITG numNodes, ITG nforc, ITG *ikforc, ITG *ilforc, ITG *xforcIndices);
 
 /**
  * @brief Modifies the values of a DFLUX or FILM boundary condition
@@ -259,7 +259,7 @@ void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilfo
  * @param numValues: number of boundary values provided
  * @param xloadVar: variable that is actually modified: DFLUX for heat flux, FILM_H for heat transfer coeff, FILM_T for sink temperature
  */
-void setXload(double *xload, int *xloadIndices, double *values, int numValues, enum xloadVariable xloadVar);
+void setXload(double *xload, ITG *xloadIndices, double *values, ITG numValues, enum xloadVariable xloadVar);
 
 /**
  * @brief Calls setXload to update the flux values at the specified indices
@@ -268,7 +268,7 @@ void setXload(double *xload, int *xloadIndices, double *values, int numValues, e
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceFluxes(double *fluxes, ITG numFaces, int *xloadIndices, double *xload);
+void setFaceFluxes(double *fluxes, ITG numFaces, ITG *xloadIndices, double *xload);
 
 /**
  * @brief Calls setXload to update the heat transfer coefficients at the specified indices
@@ -277,7 +277,7 @@ void setFaceFluxes(double *fluxes, ITG numFaces, int *xloadIndices, double *xloa
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xloadIndices, double *xload);
+void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, ITG *xloadIndices, double *xload);
 
 /**
  * @brief Calls setXload to update the sink temperature at the specified indices
@@ -286,7 +286,7 @@ void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xl
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload);
+void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, ITG *xloadIndices, double *xload);
 
 /**
  * @brief Calls setXload to update the pressure at the specified indices
@@ -295,7 +295,7 @@ void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadI
  * @param xloadIndices: indices of the xload array where the values must be updated
  * @param xload: CalculiX array for the loads
  */
-void setFacePressure(double *pressure, int numFaces, int *xloadIndices, double *xload);
+void setFacePressure(double *pressure, ITG numFaces, ITG *xloadIndices, double *xload);
 
 /**
  * @brief Modifies the values of the temperature boundary condition
@@ -304,7 +304,7 @@ void setFacePressure(double *pressure, int numFaces, int *xloadIndices, double *
  * @param xbounIndices: indices of the xboun array to modify
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
-void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun);
+void setNodeTemperatures(double *temperatures, ITG numNodes, ITG *xbounIndices, double *xboun);
 
 /**
  * @brief Modifies the values of the concentrated loads (point forces) applied to the structure
@@ -315,7 +315,7 @@ void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, 
  * @param xforcIndices: indices of the xforc array to modify
  * @param xforc: CalculiX array containing the (componentwise) assigned force values
  */
-void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, double *xforc);
+void setNodeForces(double *forces, ITG numNodes, int dim, ITG *xforcIndices, double *xforc);
 
 /**
  * @brief Modifies the values of the displacements at the interface, as a Dirichlet boundary condition
@@ -325,7 +325,7 @@ void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, dou
  * @param xbounIndices: indices of the xboun array to modify
  * @param xboun: CalculiX array containing temperature and displacement boundary values
  */
-void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun);
+void setNodeDisplacements(double *displacements, ITG numNodes, int dim, ITG *xbounIndices, double *xboun);
 
 /**
  * @brief Returns whether it is a steady-state simulation based on the value of nmethod
