@@ -39,8 +39,8 @@
          real(8)     :: elem_gp_coord(*) ! GP coords
 
          ! Internal variables
-         integer(4)     :: iel, el_id, indexe, i, j, k, l
-         integer(4)     :: iflag, idx, konl(8), gp_id, ngp
+         integer        :: iel, el_id, indexe, i, j, k, l
+         integer        :: iflag, idx, konl(8), gp_id, ngp
          real(8)        :: xl(3,8), xi, et, ze, xsj, shp(4,20)
 
          include "gauss.f"

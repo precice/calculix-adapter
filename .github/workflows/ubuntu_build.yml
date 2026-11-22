@@ -14,47 +14,52 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
         include:
-          - os: ubuntu-22.04
+          - version: "22.04"
             name: jammy
-          - os: ubuntu-24.04
+          - version: "24.04"
             name: noble
-          - os: ubuntu-26.04
+          - version: "26.04"
             name: resolute
 
-    runs-on: ${{matrix.os}}
-    container: precice/precice:develop
-    continue-on-error: true
+    runs-on: ubuntu-latest
+    container: ubuntu:${{matrix.version}}
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
+      DEBIAN_FRONTEND: noninteractive
       PACKAGE_NAME: "calculix-precice3_2.24.0-1_amd64"
 
     steps:
-    - name: Update system
+    - name: Install build dependencies
       run: |
-        apt-get -qq update
-        apt-get -qq install sudo
-        sudo apt update && sudo apt upgrade -y
+        apt-get update -qq
+        apt-get install -y build-essential gfortran libopenmpi-dev libarpack2-dev libspooles-dev lsb-release pkgconf wget ca-certificates patch git
+    - uses: precice/setup-precice-action@main
+      with:
+        precice-version: v3.4.1
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.ref }}
-    - name: install dependencies
-      run: sudo apt install libarpack2-dev libspooles-dev -y
     - name: Download CalculiX
-      run: wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
+      run: |
+        wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
+        echo "99fb4f9b0ec19b100a914c3a097ea1e7f0c22f715b96338acc4a66b63306a2e2  ccx_2.24.src.tar.bz2" | sha256sum -c -
     - name: Unpack Calculix
       run: tar -xjf ccx_2.24.src.tar.bz2
     - name: make
-      run: make -j 4 CCX="./CalculiX/ccx_2.24/src" ADDITIONAL_FFLAGS="${{matrix.flags}}"
+      run: make -j 4 CCX="./CalculiX/ccx_2.24/src"
     - name: Test run
-      run: ./bin/ccx_preCICE -h
+      run: |
+        status=0
+        version=$(./bin/ccx_preCICE -v) || status=$?
+        test "$status" -eq 0 || test "$status" -eq 201
+        printf '%s\n' "$version" | grep -Fx 'This is Version 2.24'
     - name: Download tools for packaging
-      run: sudo apt install lintian pandoc -y
+      run: apt-get install lintian pandoc -y
     - name: Create Debian Package
       run: |
         mkdir -p "packaging/debian/usr/bin" &&
         cp ./bin/ccx_preCICE ./packaging/debian/usr/bin/ccx_preCICE &&
-        cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
+        cd packaging && bash ./make_deb.sh "${{matrix.name}}"
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v7
       with:
@@ -68,4 +73,4 @@ jobs:
         name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
         path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
     - name: Inspect package with lintian
-      run: sudo apt install lintian -y && lintian ./packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb
+      run: apt-get install lintian -y && lintian ./packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb

@@ -1326,6 +1326,11 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
     exit(EXIT_FAILURE);
   }
 
+  if (strcmp1(&filab[4785], "DUCT") == 0 && *ithermal != 2) {
+    fprintf(stderr, "Ductile damage output is not supported for coupled modal dynamics.\n");
+    exit(EXIT_FAILURE);
+  }
+
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
   /* Adapter: allocate checkpointing buffers. Freed in Precice_FreeData */
@@ -1335,13 +1340,34 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
   /* Adapter: create an output buffer */
   printf("Creating a buffer to output correctly when subcycling is used.\n");
   outputBuffer *out_buffer = BufferCreate();
-  /* Adapter: Give preCICE the control of the time stepping */
+  outputBuffer *checkpoint = BufferCreate();
+  /* temploaddiff and modal load interpolation reuse the accepted increment. */
+  struct ModalField {
+    const char *name;
+    double *values;
+    size_t count;
+  } checkpointFields[] = {
+    {"time", &time, 1}, {"dthetaref", &dthetaref, 1},
+    {"vold", vold, (size_t)mt**nk}, {"veold", veold, (size_t)mt**nk},
+    {"aanew", aanew, nev}, {"aamech", aamech, nev},
+    {"xforcact", xforcact, *nforc}, {"xforcdiff", xforcdiff, *nforc},
+    {"xloadact", xloadact, 2*(size_t)*nload}, {"xloaddiff", xloaddiff, 2*(size_t)*nload},
+    {"xbodyact", xbodyact, 7*(size_t)*nbody}, {"xbodydiff", xbodydiff, 7*(size_t)*nbody},
+    {"xbounact", xbounact, *nboun}, {"xboundiff", xboundiff, *nboun},
+    {"t1act", t1act, *nk}, {"t1diff", t1diff, *nk},
+    {"fextold", fextold, neq[1]}, {"bmin", bmin, neq[1]},
+    {"bprev", bprev, neq[1]}, {"bv", bv, neq[1]},
+  };
+  const size_t checkpointFieldCount = sizeof(checkpointFields)/sizeof(checkpointFields[0]);
+  struct ModalField outputFields[] = {
+    {"stn", stn, 6*(size_t)*nk}, {"fn", fn, (size_t)mt**nk},
+    {"stx", stx, 6*(size_t)mi[0]**ne}, {"een", een, 6*(size_t)*nk},
+    {"enern", enern, *nk}, {"xstaten", xstaten, (size_t)*nstate_**nk},
+    {"emn", emn, 6*(size_t)*nk}, {"qfn", qfn, 3*(size_t)*nk},
+    {"qfx", qfx, 3*(size_t)mi[0]**ne},
+  };
+  const size_t outputFieldCount = sizeof(outputFields)/sizeof(outputFields[0]);
   while(Precice_IsCouplingOngoing()){
-    /* Adapter: Adjust solver time step */
-    Precice_AdjustSolverTimestep(&simulationData);
-    /* Adapter read coupling data if available */
-    Precice_ReadCouplingData(&simulationData);
-
     time0=time;
 
     //    printf("\nnew increment\n");
@@ -1355,12 +1381,26 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
     }
     if (Precice_requiresWritingCheckpoint()) {
       Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
-      // Otherwise, each iteration in implicit coupling would be written as a new step
-      iinc++;
-    jprint++;
-      simulationData.kode_value = *kode;
+      memcpy(simulationData.coupling_init_v, vold, sizeof(*vold)*(size_t)mt**nk);
+      BufferClear(checkpoint);
+      BufferWriteNewStep(checkpoint);
+      for (size_t field = 0; field < checkpointFieldCount; ++field) {
+        if (checkpointFields[field].values && checkpointFields[field].count > 0) {
+          BufferSaveDouble(checkpoint, checkpointFields[field].name,
+                           checkpointFields[field].values, checkpointFields[field].count);
+        }
+      }
+      BufferSaveITG(checkpoint, "iinc", &iinc, 1);
+      BufferSaveITG(checkpoint, "jprint", &jprint, 1);
+      BufferSaveITG(checkpoint, "inext", &inext, 1);
+      BufferSaveITG(checkpoint, "itp", &itp, 1);
+      BufferSaveITG(checkpoint, "iprev", &iprev, 1);
+      BufferSaveITG(checkpoint, "iabsload", &iabsload, 1);
+      BufferSaveITG(checkpoint, "kode", kode, 1);
       BufferClear(out_buffer);
     }
+    iinc++;
+    jprint++;
 
     if(dashpot)RENEW(rpar,double,4+nev*(3+nev));
 
@@ -1394,6 +1434,8 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
 		     &jprint,jout);
     }
 
+    Precice_AdjustSolverTimestep(&simulationData);
+    Precice_ReadCouplingData(&simulationData);
     reltime=theta+dtheta;
     time=reltime**tper;
     dtime=dtheta**tper;
@@ -1916,13 +1958,19 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
       BufferSaveDouble(out_buffer, "v", v, mt * *nk);
       BufferSaveITG(out_buffer, "iinc", &iinc, 1);
       BufferSaveITG(out_buffer, "kode", kode, 1);
+      BufferSaveITG(out_buffer, "inum", inum, *nk);
+      for (size_t field = 0; field < outputFieldCount; ++field) {
+        if (outputFields[field].values && outputFields[field].count > 0) {
+          BufferSaveDouble(out_buffer, outputFields[field].name, outputFields[field].values, outputFields[field].count);
+        }
+      }
 
     }
     simulationData.fn   = fn;
     simulationData.vold = v;
     Precice_WriteCouplingData(&simulationData);
     /* Adapter: Advance the coupling */
-    Precice_Advance(&simulationData);
+    Precice_Advance(&simulationData, dtime);
     if (precicec_isTimeWindowComplete()) {
       /* Write the stored outputs using FRD */
       while (BufferCanRead(out_buffer)) {
@@ -1932,6 +1980,12 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
         BufferLoadDouble(out_buffer, "v", v);
         BufferLoadITG(out_buffer, "iinc", &iinc);
         BufferLoadITG(out_buffer, "kode", kode);
+        BufferLoadITG(out_buffer, "inum", inum);
+        for (size_t field = 0; field < outputFieldCount; ++field) {
+          if (outputFields[field].values && outputFields[field].count > 0) {
+            BufferLoadDouble(out_buffer, outputFields[field].name, outputFields[field].values);
+          }
+        }
         if (strcmp1(&filab[1044], "ZZS") == 0) {
           NNEW(neigh, ITG, 40**ne);
           NNEW(ipneigh, ITG, *nk);
@@ -1958,7 +2012,18 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
     if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
-        *kode = simulationData.kode_value;
+        for (size_t field = 0; field < checkpointFieldCount; ++field) {
+          if (checkpointFields[field].values && checkpointFields[field].count > 0) {
+            BufferLoadDouble(checkpoint, checkpointFields[field].name, checkpointFields[field].values);
+          }
+        }
+        BufferLoadITG(checkpoint, "iinc", &iinc);
+        BufferLoadITG(checkpoint, "jprint", &jprint);
+        BufferLoadITG(checkpoint, "inext", &inext);
+        BufferLoadITG(checkpoint, "itp", &itp);
+        BufferLoadITG(checkpoint, "iprev", &iprev);
+        BufferLoadITG(checkpoint, "iabsload", &iabsload);
+        BufferLoadITG(checkpoint, "kode", kode);
       }
       BufferClear(out_buffer);
     }
@@ -2234,6 +2299,7 @@ void dyna_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG
 
   SFREE(iponoel);
   Precice_FreeData(&simulationData);
+  BufferFree(checkpoint);
   BufferFree(out_buffer);
   return;
 }

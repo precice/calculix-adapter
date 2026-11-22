@@ -118,7 +118,7 @@ typedef struct SimulationData {
   ITG *   nelemload;
   int     nload;
   char *  sideload;
-  double  nk;
+  ITG     nk;
   ITG     ne;
   ITG     mt;
   double *theta;
@@ -176,7 +176,7 @@ void Precice_AdjustSolverTimestep(SimulationData *sim);
  * @brief Advances the coupling
  * @param sim
  */
-void Precice_Advance(SimulationData *sim);
+void Precice_Advance(SimulationData *sim, double solverDt);
 
 /**
  * @brief Returns true if coupling is still ongoing
@@ -217,7 +217,7 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v);
  * @param derivatives: array containing the time derivatives (velocities) of the dofs
  * @param nev: number of eigenvalues used (i.e. array size)
  */
-void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev);
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, ITG nev);
 
 /**
  * @brief Writes iteration checkpoint
@@ -226,7 +226,7 @@ void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, dou
  * @param derivatives: array containing the time derivatives (velocities) of the dofs
  * @param nev: number of eigenvalues used (i.e. array size)
  */
-void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev);
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, ITG nev);
 
 /**
  * @brief Reads the coupling data for all interfaces

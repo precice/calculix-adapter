@@ -10,8 +10,7 @@ is somehow harder with this version. This page gives a detailed walkthrough to b
 
 ## Overview
 
-To build the preCICE adapter for CalculiX with PaStiX, it is first necessary to build PaStiX. A manual build is necessary for most steps, as specific compilation flags must be used for the dependencies: pre-built packages cannot be used. In particular, PaStiX (and CalculiX) must be compiled with flags to use 8-byte integers. On this page, we provide a step-by-step building guide of the adapter, tested on Ubuntu 20.04.
-This should work with some modifications on other systems. You may also need to tweak this depending on your needs, e.g. if you want to build some dependencies yourself instead of using a package manager.
+To build the preCICE adapter for CalculiX with PaStiX, it is first necessary to build PaStiX. A manual build is necessary for most steps, as specific compilation flags must be used for the dependencies: pre-built packages cannot be used. In particular, PaStiX (and CalculiX) must be compiled with flags to use 8-byte integers. The commands below use Ubuntu package names.
 
 {% note %}
 This page was built following CalculiX' documentation with adaptations for preCICE and some additional tips from experience. Support of PaStiX is still experimental and feedback is highly valuable!
@@ -20,7 +19,7 @@ This page was built following CalculiX' documentation with adaptations for preCI
 ## Required packages
 
 Make sure you have a working installation of preCICE. Also run these installation commands, (after a call to `sudo apt update` and `sudo apt upgrade`) :
-`sudo apt install build-essential cmake git gfortran flex bison zlib1g-dev nvidia-cuda-toolkit-gcc libspooles-dev libyaml-cpp-dev`
+`sudo apt install build-essential cmake git gfortran flex bison zlib1g-dev nvidia-cuda-toolkit-gcc patch pkg-config`
 
 {% version %}
 Up to the adapter v2.20.1, the dependency package `libyaml-cpp-dev` was also required.
@@ -150,7 +149,7 @@ Once all of these are done, run `make lib` in the `ARPACK` folder.
 To build the adapter, check out the adapter revision that supports CalculiX 2.24:
 
 ```bash
-    git clone https://github.com/precice/calculix-adapter
+    git clone -b develop https://github.com/precice/calculix-adapter
     cd calculix-adapter
 ```
 
@@ -176,7 +175,7 @@ Then you can build the adapter with this command in the `calculix-adapter` folde
     make -f Makefile_i8_PaStiX -j 4 CCX=~/CalculiX/ccx_2.24/src ADDITIONAL_FFLAGS=-fallow-argument-mismatch
 ```
 
-Once the build is successful, the adapter should be in `./bin/ccx_preCICE`.
+The PaStiX build writes `./bin-i8/ccx_preCICE`. Use the regular Makefile for decks that select SPOOLES.
 
 ### Updating shared libraries
 

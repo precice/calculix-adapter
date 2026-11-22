@@ -9,10 +9,23 @@
 
 #include "PreciceInterface.h"
 #include <assert.h>
+#include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
 #include "precice/preciceC.h"
+
+void FORTRAN(getflux, (double *co, ITG *ntmat, double *vold, double *cocon,
+                       ITG *ncocon, ITG *iset, ITG *istartset, ITG *iendset,
+                       ITG *ipkon, char *lakon, ITG *kon, ITG *ialset,
+                       ITG *ielmat, ITG *mi, double *flux));
+void FORTRAN(getkdeltatemp, (double *co, ITG *ntmat, double *vold, double *cocon,
+                             ITG *ncocon, ITG *iset, ITG *istartset, ITG *iendset,
+                             ITG *ipkon, char *lakon, ITG *kon, ITG *ialset,
+                             ITG *ielmat, ITG *mi, double *kdelta, double *reftemp));
+void FORTRAN(getelementgausspointcoords, (ITG * nelem, ITG *elem_ids, ITG *nope,
+                                          double *co, ITG *kon, ITG *ipkon, double *elem_gp_coord));
 
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim)
 {
@@ -107,11 +120,13 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
   }
 }
 
-void Precice_Advance(SimulationData *sim)
+void Precice_Advance(SimulationData *sim, double solverDt)
 {
-  printf("Adapter calling advance()...\n");
-  fflush(stdout);
-
+  if (!isSteadyStateSimulation(sim->nmethod) &&
+      (!isfinite(solverDt) || fabs(solverDt - sim->solver_dt) > 1e-12 * fmax(1.0, sim->solver_dt))) {
+    fprintf(stderr, "CalculiX used a different time step (%g) from the coupled loads (%g).\n", solverDt, sim->solver_dt);
+    exit(EXIT_FAILURE);
+  }
   precicec_advance(sim->solver_dt);
 }
 
@@ -162,7 +177,7 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
   memcpy(sim->coupling_init_v, v, sizeof(double) * sim->mt * sim->nk);
 }
 
-void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev)
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, ITG nev)
 {
 
   printf("Adapter reading checkpoint...\n");
@@ -179,7 +194,7 @@ void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, dou
   memcpy(derivatives, sim->eigenDOFsDerivatives, sizeof(double) * nev);
 }
 
-void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev)
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, ITG nev)
 {
 
   printf("Adapter writing checkpoint...\n");
@@ -598,32 +613,42 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   char *elementSetName    = interface->name;
   interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
-  interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
-
-  interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
+  ITG numElements         = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
+  if (numElements <= 0 || numElements > INT_MAX) {
+    fprintf(stderr, "Invalid elements mesh size for preCICE.\n");
+    exit(EXIT_FAILURE);
+  }
+  interface->numElements = (int) numElements;
+  interface->elementIDs  = malloc(numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
-  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
-  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
-
-  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
-  for (int j = 0; j < interface->numIPTotal; j++) {
-    interface->elemIPID[j] = j;
+  ITG nodesPerElement = 0;
+  for (ITG i = 0; i < numElements; ++i) {
+    ITG element = interface->elementIDs[i] - 1;
+    if (element < 0 || element >= sim->ne || sim->ipkon[element] < 0) {
+      fprintf(stderr, "Invalid element in preCICE elements mesh.\n");
+      exit(EXIT_FAILURE);
+    }
+    const char *type  = sim->lakon + 8 * element;
+    ITG         nodes = 0;
+    if (strncmp(type, "C3D4    ", 8) == 0)
+      nodes = 4;
+    if (strncmp(type, "C3D8    ", 8) == 0)
+      nodes = 8;
+    if (nodes == 0 || (i > 0 && nodes != nodesPerElement)) {
+      fprintf(stderr, "Elements meshes require all C3D4 or all fully integrated C3D8 elements.\n");
+      exit(EXIT_FAILURE);
+    }
+    nodesPerElement = nodes;
   }
-
-  ITG numElements = interface->numElements;
-
-  enum ElemType elemType = findSimulationMeshType(sim);
-
-  // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
-  ITG nodesPerElement;
-  if (elemType == TETRAHEDRA) {
-    nodesPerElement = 4;
-  } else if (elemType == HEXAHEDRA) {
-    nodesPerElement = 8;
-  } else {
-    supportedElementError();
+  int pointsPerElement = nodesPerElement == 4 ? 1 : 8;
+  if (numElements > INT_MAX / pointsPerElement) {
+    fprintf(stderr, "Too many integration points for the preCICE C API.\n");
+    exit(EXIT_FAILURE);
   }
+  interface->numIPTotal        = (int) numElements * pointsPerElement;
+  interface->elemIPCoordinates = malloc((size_t) interface->numIPTotal * 3 * sizeof(double));
+  interface->elemIPID          = malloc((size_t) interface->numIPTotal * sizeof(int));
 
   FORTRAN(getelementgausspointcoords, (&numElements,
                                        interface->elementIDs,

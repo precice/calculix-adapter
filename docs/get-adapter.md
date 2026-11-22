@@ -33,12 +33,12 @@ Replace `resolute` with `noble` to get the package for Ubuntu 24.04 (Noble Numba
 1. Download and unzip the latest state of the adapter (e.g. in the `CalculiX` folder), and see the `README.md` for the supported CalculiX version:
 
     ```bash
-    wget https://github.com/precice/calculix-adapter/archive/refs/heads/master.tar.gz
-    tar -xzf master.tar.gz
-    cd calculix-adapter-master
+    wget https://github.com/precice/calculix-adapter/archive/refs/heads/develop.tar.gz
+    tar -xzf develop.tar.gz
+    cd calculix-adapter-develop
     ```
 
-2. Edit the `Makefile` to set the paths to dependencies.
+2. Install `patch` and edit the `Makefile` to set the paths to dependencies.
    - If you have the CalculiX source in `~/CalculiX/` and the dependencies in your global paths, you don't need to change anything.
    - Otherwise, set `CCX` and the include and lib flags for the dependencies.
 3. Clean any previous builds with `make clean`.

@@ -1649,10 +1649,18 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
   /* Adapter: Create the interfaces and initialize the coupling */
   Precice_Setup(configFilename, preciceParticipantName, &simulationData);
 
+  bool implicitWindow = false;
   while(Precice_IsCouplingOngoing()){
 
     /* Adapter: Adjust solver time step */
     Precice_AdjustSolverTimestep(&simulationData);
+    const bool writeCheckpoint = Precice_requiresWritingCheckpoint();
+    if (writeCheckpoint) implicitWindow = true;
+    if (*ndmat_ > 0 && implicitWindow &&
+        simulationData.solver_dt < precicec_getMaxTimeStepSize() - 1e-12) {
+      fprintf(stderr, "Damage evolution requires a single increment per implicit coupling window.\n");
+      exit(EXIT_FAILURE);
+    }
     /* Adapter read coupling data if available */
     Precice_ReadCouplingData(&simulationData);
 
@@ -1672,7 +1680,7 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
 
       isiz=mt**nk;cpypardou(vini,vold,&isiz,&num_cpus);
 
-      if (Precice_requiresWritingCheckpoint()) {
+      if (writeCheckpoint) {
         Precice_WriteIterationCheckpoint(&simulationData, vini);
       }
 
@@ -1682,11 +1690,9 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
       }
       isiz=neq[1];cpypardou(fini,f,&isiz,&num_cpus);
       if(*nmethod==4){
-	if(*iexpl<=1){
-	  isiz=mt**nk;
-	  cpypardou(veini,veold,&isiz,&num_cpus);
-	  cpypardou(accini,accold,&isiz,&num_cpus);
-	}
+	isiz=mt**nk;
+	cpypardou(veini,veold,&isiz,&num_cpus);
+	cpypardou(accini,accold,&isiz,&num_cpus);
 	isiz=mt**nk;cpypardou(fnextini,fnext,&isiz,&num_cpus);
 
 	isiz=neq[1];
@@ -2091,19 +2097,11 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
 	    dtmin=dtvol;
 	  }
 
-	  if(dtmin>(*tmax*(*tper))){
-	    dtime=*tmax*(*tper);}
-	  else if(dtmin<dtset){
-	    dtime=dtset;}
-	  else {
-	    dtime=dtmin;
+	  /* Loads were evaluated for dtime. A smaller stable step needs new loads. */
+	  if (fmin(*tmax * *tper, fmax(dtmin, dtset)) < dtime - 1e-12) {
+	    fprintf(stderr, "Explicit contact requires a smaller coupled time step.\n");
+	    exit(EXIT_FAILURE);
 	  }
-
-	  dtheta=(dtime)/(*tper);
-	  reltime=theta+dtheta;
-	  time=reltime**tper;
-	  dthetaref=dtheta;
-	  printf(" SELECTED time increment (based on contact):%e\n\n",dtime);
 
 	  ncontacts=*ne-ne0;
 	  inccontact=0;
@@ -2111,18 +2109,10 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
 
           /* no contact elements (either no contact or massless contact) */
 
-	  if(dtvol>(*tmax*(*tper))){
-	    dtime=*tmax*(*tper);
-	  }else if(dtvol<dtset){
-	    dtime=dtset;
-	  }else{
-	    dtime=dtvol;
+	  if (fmin(*tmax * *tper, fmax(dtvol, dtset)) < dtime - 1e-12) {
+	    fprintf(stderr, "Explicit dynamics requires a smaller coupled time step.\n");
+	    exit(EXIT_FAILURE);
 	  }
-	  dtheta=(dtime)/(*tper);
-	  reltime=theta+dtheta;
-	  time=reltime**tper;
-	  dthetaref=dtheta;
-	  printf(" SELECTED time increment (based on contact):%e\n\n",*tinc);
 
 	  dtcont=1.e30;
 	}
@@ -3718,16 +3708,13 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
       SFREE(islavactdof);
     }
 
-    /* Adapter: Copy necessary data for coupling */
-    simulationData.fn = fn;
-
-    Precice_WriteCouplingData(&simulationData);
-    /* Adapter: Advance the coupling */
-    Precice_Advance(&simulationData);
-    /* Adapter: If the coupling does not converge, read the checkpoint */
-    if (Precice_requiresReadingCheckpoint()) {
-      if (*nmethod == 4) {
-        Precice_ReadIterationCheckpoint(&simulationData, vold);
+    /* A local cutback retries the increment without advancing preCICE. */
+    if (icutb == 0) {
+      simulationData.fn = fn;
+      Precice_WriteCouplingData(&simulationData);
+      Precice_Advance(&simulationData, dtime);
+      if (Precice_requiresReadingCheckpoint()) {
+        Precice_ReadIterationCheckpoint(&simulationData, vini);
         icutb++;
       }
     }

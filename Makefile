@@ -83,19 +83,19 @@ SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 
 # Source files in this folder and in the adapter directory
-$(OBJDIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : %.f
+$(OBJDIR)/%.o : %.f | $(OBJDIR)
 	$(FC) $(FFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : adapter/%.c
+$(OBJDIR)/%.o : adapter/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : adapter/%.cpp
+$(OBJDIR)/%.o : adapter/%.cpp | $(OBJDIR)
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 # Source files in the $(CCX) folder
-$(OBJDIR)/%.o : $(CCX)/%.c
+$(OBJDIR)/%.o : $(CCX)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : $(CCX)/%.f
+$(OBJDIR)/%.o : $(CCX)/%.f | $(OBJDIR)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 # Generate list of object files from the source files, prepend $(OBJDIR)
@@ -106,14 +106,20 @@ OCCXC += $(OBJDIR)/ConfigReader.o $(OBJDIR)/2D3DCoupling.o $(OBJDIR)/OutputBuffe
 
 
 
-$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a
+$(OBJDIR)/ccx_preCICE: $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a | $(OBJDIR)
 	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
 
 $(OBJDIR)/ccx_$(CCX_VERSION).a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
 
+# Keep the CalculiX source directory unchanged while correcting restart reads.
+$(addprefix $(OBJDIR)/,restartread.o restartshort.o): $(OBJDIR)/%.o: $(CCX)/%.f %.patch | $(OBJDIR)
+	patch -s -o $(OBJDIR)/$*.f $< < $*.patch
+	$(FC) $(FFLAGS) -c $(OBJDIR)/$*.f -o $@
+
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
+	rm -f $(OBJDIR)/restartread.f $(OBJDIR)/restartshort.f
 	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_$(CCX_VERSION).a $(OBJDIR)/ccx_preCICE

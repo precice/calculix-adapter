@@ -185,6 +185,8 @@ This surface file is generated during the mesh generation process. The second ad
 
 Note that an error will only occur if `nodes-mesh-with-connectivity` is specified without a `.sur` file. The CalculiX adapter with nearest-projection mapping only supports tetrahedral elements (`C3D4` and `C3D10`), as preCICE only works with surface triangles for nearest-projection mapping.
 
+Material damage evolution in the coupled nonlinear solver requires one increment per implicit coupling window. Material ramping is available in standalone CalculiX.
+
 ## Modal dynamic simulations
 
 The adapter supports modal dynamic simulations. In this type of simulation, eigenmodes from a frequency analysis are used. Instead of solving the full system of equations, CalculiX solves the problem as a time-dependent linear combination of these eigenmodes; this reduces the number of degrees of freedom of the system. Therefore, the simulation is faster, although its accuracy is dependent on the nonlinearity of the response. This method is very attractive in cases in which the solid dynamics is linear since, if you need many runs of the simulation, the `*FREQUENCY*` extraction step needs to be run only once.
@@ -283,6 +285,8 @@ CalculiX comes with OpenMP and the SPOOLES library, which itself can use OpenMP.
 You can also try [GPU acceleration with PaStiX](adapter-calculix-pastix-build.html).
 
 ## Restarting
+
+Use a restart file written by CalculiX 2.24 with the same integer width as the executable reading it.
 
 To restart a CalculiX simulation, we need to enable restart files (`<name>.rout`), run the first simulation, and then restart the second simulation from that using a modified input file and renaming the `<name>.rout` to `<name>.rin`. See an [example from the community](https://pawel-lojek.medium.com/resuming-fsi-simulations-with-openfoam-calculix-896088861ae).
 

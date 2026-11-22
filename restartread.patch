@@ -1,0 +1,15 @@
+--- restartread.f
++++ restartread.f
+@@ -90 +90 @@
+-     &     err=15)
++     &     ACTION='READ',err=15)
+@@ -104 +104 @@
+-     &           FORM='UNFORMATTED',err=15)
++     &           FORM='UNFORMATTED',ACTION='READ',err=15)
+@@ -313,3 +313,3 @@
+-        write(15)(dmcon(i),i=1,(ndmat_+1)*ntmat_*nmat)
+-        write(15)(ndmcon(i),i=1,2*nmat)
+-        write(15)(dam(i),i=1,mi(1)*ne)
++        read(15)(dmcon(i),i=1,(ndmat_+1)*ntmat_*nmat)
++        read(15)(ndmcon(i),i=1,2*nmat)
++        read(15)(dam(i),i=1,mi(1)*ne)

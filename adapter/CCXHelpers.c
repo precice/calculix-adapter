@@ -84,7 +84,7 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1;
+    ITG nodeIdx = nodes[i] - 1;
     // The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
     for (j = 0; j < dim; j++) {
       coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
@@ -99,7 +99,7 @@ void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *te
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx     = nodes[i] - 1;
+    ITG nodeIdx     = nodes[i] - 1;
     temperatures[i] = v[nodeIdx * mt];
   }
 }
@@ -109,7 +109,7 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1;
+    ITG nodeIdx = nodes[i] - 1;
     for (j = 0; j < dim; j++) {
       forces[dim * i + j] = fn[nodeIdx * mt + j + 1];
     }
@@ -124,7 +124,7 @@ void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, 
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
     }
@@ -139,7 +139,7 @@ void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, dou
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
     }
@@ -154,7 +154,7 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
     }
