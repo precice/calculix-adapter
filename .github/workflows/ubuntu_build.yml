@@ -14,31 +14,32 @@ jobs:
 
     strategy:
       matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
         include:
-          - version: "22.04"
+          - os: ubuntu-22.04
             name: jammy
-          - version: "24.04"
+          - os: ubuntu-24.04
             name: noble
-          - version: "26.04"
+          - os: ubuntu-26.04
             name: resolute
 
-    runs-on: ubuntu-latest
-    container: ubuntu:${{matrix.version}}
+    runs-on: ${{matrix.os}}
+    container: precice/precice:develop
+    continue-on-error: true
     env: # Versioning is "calculix-preciceX_2.YY-Z[...]" with X the major preCICE version, YY the minor CCX version and Z the package version
-      DEBIAN_FRONTEND: noninteractive
       PACKAGE_NAME: "calculix-precice3_2.24.0-1_amd64"
 
     steps:
-    - name: Install build dependencies
+    - name: Update system
       run: |
-        apt-get update -qq
-        apt-get install -y build-essential gfortran libopenmpi-dev libarpack2-dev libspooles-dev lsb-release pkgconf wget ca-certificates patch git
-    - uses: precice/setup-precice-action@main
-      with:
-        precice-version: v3.4.1
+        apt-get -qq update
+        apt-get -qq install sudo
+        sudo apt update && sudo apt upgrade -y
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.ref }}
+    - name: install dependencies
+      run: sudo apt install libarpack2-dev libspooles-dev patch -y
     - name: Download CalculiX
       run: |
         wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
@@ -54,12 +55,12 @@ jobs:
         test "$status" -eq 0 || test "$status" -eq 201
         printf '%s\n' "$version" | grep -Fx 'This is Version 2.24'
     - name: Download tools for packaging
-      run: apt-get install lintian pandoc -y
+      run: sudo apt install lintian pandoc -y
     - name: Create Debian Package
       run: |
         mkdir -p "packaging/debian/usr/bin" &&
         cp ./bin/ccx_preCICE ./packaging/debian/usr/bin/ccx_preCICE &&
-        cd packaging && bash ./make_deb.sh "${{matrix.name}}"
+        cd packaging && pwd && bash ./make_deb.sh ${{matrix.name}}
     - name: Store Debian package artifact
       uses: actions/upload-artifact@v7
       with:
@@ -73,4 +74,4 @@ jobs:
         name: "${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
         path: "packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb.sha256"
     - name: Inspect package with lintian
-      run: apt-get install lintian -y && lintian ./packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb
+      run: sudo apt install lintian -y && lintian ./packaging/${{env.PACKAGE_NAME}}_${{matrix.name}}.deb
