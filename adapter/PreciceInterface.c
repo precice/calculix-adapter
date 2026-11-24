@@ -9,10 +9,14 @@
 
 #include "PreciceInterface.h"
 #include <assert.h>
+#include <limits.h>
 #include <stdlib.h>
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
 #include "precice/preciceC.h"
+
+void FORTRAN(getelementgausspointcoords, (ITG * nelem, ITG *elem_ids, ITG *nope,
+                                          double *co, ITG *kon, ITG *ipkon, double *elem_gp_coord));
 
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim)
 {
@@ -591,6 +595,13 @@ static enum ElemType findSimulationMeshType(SimulationData *sim)
   return INVALID_ELEMENT;
 }
 
+static void elementsMeshError(const char *message)
+{
+  fprintf(stderr, "%s\n", message);
+  precicec_finalize();
+  exit(EXIT_FAILURE);
+}
+
 void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, SimulationData *sim)
 {
   printf("WARNING: Elements-mesh support is experimental. Use with caution.\n");
@@ -598,32 +609,39 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
 
   char *elementSetName    = interface->name;
   interface->elementSetID = getSetID(elementSetName, sim->set, sim->nset);
-  interface->numElements  = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
-
-  interface->elementIDs = malloc(interface->numElements * sizeof(ITG));
+  ITG numElements         = getNumSetElements(interface->elementSetID, sim->istartset, sim->iendset);
+  if (numElements <= 0 || numElements > INT_MAX) {
+    elementsMeshError("Invalid elements mesh size for preCICE.");
+  }
+  interface->numElements = (int) numElements;
+  interface->elementIDs  = malloc(numElements * sizeof(ITG));
   getElementsIDs(interface->elementSetID, sim->ialset, sim->istartset, sim->iendset, interface->elementIDs);
 
-  interface->numIPTotal        = sim->mi[0] * interface->numElements; // Number of Gauss points per element * number of elements
-  interface->elemIPCoordinates = malloc(interface->numIPTotal * 3 * sizeof(double));
-
-  interface->elemIPID = malloc(interface->numIPTotal * sizeof(int));
-  for (int j = 0; j < interface->numIPTotal; j++) {
-    interface->elemIPID[j] = j;
+  ITG nodesPerElement = 0;
+  for (ITG i = 0; i < numElements; ++i) {
+    ITG element = interface->elementIDs[i] - 1;
+    if (element < 0 || element >= sim->ne || sim->ipkon[element] < 0) {
+      elementsMeshError("Invalid element in preCICE elements mesh.");
+    }
+    const char *type  = sim->lakon + 8 * element;
+    ITG         nodes = 0;
+    if (strncmp(type, "C3D4    ", 8) == 0)
+      nodes = 4;
+    if (strncmp(type, "C3D8    ", 8) == 0)
+      nodes = 8;
+    if (nodes == 0 || (i > 0 && nodes != nodesPerElement)) {
+      elementsMeshError("Elements meshes require all C3D4 or all fully integrated C3D8 elements.");
+    }
+    nodesPerElement = nodes;
   }
-
-  int numElements = interface->numElements;
-
-  enum ElemType elemType = findSimulationMeshType(sim);
-
-  // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
-  int nodesPerElement;
-  if (elemType == TETRAHEDRA) {
-    nodesPerElement = 4;
-  } else if (elemType == HEXAHEDRA) {
-    nodesPerElement = 8;
-  } else {
-    supportedElementError();
+  int pointsPerElement = nodesPerElement == 4 ? 1 : 8;
+  // The Fortran helper indexes the flattened XYZ array with INTEGER(4).
+  if (numElements > INT_MAX / 3 / pointsPerElement) {
+    elementsMeshError("Too many integration points for the elements mesh.");
   }
+  interface->numIPTotal        = (int) numElements * pointsPerElement;
+  interface->elemIPCoordinates = malloc((size_t) interface->numIPTotal * 3 * sizeof(double));
+  interface->elemIPID          = malloc((size_t) interface->numIPTotal * sizeof(int));
 
   FORTRAN(getelementgausspointcoords, (&numElements,
                                        interface->elementIDs,
