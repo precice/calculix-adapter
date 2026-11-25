@@ -1,0 +1,52 @@
+*HEADING
+Quadrature on selected linear solid elements
+*NODE
+1, -4, 0, 0
+2, -2, 0, 0
+3, -2, 2, 0
+4, -4, 2, 0
+5, -4, 0, 2
+6, -2, 0, 2
+7, -2, 2, 2
+8, -4, 2, 2
+9, 10, 0, 0
+10, 12, 0, 0
+11, 12, 2, 0
+12, 10, 2, 0.5
+13, 10, 0, 2
+14, 12, 0, 2
+15, 12, 2, 2
+16, 10, 2, 2.5
+*ELEMENT, TYPE=C3D8, ELSET=HEXONLY
+1, 1, 2, 3, 4, 5, 6, 7, 8
+*ELEMENT, TYPE=C3D4, ELSET=TETONLY
+2, 9, 10, 11, 12
+*ELEMENT, TYPE=C3D4
+3, 13, 14, 15, 16
+*ELSET, ELSET=BODY
+1, 2, 3
+*NSET, NSET=NPROBE
+12
+*SOLID SECTION, ELSET=BODY, MATERIAL=ELASTIC
+*MATERIAL, NAME=ELASTIC
+*ELASTIC
+1000., 0.3
+*BOUNDARY
+1, 1, 3
+4, 1, 3
+5, 1, 3
+8, 1, 3
+9, 1, 3
+10, 1, 3
+11, 1, 3
+13, 1, 3
+14, 1, 3
+15, 1, 3
+*STEP, NLGEOM
+*STATIC
+1., 1.
+*CLOAD
+12, 3, -0.1
+*NODE FILE
+U
+*END STEP

@@ -1,0 +1,12 @@
+precice-config-file: precice-config.xml
+
+participants:
+  Solid:
+    interfaces:
+    - patch: tetonly
+      elements-mesh: Tets
+    - patch: hexonly
+      elements-mesh: Hexes
+    - patch: probe
+      nodes-mesh: Solid-Nodes
+      write-data: [Displacement]
