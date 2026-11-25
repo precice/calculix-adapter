@@ -161,7 +161,7 @@ wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
 tar xvjf ccx_2.24.src.tar.bz2
 ```
 
-The source code is now in the `~/CalculiX/ccx_2.24/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/develop/Makefile) is looking for CCX in this directory by default, so modify it if needed.
+The source code is now in the `~/CalculiX/ccx_2.24/src` directory. The adapter's [`Makefile`](https://github.com/precice/calculix-adapter/blob/master/Makefile) is looking for CCX in this directory by default, so modify it if needed.
 
 ### Building the "vanilla" CalculiX (optional)
 
