@@ -31,8 +31,8 @@ public:
   std::vector<double> &loadDouble(const std::string &name);
   std::vector<ITG> &   loadITG(const std::string &name);
 
-  void saveDouble(const std::string &name, double *data, unsigned n);
-  void saveITG(const std::string &name, ITG *data, unsigned n);
+  void saveDouble(const std::string &name, double *data, size_t n);
+  void saveITG(const std::string &name, ITG *data, size_t n);
 
 private:
   unsigned currentReadIter{0};
