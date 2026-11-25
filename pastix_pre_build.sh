@@ -1,6 +1,14 @@
-#! /bin/bash
+#!/bin/bash
+set -eu
 
-echo "Renaming includes of \"pastix.h\" to \"pastix_ccx.h\" to avoid conflict."
-sed -i 's/#include "pastix.h"/ #include "pastix_ccx.h"/g' ~/CalculiX/ccx_2.20/src/*.c
-echo "Renaming CalculiX file pastix.h to pastix_ccx.h"
-mv ~/CalculiX/ccx_2.20/src/pastix.h ~/CalculiX/ccx_2.20/src/pastix_ccx.h
+ccx_src=${1:-"$HOME/CalculiX/ccx_2.24/src"}
+test -f "$ccx_src/pastix.h" || test -f "$ccx_src/pastix_ccx.h"
+for source in "$ccx_src"/*.c; do
+    if grep -Fq '#include "pastix.h"' "$source"; then
+        sed -i.bak 's/#include "pastix.h"/#include "pastix_ccx.h"/g' "$source"
+        rm "$source.bak"
+    fi
+done
+if [ -f "$ccx_src/pastix.h" ]; then
+    mv "$ccx_src/pastix.h" "$ccx_src/pastix_ccx.h"
+fi

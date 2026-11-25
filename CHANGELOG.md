@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 <!-- markdownlint-configure-file {"MD024": { "siblings_only": true } } -->
 
+## [Unreleased]
+
+### Changed
+
+- Ported the adapter to CalculiX 2.24.
+
 ## [v2.20.2] 2026-08-05
 
 ### Added

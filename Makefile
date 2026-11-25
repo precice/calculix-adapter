@@ -2,7 +2,7 @@
 # https://precice.org/adapter-calculix-get-calculix.html
 # Set the following variables before building:
 # Path to original CalculiX source (e.g. $(HOME)/ccx_2.xx/src )
-CCX_VERSION			= 2.20
+CCX_VERSION			= 2.24
 CCX             = $(HOME)/CalculiX/ccx_$(CCX_VERSION)/src
 
 ### Change these if you built SPOOLES, or ARPACK from source ###
@@ -64,7 +64,7 @@ endif
 FC = mpifort
 # FC = mpif90
 # FC = gfortran
-FFLAGS = -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
+FFLAGS = -cpp -Wall -O3 -fopenmp $(INCLUDES) ${ADDITIONAL_FFLAGS}
 ifeq ($(findstring GNU,$(shell $(FC) --version)),GNU)
   GCC_VERSION_MAJOR := $(shell $(FC) -dumpversion | cut -d. -f1)
   ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 10 ] && echo yes),yes)
@@ -77,25 +77,25 @@ include $(CCX)/Makefile.inc
 SCCXMAIN = ccx_$(CCX_VERSION).c
 
 # Append additional sources
-SCCXC += nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
+SCCXC += buildinfo.c nonlingeo_precice.c dyna_precice.c CCXHelpers.c PreciceInterface.c
 SCCXF += getflux.f getkdeltatemp.f getelementgausspointcoords.f
 
 
 
 # Source files in this folder and in the adapter directory
-$(OBJDIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : %.f
+$(OBJDIR)/%.o : %.f | $(OBJDIR)
 	$(FC) $(FFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : adapter/%.c
+$(OBJDIR)/%.o : adapter/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : adapter/%.cpp
+$(OBJDIR)/%.o : adapter/%.cpp | $(OBJDIR)
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 # Source files in the $(CCX) folder
-$(OBJDIR)/%.o : $(CCX)/%.c
+$(OBJDIR)/%.o : $(CCX)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/%.o : $(CCX)/%.f
+$(OBJDIR)/%.o : $(CCX)/%.f | $(OBJDIR)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 # Generate list of object files from the source files, prepend $(OBJDIR)
@@ -106,14 +106,20 @@ OCCXC += $(OBJDIR)/ConfigReader.o $(OBJDIR)/2D3DCoupling.o $(OBJDIR)/OutputBuffe
 
 
 
-$(OBJDIR)/ccx_preCICE: $(OBJDIR) $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a
+$(OBJDIR)/ccx_preCICE: $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a | $(OBJDIR)
 	$(FC) -fopenmp -Wall -O3 -o $@ $(OCCXMAIN) $(OBJDIR)/ccx_$(CCX_VERSION).a $(LIBS)
 
 $(OBJDIR)/ccx_$(CCX_VERSION).a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
 
+# Keep the CalculiX source directory unchanged while correcting restart reads.
+$(addprefix $(OBJDIR)/,restartread.o restartshort.o): $(OBJDIR)/%.o: $(CCX)/%.f %.patch | $(OBJDIR)
+	patch -s -o $(OBJDIR)/$*.f $< < $*.patch
+	$(FC) $(FFLAGS) -c $(OBJDIR)/$*.f -o $@
+
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 clean:
+	rm -f $(OBJDIR)/restartread.f $(OBJDIR)/restartshort.f
 	rm -f $(OBJDIR)/*.o $(OBJDIR)/ccx_$(CCX_VERSION).a $(OBJDIR)/ccx_preCICE

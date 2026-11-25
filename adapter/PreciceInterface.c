@@ -14,6 +14,17 @@
 #include "ConfigReader.h"
 #include "precice/preciceC.h"
 
+void FORTRAN(getflux, (double *co, ITG *ntmat, double *vold, double *cocon,
+                       ITG *ncocon, ITG *iset, ITG *istartset, ITG *iendset,
+                       ITG *ipkon, char *lakon, ITG *kon, ITG *ialset,
+                       ITG *ielmat, ITG *mi, double *flux));
+void FORTRAN(getkdeltatemp, (double *co, ITG *ntmat, double *vold, double *cocon,
+                             ITG *ncocon, ITG *iset, ITG *istartset, ITG *iendset,
+                             ITG *ipkon, char *lakon, ITG *kon, ITG *ialset,
+                             ITG *ielmat, ITG *mi, double *kdelta, double *reftemp));
+void FORTRAN(getelementgausspointcoords, (ITG * nelem, ITG *elem_ids, ITG *nope,
+                                          double *co, ITG *kon, ITG *ipkon, double *elem_gp_coord));
+
 void Precice_Setup(char *configFilename, char *participantName, SimulationData *sim)
 {
   assert(sim != NULL);
@@ -162,7 +173,7 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v)
   memcpy(sim->coupling_init_v, v, sizeof(double) * sim->mt * sim->nk);
 }
 
-void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev)
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, ITG nev)
 {
 
   printf("Adapter reading checkpoint...\n");
@@ -179,7 +190,7 @@ void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, dou
   memcpy(derivatives, sim->eigenDOFsDerivatives, sizeof(double) * nev);
 }
 
-void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev)
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, ITG nev)
 {
 
   printf("Adapter writing checkpoint...\n");
@@ -301,7 +312,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
   PreciceInterface **interfaces    = sim->preciceInterfaces;
   int                numInterfaces = sim->numPreciceInterfaces;
   int                i, j;
-  int                iset;
+  ITG                iset;
 
   for (i = 0; i < numInterfaces; i++) {
     // Prepare data
@@ -311,7 +322,7 @@ void Precice_WriteCouplingData(SimulationData *sim)
       enum CouplingDataType type = interfaces[i]->writeData[j];
       if (type == SINK_TEMPERATURE || type == HEAT_TRANSFER_COEFF) {
         if (KDelta == NULL) {
-          int iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
+          ITG iset = interfaces[i]->faceSetID + 1; // Adjust index before calling Fortran function
           KDelta   = malloc(interfaces[i]->numElements * sizeof(double));
           T        = malloc(interfaces[i]->numElements * sizeof(double));
           FORTRAN(getkdeltatemp, (sim->co,
@@ -611,12 +622,12 @@ void PreciceInterface_ConfigureElementsMesh(PreciceInterface *interface, Simulat
     interface->elemIPID[j] = j;
   }
 
-  int numElements = interface->numElements;
+  ITG numElements = interface->numElements;
 
   enum ElemType elemType = findSimulationMeshType(sim);
 
   // Gauss point extraction is supported only for tetrahedra and hexahedra elements.
-  int nodesPerElement;
+  ITG nodesPerElement;
   if (elemType == TETRAHEDRA) {
     nodesPerElement = 4;
   } else if (elemType == HEXAHEDRA) {
@@ -769,20 +780,20 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
     if (startsWith(config->readDataNames[i], "Temperature")) {
       PreciceInterface_EnsureValidRead(sim, TEMPERATURE);
       interface->readData[i]  = TEMPERATURE;
-      interface->xbounIndices = malloc(interface->numNodes * sizeof(int));
+      interface->xbounIndices = malloc(interface->numNodes * sizeof(ITG));
       interface->temperature  = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, TEMPERATURE);
       printf("Read data '%s' found.\n", interface->temperature);
     } else if (startsWith(config->readDataNames[i], "Heat-Flux")) {
       interface->readData[i]  = HEAT_FLUX;
-      interface->xloadIndices = malloc(interface->numElements * sizeof(int));
+      interface->xloadIndices = malloc(interface->numElements * sizeof(ITG));
       getXloadIndices("DFLUX", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       PreciceInterface_EnsureValidRead(sim, HEAT_FLUX);
       interface->flux = strdup(config->readDataNames[i]);
       printf("Read data '%s' found.\n", interface->flux);
     } else if (startsWith(config->readDataNames[i], "Sink-Temperature")) {
       interface->readData[i]  = SINK_TEMPERATURE;
-      interface->xloadIndices = malloc(interface->numElements * sizeof(int));
+      interface->xloadIndices = malloc(interface->numElements * sizeof(ITG));
       getXloadIndices("FILM", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       PreciceInterface_EnsureValidRead(sim, SINK_TEMPERATURE);
       interface->kDeltaTemperatureRead = strdup(config->readDataNames[i]);
@@ -794,7 +805,7 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
       printf("Read data '%s' found.\n", interface->kDeltaRead);
     } else if (startsWith(config->readDataNames[i], "Pressure")) {
       interface->readData[i]  = PRESSURE;
-      interface->xloadIndices = malloc(interface->numElements * sizeof(int));
+      interface->xloadIndices = malloc(interface->numElements * sizeof(ITG));
       PreciceInterface_EnsureValidRead(sim, PRESSURE);
       getXloadIndices("PRESSUREDLOAD", interface->elementIDs, interface->faceIDs, interface->numElements, sim->nload, sim->nelemload, sim->sideload, interface->xloadIndices);
       interface->pressure = strdup(config->readDataNames[i]);
@@ -802,14 +813,14 @@ void PreciceInterface_ConfigureCouplingData(PreciceInterface *interface, Simulat
     } else if (startsWith(config->readDataNames[i], "Force")) {
       PreciceInterface_EnsureValidRead(sim, FORCES);
       interface->readData[i]  = FORCES;
-      interface->xforcIndices = malloc(interface->numNodes * 3 * sizeof(int));
+      interface->xforcIndices = malloc(interface->numNodes * 3 * sizeof(ITG));
       interface->forces       = strdup(config->readDataNames[i]);
       getXforcIndices(interface->nodeIDs, interface->numNodes, sim->nforc, sim->ikforc, sim->ilforc, interface->xforcIndices);
       printf("Read data '%s' found.\n", interface->forces);
     } else if (startsWith(config->readDataNames[i], "Displacement")) {
       PreciceInterface_EnsureValidRead(sim, DISPLACEMENTS);
       interface->readData[i]   = DISPLACEMENTS;
-      interface->xbounIndices  = malloc(interface->numNodes * 3 * sizeof(int));
+      interface->xbounIndices  = malloc(interface->numNodes * 3 * sizeof(ITG));
       interface->displacements = strdup(config->readDataNames[i]);
       getXbounIndices(interface->nodeIDs, interface->numNodes, sim->nboun, sim->ikboun, sim->ilboun, interface->xbounIndices, DISPLACEMENTS);
       printf("Read data '%s' found.\n", interface->displacements);

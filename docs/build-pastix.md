@@ -1,5 +1,5 @@
 ---
-title: Building the Calculix adapter with PaStiX (and CalculiX 2.17)
+title: Building the CalculiX adapter with PaStiX
 permalink: adapter-calculix-pastix-build.html
 aliases:
   - /adapter-calculix-pastix-build.html
@@ -10,8 +10,7 @@ is somehow harder with this version. This page gives a detailed walkthrough to b
 
 ## Overview
 
-To build the preCICE adapter for CalculiX with PaStiX, it is first necessary to build PaStiX. A manual build is necessary for most steps, as specific compilation flags must be used for the dependencies: pre-built packages cannot be used. In particular, PaStiX (and CalculiX) must be compiled with flags to use 8-byte integers. On this page, we provide a step-by-step building guide of the adapter, tested on Ubuntu 20.04.
-This should work with some modifications on other systems. You may also need to tweak this depending on your needs, e.g. if you want to build some dependencies yourself instead of using a package manager.
+To build the preCICE adapter for CalculiX with PaStiX, it is first necessary to build PaStiX. A manual build is necessary for most steps, as specific compilation flags must be used for the dependencies: pre-built packages cannot be used. In particular, PaStiX (and CalculiX) must be compiled with flags to use 8-byte integers. The commands below use Ubuntu package names.
 
 {% note %}
 This page was built following CalculiX' documentation with adaptations for preCICE and some additional tips from experience. Support of PaStiX is still experimental and feedback is highly valuable!
@@ -20,7 +19,7 @@ This page was built following CalculiX' documentation with adaptations for preCI
 ## Required packages
 
 Make sure you have a working installation of preCICE. Also run these installation commands, (after a call to `sudo apt update` and `sudo apt upgrade`) :
-`sudo apt install build-essential cmake git gfortran flex bison zlib1g-dev nvidia-cuda-toolkit-gcc libspooles-dev libyaml-cpp-dev`
+`sudo apt install build-essential cmake git gfortran flex bison zlib1g-dev nvidia-cuda-toolkit-gcc patch pkg-config`
 
 {% version %}
 Up to the adapter v2.20.1, the dependency package `libyaml-cpp-dev` was also required.
@@ -35,9 +34,9 @@ You can get these elsewhere or build them from source. In particular, it is prob
 This guide assumes Calculix's source code is in the user's home folder `/home/user_name`, with the alias `~`. If you don't want to follow this convention, you may have to adapt slightly the instructions below. Download can be done on command line:
 
 ```bash
-    cd ~ && wget http://www.dhondt.de/ccx_2.17.src.tar.bz2
-    bunzip2 ccx_2.17.src.tar.bz2
-    tar -xvf ccx_2.17.src.tar
+    cd ~ && wget https://www.dhondt.de/ccx_2.24.src.tar.bz2
+    bunzip2 ccx_2.24.src.tar.bz2
+    tar -xvf ccx_2.24.src.tar
 
 ```
 
@@ -73,7 +72,7 @@ This library will be put in a subfolder of the PaStiX folder.
     cd ~/PaStiX/ 
     wget https://download.open-mpi.org/release/hwloc/v2.1/hwloc-2.1.0.tar.bz2
     bunzip2 hwloc-2.1.0.tar.bz2 && tar -xf hwloc-2.1.0.tar
-    cp ~/CalculiX/ccx_2.17/src/make_hwloc.sh ~/PaStiX/hwloc-2.1.0/make_hwloc.sh
+    cp ~/CalculiX/ccx_2.24/src/make_hwloc.sh ~/PaStiX/hwloc-2.1.0/make_hwloc.sh
     cd hwloc-2.1.0
     ./configure --prefix=$HOME/PaStiX/hwloc_i8 CC=gcc CXX=g++
     make -j8
@@ -86,7 +85,7 @@ This library will be put in a subfolder of the PaStiX folder.
 ```bash
     cd ~/PaStiX && git clone -b pastix-6.0.2 --single-branch https://bitbucket.org/mfaverge/parsec.git
     cd parsec
-    cp ~/CalculiX/ccx_2.17/src/make_parsec.sh ~/PaStiX/parsec
+    cp ~/CalculiX/ccx_2.24/src/make_parsec.sh ~/PaStiX/parsec
     ./make_parsec.sh
 
 ```
@@ -97,7 +96,7 @@ This library will be put in a subfolder of the PaStiX folder.
     cd ~/PaStiX
     wget https://gitlab.inria.fr/scotch/scotch/-/archive/master/scotch-master.tar.gz
     tar -xf scotch-master.tar.gz
-    cp ~/CalculiX/ccx_2.17/src/make_scotch.sh ~/PaStiX/scotch-master
+    cp ~/CalculiX/ccx_2.24/src/make_scotch.sh ~/PaStiX/scotch-master
     cd scotch-master
     ./make_scotch.sh
 
@@ -111,7 +110,7 @@ This library will be put in a subfolder of the PaStiX folder.
     mv PaStiX4CalculiX pastix_src
     cd pastix_src
     rm make_pastix.sh
-    cp ~/CalculiX/ccx_2.17/src/make_pastix.sh .
+    cp ~/CalculiX/ccx_2.24/src/make_pastix.sh .
     ./make_pastix.sh
 
 ```
@@ -147,10 +146,10 @@ Once all of these are done, run `make lib` in the `ARPACK` folder.
 
 ## Building the adapter
 
-To build the adapter, clone its repository and checkout the `2.17` branch :
+To build the adapter, check out the adapter revision that supports CalculiX 2.24:
 
 ```bash
-    git clone -b v2.17 https://github.com/precice/calculix-adapter
+    git clone -b develop https://github.com/precice/calculix-adapter
     cd calculix-adapter
 ```
 
@@ -159,24 +158,24 @@ To build the adapter, clone its repository and checkout the `2.17` branch :
 Due to some conflicts between CalculiX, PaStiX and the adapter (both CalculiX and PaStiX have a `pastix.h` file, and neither of them is local from the point of view of the adapter), some changes are required in the CalculiX codebase. We provide a script, `pastix_pre_build.sh` that does these changes. Run it.
 
 ```bash
-    ./pastix_pre_build.sh
+    ./pastix_pre_build.sh ~/CalculiX/ccx_2.24/src
 ```
 
 ### Compilation
 
-To build the adapter, use the provided `Makefile_i8_PaStiX`: the regular Makefile would build the adapter without PaStiX. Assuming you followed the previous steps, it should be useable without modifications other than giving Calculix' path; otherwise, some other paths updates could be required. You also need to ensure then Makefile finds the required dependencies when calling `pkg-config`. This can be done by changing the `PKG_PATH_CONFIG` environment variable. Assuming you used suggested paths, this would look like this:
+To build the adapter, use the provided `Makefile_i8_PaStiX`: the regular Makefile would build the adapter without PaStiX. Assuming you followed the previous steps, it should be useable without modifications other than giving Calculix' path; otherwise, some other paths updates could be required. You also need to ensure then Makefile finds the required dependencies when calling `pkg-config`. This can be done by changing the `PKG_CONFIG_PATH` environment variable. Assuming you used suggested paths, this would look like this:
 
 ```bash
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:~/PaStiX/pastix_i8/lib/pkgconfig/:~/PaStiX/hwloc_i8/lib/pkgconfig/:~/PaStiX/parsec_i8/lib/pkgconfig/
 ```
 
-Then you can build the adapter with this command in the `calculix-adapter` (and be sure to checkout the `2.17` branch) folder :
+Then you can build the adapter with this command in the `calculix-adapter` folder :
 
 ```bash
-    make -f Makefile_i8_PaStiX -j 4 CCX=~/CalculiX/ccx_2.17/src
+    make -f Makefile_i8_PaStiX -j 4 CCX=~/CalculiX/ccx_2.24/src ADDITIONAL_FFLAGS=-fallow-argument-mismatch
 ```
 
-Once the build is successful, the adapter should be in `./bin/ccx_preCICE`.
+The PaStiX build writes `./bin-i8/ccx_preCICE`. Use the regular Makefile for decks that select SPOOLES.
 
 ### Updating shared libraries
 

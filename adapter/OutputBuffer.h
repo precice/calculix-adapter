@@ -17,7 +17,7 @@
 #define CCX_OUTPUTBUFFER_H
 
 // To avoid including CalculiX.h
-#ifdef LONGLONG
+#ifdef INTSIZE64
 #define ITG long long
 #define ITGFORMAT "lld"
 #else

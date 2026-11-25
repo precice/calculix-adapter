@@ -10,4 +10,4 @@ jobs:
     uses: precice/tutorials/.github/workflows/system-tests.yml@develop
     with:
       suites: calculix-adapter
-      build_args: CALCULIX_ADAPTER_PR:${{ github.event.number }},CALCULIX_ADAPTER_REF:${{ github.event.pull_request.head.sha }}
+      build_args: CALCULIX_VERSION:2.24,CALCULIX_ADAPTER_PR:${{ github.event.number }},CALCULIX_ADAPTER_REF:${{ github.event.pull_request.head.sha }}

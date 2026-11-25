@@ -27,7 +27,7 @@ typedef struct PreciceInterface {
 
   // Interface nodes
   int          numNodes;
-  int *        nodeIDs;
+  ITG *        nodeIDs;
   Mapping2D3D *mappingQuasi2D3D;
   double *     nodeCoordinates;
   int          nodeSetID;
@@ -36,13 +36,13 @@ typedef struct PreciceInterface {
   char *       elementsMeshName;
 
   int     numElements;
-  int *   elementIDs;
+  ITG *   elementIDs;
   int *   elemIPID;
   int     elementSetID;
   double *elemIPCoordinates;
   int     numIPTotal;
 
-  int *   faceIDs;
+  ITG *   faceIDs;
   double *faceCenterCoordinates;
   int     faceSetID;
   char *  faceCentersMeshName;
@@ -73,9 +73,9 @@ typedef struct PreciceInterface {
   char *pressure;
 
   // Indices that indicate where to apply the boundary conditions / forces
-  int *xloadIndices;
-  int *xbounIndices;
-  int *xforcIndices;
+  ITG *xloadIndices;
+  ITG *xbounIndices;
+  ITG *xforcIndices;
 
   // Mapping type if nearest-projection mapping
   int mapNPType;
@@ -118,7 +118,7 @@ typedef struct SimulationData {
   ITG *   nelemload;
   int     nload;
   char *  sideload;
-  double  nk;
+  ITG     nk;
   ITG     ne;
   ITG     mt;
   double *theta;
@@ -217,7 +217,7 @@ void Precice_WriteIterationCheckpoint(SimulationData *sim, double *v);
  * @param derivatives: array containing the time derivatives (velocities) of the dofs
  * @param nev: number of eigenvalues used (i.e. array size)
  */
-void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, int nev);
+void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, double *derivatives, ITG nev);
 
 /**
  * @brief Writes iteration checkpoint
@@ -226,7 +226,7 @@ void Precice_ReadIterationCheckpointModal(SimulationData *sim, double *dofs, dou
  * @param derivatives: array containing the time derivatives (velocities) of the dofs
  * @param nev: number of eigenvalues used (i.e. array size)
  */
-void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, int nev);
+void Precice_WriteIterationCheckpointModal(SimulationData *sim, const double *dofs, const double *derivatives, ITG nev);
 
 /**
  * @brief Reads the coupling data for all interfaces

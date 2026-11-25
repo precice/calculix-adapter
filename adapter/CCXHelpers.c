@@ -84,7 +84,7 @@ void getNodeCoordinates(ITG *nodes, ITG numNodes, int dim, double *co, double *v
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1;
+    ITG nodeIdx = nodes[i] - 1;
     // The displacements are added to the coordinates such that in case of a simulation restart the displaced coordinates are used for initializing the coupling interface instead of the initial coordinates
     for (j = 0; j < dim; j++) {
       coordinates[i * dim + j] = co[nodeIdx * 3 + j] + v[nodeIdx * mt + j + 1];
@@ -99,7 +99,7 @@ void getNodeTemperatures(ITG *nodes, ITG numNodes, double *v, int mt, double *te
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx     = nodes[i] - 1;
+    ITG nodeIdx     = nodes[i] - 1;
     temperatures[i] = v[nodeIdx * mt];
   }
 }
@@ -109,7 +109,7 @@ void getNodeForces(ITG *nodes, ITG numNodes, int dim, double *fn, ITG mt, double
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1;
+    ITG nodeIdx = nodes[i] - 1;
     for (j = 0; j < dim; j++) {
       forces[dim * i + j] = fn[nodeIdx * mt + j + 1];
     }
@@ -124,7 +124,7 @@ void getNodeDisplacements(ITG *nodes, ITG numNodes, int dim, double *v, ITG mt, 
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacements[dim * i + j] = v[nodeIdx * mt + j + 1];
     }
@@ -139,7 +139,7 @@ void getNodeDisplacementDeltas(ITG *nodes, ITG numNodes, int dim, double *v, dou
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       displacementDeltas[dim * i + j] = v[nodeIdx * mt + j + 1] - v_init[nodeIdx * mt + j + 1];
     }
@@ -154,7 +154,7 @@ void getNodeVelocities(ITG *nodes, ITG numNodes, int dim, double *ve, ITG mt, do
   ITG i, j;
 
   for (i = 0; i < numNodes; i++) {
-    int nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
+    ITG nodeIdx = nodes[i] - 1; // The node Id starts with 1, not with 0, therefore, decrement is necessary
     for (j = 0; j < dim; j++) {
       velocities[dim * i + j] = ve[nodeIdx * mt + j + 1];
     }
@@ -302,18 +302,18 @@ void getXloadIndices(char const *loadType, ITG *elementIDs, ITG *faceIDs, ITG nu
 }
 
 // Get the indices for the xboun array, corresponding to the temperature or displacement DOF of the nodes passed to the function
-void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilboun, int *xbounIndices, enum CouplingDataType couplDataType)
+void getXbounIndices(ITG *nodes, ITG numNodes, ITG nboun, ITG *ikboun, ITG *ilboun, ITG *xbounIndices, enum CouplingDataType couplDataType)
 {
   ITG i;
 
   switch (couplDataType) {
   case TEMPERATURE:
     for (i = 0; i < numNodes; i++) {
-      int idof = 8 * (nodes[i] - 1) + 0; // 0 for temperature DOF
-      int k;
+      ITG idof = 8 * (nodes[i] - 1) + 0; // 0 for temperature DOF
+      ITG k;
       FORTRAN(nident, (ikboun, &idof, &nboun, &k));
       k -= 1;                          // Adjust because of FORTRAN indices
-      int m           = ilboun[k] - 1; // Adjust because of FORTRAN indices
+      ITG m           = ilboun[k] - 1; // Adjust because of FORTRAN indices
       xbounIndices[i] = m;
     }
     // See documentation ccx_2.13.pdf for the definition of ikboun and ilboun
@@ -326,10 +326,10 @@ void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilbo
     break;
   case DISPLACEMENTS:
     for (i = 0; i < numNodes; i++) {
-      int idof_x = 8 * (nodes[i] - 1) + 1; // x-component of displacement
-      int idof_y = 8 * (nodes[i] - 1) + 2; // y-component of displacement
-      int idof_z = 8 * (nodes[i] - 1) + 3; // z-component of displacement
-      int kx, ky, kz;
+      ITG idof_x = 8 * (nodes[i] - 1) + 1; // x-component of displacement
+      ITG idof_y = 8 * (nodes[i] - 1) + 2; // y-component of displacement
+      ITG idof_z = 8 * (nodes[i] - 1) + 3; // z-component of displacement
+      ITG kx, ky, kz;
       FORTRAN(nident, (ikboun, &idof_x, &nboun, &kx));
       FORTRAN(nident, (ikboun, &idof_y, &nboun, &ky));
       FORTRAN(nident, (ikboun, &idof_z, &nboun, &kz));
@@ -351,17 +351,17 @@ void getXbounIndices(ITG *nodes, ITG numNodes, int nboun, int *ikboun, int *ilbo
 }
 
 // Get the indices for the xforc array, corresponding to the force DOFs of the nodes passed to the function
-void getXforcIndices(ITG *nodes, ITG numNodes, int nforc, int *ikforc, int *ilforc, int *xforcIndices)
+void getXforcIndices(ITG *nodes, ITG numNodes, ITG nforc, ITG *ikforc, ITG *ilforc, ITG *xforcIndices)
 {
   ITG i;
 
   for (i = 0; i < numNodes; i++) {
     // x-direction
-    int idof = 8 * (nodes[i] - 1) + 1; // 1 for x force DOF
-    int k;
+    ITG idof = 8 * (nodes[i] - 1) + 1; // 1 for x force DOF
+    ITG k;
     FORTRAN(nident, (ikforc, &idof, &nforc, &k));
     k -= 1;                              // Adjust because of FORTRAN indices
-    int m               = ilforc[k] - 1; // Adjust because of FORTRAN indices
+    ITG m               = ilforc[k] - 1; // Adjust because of FORTRAN indices
     xforcIndices[3 * i] = m;
 
     // y-direction
@@ -410,7 +410,7 @@ int getXloadIndexOffset(enum xloadVariable xloadVar)
   }
 }
 
-void setXload(double *xload, int *xloadIndices, double *values, int numValues, enum xloadVariable xloadVar)
+void setXload(double *xload, ITG *xloadIndices, double *values, ITG numValues, enum xloadVariable xloadVar)
 {
   ITG i;
   int indexOffset = getXloadIndexOffset(xloadVar);
@@ -420,27 +420,27 @@ void setXload(double *xload, int *xloadIndices, double *values, int numValues, e
   }
 }
 
-void setFaceFluxes(double *fluxes, ITG numFaces, int *xloadIndices, double *xload)
+void setFaceFluxes(double *fluxes, ITG numFaces, ITG *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, fluxes, numFaces, DFLUX);
 }
 
-void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, int *xloadIndices, double *xload)
+void setFaceHeatTransferCoefficients(double *coefficients, ITG numFaces, ITG *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, coefficients, numFaces, FILM_H);
 }
 
-void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, int *xloadIndices, double *xload)
+void setFaceSinkTemperatures(double *sinkTemperatures, ITG numFaces, ITG *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, sinkTemperatures, numFaces, FILM_T);
 }
 
-void setFacePressure(double *pressure, ITG numFaces, int *xloadIndices, double *xload)
+void setFacePressure(double *pressure, ITG numFaces, ITG *xloadIndices, double *xload)
 {
   setXload(xload, xloadIndices, pressure, numFaces, PRESSUREDLOAD);
 }
 
-void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, double *xboun)
+void setNodeTemperatures(double *temperatures, ITG numNodes, ITG *xbounIndices, double *xboun)
 {
   ITG i;
 
@@ -449,7 +449,7 @@ void setNodeTemperatures(double *temperatures, ITG numNodes, int *xbounIndices, 
   }
 }
 
-void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, double *xforc)
+void setNodeForces(double *forces, ITG numNodes, int dim, ITG *xforcIndices, double *xforc)
 {
   ITG i, j;
 
@@ -460,7 +460,7 @@ void setNodeForces(double *forces, ITG numNodes, int dim, int *xforcIndices, dou
   }
 }
 
-void setNodeDisplacements(double *displacements, ITG numNodes, int dim, int *xbounIndices, double *xboun)
+void setNodeDisplacements(double *displacements, ITG numNodes, int dim, ITG *xbounIndices, double *xboun)
 {
   ITG i, j;
 

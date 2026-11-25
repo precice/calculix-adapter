@@ -54,7 +54,7 @@ jobs:
           apt update
           apt -y upgrade
           apt -y install git build-essential lsb-release cmake libeigen3-dev libxml2-dev libboost-all-dev python3-dev python3-numpy petsc-dev sed
-          apt -y install libarpack2-dev libspooles-dev
+          apt -y install libarpack2-dev libspooles-dev patch
       - name: Install preCICE
         uses: precice/setup-precice-action@main
         with:
@@ -69,13 +69,17 @@ jobs:
       - name: Download CalculiX sources
         run: |
           VERSION=$(echo "${{ github.event.inputs.release }}" | sed -E "s/^v([0-9]\.[0-9]+)\.[0-9]+/ccx_\1/" )
-          wget http://www.dhondt.de/${VERSION}.src.tar.bz2
+          wget https://www.dhondt.de/${VERSION}.src.tar.bz2
           # CalculiX/ccx_x.yy/src -> CalculiX_src
           tar --transform="s|/${VERSION}/|_|" -xjf ${VERSION}.src.tar.bz2
       - name: make
         run: make -j 4 CCX="./CalculiX_src" ADDITIONAL_FFLAGS="${{ github.event.inputs.fflags }}"
       - name: Test run
-        run: ./bin/ccx_preCICE -h
+        run: |
+          status=0
+          version=$(./bin/ccx_preCICE -v) || status=$?
+          test "$status" -eq 0 || test "$status" -eq 201
+          printf '%s\n' "$version" | grep -E '^This is Version [0-9]+[.][0-9]+$'
       - name: Download tools for packaging
         run: apt -y install lintian pandoc lsb-release
       - name: Create Debian Package
