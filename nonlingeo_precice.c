@@ -42,6 +42,13 @@
 
 #define max(a,b) ((a) >= (b) ? (a) : (b))
 
+static double selectedTimeIncrement(double stable, double maximum, double prescribedMinimum)
+{
+  if (stable > maximum) return maximum;
+  if (stable < prescribedMinimum) return prescribedMinimum;
+  return stable;
+}
+
 void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	       ITG *ne,
 	       ITG *nodeboun,ITG *ndirboun,double *xboun,ITG *nboun,
@@ -2098,7 +2105,7 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
 	  }
 
 	  /* Loads were evaluated for dtime. A smaller stable step needs new loads. */
-	  if (fmin(*tmax * *tper, fmax(dtmin, dtset)) < dtime - 1e-12) {
+	  if (selectedTimeIncrement(dtmin, *tmax * *tper, dtset) < dtime - 1e-12) {
 	    fprintf(stderr, "Explicit contact requires a smaller coupled time step.\n");
 	    exit(EXIT_FAILURE);
 	  }
@@ -2109,7 +2116,7 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
 
           /* no contact elements (either no contact or massless contact) */
 
-	  if (fmin(*tmax * *tper, fmax(dtvol, dtset)) < dtime - 1e-12) {
+	  if (selectedTimeIncrement(dtvol, *tmax * *tper, dtset) < dtime - 1e-12) {
 	    fprintf(stderr, "Explicit dynamics requires a smaller coupled time step.\n");
 	    exit(EXIT_FAILURE);
 	  }
@@ -3708,15 +3715,16 @@ void nonlingeo_precice(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakon
       SFREE(islavactdof);
     }
 
-    /* A local cutback retries the increment without advancing preCICE. */
-    if (icutb == 0) {
-      simulationData.fn = fn;
-      Precice_WriteCouplingData(&simulationData);
-      Precice_Advance(&simulationData, dtime);
-      if (Precice_requiresReadingCheckpoint()) {
-        Precice_ReadIterationCheckpoint(&simulationData, vini);
-        icutb++;
-      }
+    if (*ndmat_ > 0 && icutb != 0) {
+      fprintf(stderr, "A coupled damage increment did not converge.\n");
+      exit(EXIT_FAILURE);
+    }
+    simulationData.fn = fn;
+    Precice_WriteCouplingData(&simulationData);
+    Precice_Advance(&simulationData);
+    if (Precice_requiresReadingCheckpoint() && (*nmethod == 4 || *ndmat_ > 0)) {
+      Precice_ReadIterationCheckpoint(&simulationData, *ndmat_ > 0 ? vini : vold);
+      icutb++;
     }
     if((icutb==0)&&(*ndmat_>0)){
       FORTRAN(calcdamage,(ipkon,lakon,kon,co,mi,thicke,

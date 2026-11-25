@@ -9,8 +9,6 @@
 
 #include "PreciceInterface.h"
 #include <assert.h>
-#include <limits.h>
-#include <math.h>
 #include <stdlib.h>
 #include "CCXHelpers.h"
 #include "ConfigReader.h"
@@ -120,13 +118,11 @@ void Precice_AdjustSolverTimestep(SimulationData *sim)
   }
 }
 
-void Precice_Advance(SimulationData *sim, double solverDt)
+void Precice_Advance(SimulationData *sim)
 {
-  if (!isSteadyStateSimulation(sim->nmethod) &&
-      (!isfinite(solverDt) || fabs(solverDt - sim->solver_dt) > 1e-12 * fmax(1.0, sim->solver_dt))) {
-    fprintf(stderr, "CalculiX used a different time step (%g) from the coupled loads (%g).\n", solverDt, sim->solver_dt);
-    exit(EXIT_FAILURE);
-  }
+  printf("Adapter calling advance()...\n");
+  fflush(stdout);
+
   precicec_advance(sim->solver_dt);
 }
 

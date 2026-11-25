@@ -176,7 +176,7 @@ void Precice_AdjustSolverTimestep(SimulationData *sim);
  * @brief Advances the coupling
  * @param sim
  */
-void Precice_Advance(SimulationData *sim, double solverDt);
+void Precice_Advance(SimulationData *sim);
 
 /**
  * @brief Returns true if coupling is still ongoing

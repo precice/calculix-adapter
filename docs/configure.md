@@ -185,7 +185,7 @@ This surface file is generated during the mesh generation process. The second ad
 
 Note that an error will only occur if `nodes-mesh-with-connectivity` is specified without a `.sur` file. The CalculiX adapter with nearest-projection mapping only supports tetrahedral elements (`C3D4` and `C3D10`), as preCICE only works with surface triangles for nearest-projection mapping.
 
-Material damage evolution in the coupled nonlinear solver requires one increment per implicit coupling window. Material ramping is available in standalone CalculiX.
+Material damage evolution in the coupled nonlinear solver requires a converged increment and one increment per implicit coupling window. Material ramping is available in standalone CalculiX.
 
 ## Modal dynamic simulations
 

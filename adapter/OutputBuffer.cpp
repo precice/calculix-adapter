@@ -34,13 +34,13 @@ std::vector<ITG> &outputBuffer::loadITG(const std::string &name)
   return this->states[currentReadIter].data_itg[name];
 }
 
-void outputBuffer::saveDouble(const std::string &name, double *data, size_t n)
+void outputBuffer::saveDouble(const std::string &name, double *data, unsigned n)
 {
   assert(!states.empty());
   this->states.back().data_double[name] = std::vector<double>(data, data + n);
 }
 
-void outputBuffer::saveITG(const std::string &name, ITG *data, size_t n)
+void outputBuffer::saveITG(const std::string &name, ITG *data, unsigned n)
 {
   this->states.back().data_itg[name] = std::vector<ITG>(data, data + n);
 }
@@ -54,11 +54,11 @@ void BufferFree(outputBuffer *buffer)
 {
   delete buffer;
 }
-void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, size_t length)
+void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsigned length)
 {
   buffer->saveDouble(name, data, length);
 }
-void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, size_t length)
+void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length)
 {
   buffer->saveITG(name, data, length);
 }
