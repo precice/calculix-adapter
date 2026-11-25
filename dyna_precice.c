@@ -1423,6 +1423,23 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
   /* Adapter: create an output buffer */
   printf("Creating a buffer to output correctly when subcycling is used.\n");
   outputBuffer *out_buffer = BufferCreate();
+  ITG checkpointIncrement = 0, checkpointPrint = 0, checkpointKode = 0;
+  struct {
+    const char *name;
+    double *values;
+    size_t count;
+  } outputFields[] = {
+    {"stn", stn, 6 * (size_t) *nk},
+    {"fn", fn, (size_t) mt * *nk},
+    {"stx", stx, 6 * (size_t) mi[0] * *ne},
+    {"een", een, 6 * (size_t) *nk},
+    {"enern", enern, (size_t) *nk},
+    {"xstaten", xstaten, (size_t) *nstate_ * *nk},
+    {"emn", emn, 6 * (size_t) *nk},
+    {"qfn", qfn, 3 * (size_t) *nk},
+    {"qfx", qfx, 3 * (size_t) mi[0] * *ne},
+  };
+  const size_t outputFieldCount = sizeof(outputFields) / sizeof(outputFields[0]);
   /* Adapter: Give preCICE the control of the time stepping */
   while (Precice_IsCouplingOngoing()) {
     /* Adapter: Adjust solver time step */
@@ -1443,12 +1460,13 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     }
     if (Precice_requiresWritingCheckpoint()) {
       Precice_WriteIterationCheckpointModal(&simulationData, bj, bjp, nev);
-      // Otherwise, each iteration in implicit coupling would be written as a new step
-      iinc++;
-      jprint++;
-      simulationData.kode_value = *kode;
+      checkpointIncrement = iinc;
+      checkpointPrint = jprint;
+      checkpointKode = *kode;
       BufferClear(out_buffer);
     }
+    iinc++;
+    jprint++;
 
     if (dashpot)
       RENEW(rpar, double, 4 + nev * (3 + nev));
@@ -2021,41 +2039,23 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         }
       }
     }
-    //if (iout == 2) {
-    /* Adatper: TODO, integrate configurable output frequency */
-    if (1) {
-      (*kode)++;
-      if (strcmp1(&filab[1044], "ZZS") == 0) {
-        NNEW(neigh, ITG, 40 * *ne);
-        NNEW(ipneigh, ITG, *nk);
-      }
-      ptime = *ttime + time;
-      BufferWriteNewStep(out_buffer);
-      /* preCICE adapter: memorize required calls then do them later, if converged */
-      /*
-      
-      frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
-          kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
-          nstate_, istep, &iinc, ithermal, qfn, &mode, &noddiam, trab, inotr,
-          ntrans, orab, ielorien, norien, description, ipneigh, neigh,
-          mi, stx, vr, vi, stnr, stni, vmax, stnmax, &ngraph, veold, ener, ne,
-          cs, set, nset, istartset, iendset, ialset, eenmax, fnr, fni, emn,
-          thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
-          prop, sti);
-      /*/
+    (*kode)++;
+    ptime = *ttime + time;
+    BufferWriteNewStep(out_buffer);
 
-      BufferSaveDouble(out_buffer, "ptime", &ptime, 1);
-      BufferSaveDouble(out_buffer, "veold", veold, mt * *nk);
-      BufferSaveDouble(out_buffer, "vold", vold, mt * *nk);
-      BufferSaveDouble(out_buffer, "v", v, mt * *nk);
-      BufferSaveITG(out_buffer, "iinc", &iinc, 1);
-      BufferSaveITG(out_buffer, "kode", kode, 1);
-
-      if (strcmp1(&filab[1044], "ZZS") == 0) {
-        SFREE(ipneigh);
-        SFREE(neigh);
+    BufferSaveDouble(out_buffer, "ptime", &ptime, 1);
+    BufferSaveDouble(out_buffer, "veold", veold, mt * *nk);
+    BufferSaveDouble(out_buffer, "vold", vold, mt * *nk);
+    BufferSaveDouble(out_buffer, "v", v, mt * *nk);
+    BufferSaveITG(out_buffer, "iinc", &iinc, 1);
+    BufferSaveITG(out_buffer, "kode", kode, 1);
+    BufferSaveITG(out_buffer, "inum", inum, *nk);
+    for (size_t field = 0; field < outputFieldCount; ++field) {
+      if (outputFields[field].values && outputFields[field].count > 0) {
+        BufferSaveDouble(out_buffer, outputFields[field].name, outputFields[field].values, outputFields[field].count);
       }
     }
+
     simulationData.fn   = fn;
     simulationData.vold = v;
     Precice_WriteCouplingData(&simulationData);
@@ -2070,6 +2070,16 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
         BufferLoadDouble(out_buffer, "v", v);
         BufferLoadITG(out_buffer, "iinc", &iinc);
         BufferLoadITG(out_buffer, "kode", kode);
+        BufferLoadITG(out_buffer, "inum", inum);
+        for (size_t field = 0; field < outputFieldCount; ++field) {
+          if (outputFields[field].values && outputFields[field].count > 0) {
+            BufferLoadDouble(out_buffer, outputFields[field].name, outputFields[field].values);
+          }
+        }
+        if (strcmp1(&filab[1044], "ZZS") == 0) {
+          NNEW(neigh, ITG, 40 * *ne);
+          NNEW(ipneigh, ITG, *nk);
+        }
 
         frd(co, &nkg, kon, ipkon, lakon, &neg, v, stn, inum, nmethod,
             kode, filab, een, t1, fn, &ptime, epn, ielmat, matname, enern, xstaten,
@@ -2080,6 +2090,10 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
             thicke, jobnamec, output, qfx, cdn, &mortar, cdnr, cdni, nmat, ielprop,
             prop, sti);
 
+        if (strcmp1(&filab[1044], "ZZS") == 0) {
+          SFREE(ipneigh);
+          SFREE(neigh);
+        }
         BufferReadNext(out_buffer);
       }
       BufferClear(out_buffer);
@@ -2088,7 +2102,9 @@ void dyna_precice(double **cop, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp
     if (Precice_requiresReadingCheckpoint()) {
       if (*nmethod == 4) {
         Precice_ReadIterationCheckpointModal(&simulationData, bj, bjp, nev);
-        *kode = simulationData.kode_value;
+        iinc = checkpointIncrement;
+        jprint = checkpointPrint;
+        *kode = checkpointKode;
       }
       BufferClear(out_buffer);
     }

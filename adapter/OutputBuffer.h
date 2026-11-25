@@ -16,6 +16,8 @@
 #ifndef CCX_OUTPUTBUFFER_H
 #define CCX_OUTPUTBUFFER_H
 
+#include <stddef.h>
+
 // To avoid including CalculiX.h
 #ifdef LONGLONG
 #define ITG long long
@@ -49,7 +51,7 @@ void BufferFree(outputBuffer *buffer);
  * @param data array of values
  * @param length size of the array
  */
-void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsigned length);
+void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, size_t length);
 
 /**
  * @brief Saves an array of "ITG" at the current step, under a given name
@@ -59,7 +61,7 @@ void BufferSaveDouble(outputBuffer *buffer, const char *name, double *data, unsi
  * @param data array of values
  * @param length size of the array
  */
-void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, unsigned length);
+void BufferSaveITG(outputBuffer *buffer, const char *name, ITG *data, size_t length);
 
 /**
  * @brief Loads an array of "double" at the current step (modified through ReadNext and Clear) with a given name
